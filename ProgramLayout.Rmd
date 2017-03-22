@@ -1,0 +1,32 @@
+---
+title: "Program Layout"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Radford's HMC takes in U, Grad_U, epsilon, L, and current_q and outputs
+a new sample. 
+
+U should just be a R function wrapper calling a TF op called U that takes in
+some q as a tf.placeholder. This way we can get the gradient of U w.r.t. q
+
+the op U will be the likelihood of data thus it needs to take a data placeholder.
+This place holder will be the $N \times p$ matrix of data, $X$.
+It will consist of the log likelihood for the sum of Gaussian PDFs evaluated at each
+of our data points:
+
+$$l(W, \Lambda, \sigma^2) := -\frac{N}{2} \ln |C| - \frac{N}{2} \mathrm{tr}(C^{-1} \hat{\Sigma})$$
+
+where $C := W \Lambda^2 W^T + \sigma^2 I$ and $\hat{\Sigma} := (1/N) X^T X$. We cannot just evaluate
+the density at the W, that corresponds to some $\Theta$. We also have to multiply by the appropiate
+Stiefel area form. Giving us finally
+
+$$U(W(\Theta), \Lambda, \sigma^2) := \frac{N}{2} \ln |C| + \frac{N}{2} \mathrm{tr}(C^{-1} \hat{\Sigma}) - \ln |G^T d\Theta|$$
+U op needs to take in angles and within it
+
+1. Compute G
+2. From G compute W (just mult by I_np) and plug in to likelihood
+3. From G compute stiefel area form
