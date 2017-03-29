@@ -55,6 +55,7 @@ GetJacobian <- function(v, x){
 GetStiefelAreaForm <- function(G, angles, n, p) {
   
   FList <- list()
+  StiefelDim <- as.integer(n*p - p*(p+1)/2)
   
   for(i in 0:(p-1)) {
     #Rows <- tf$transpose(G[,(i+1):(n-1)])
@@ -63,7 +64,7 @@ GetStiefelAreaForm <- function(G, angles, n, p) {
     OneForms <- tf$transpose(tf$matmul(GTransposeRows, Jacobian))
     
     for(j in 0:(n-i-1-1)) {
-      OneForm <- tf$slice(OneForms, list(0L, as.integer(j)), list(as.integer(n), 1L))
+      OneForm <- tf$slice(OneForms, list(0L, as.integer(j)), list(as.integer(StiefelDim), 1L))
       FList <- c(FList, OneForm)
     }
   }
