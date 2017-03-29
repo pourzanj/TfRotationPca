@@ -25,6 +25,28 @@ the density at the W, that corresponds to some $\Theta$. We also have to multipl
 Stiefel area form. Giving us finally
 
 $$U(W(\Theta), \Lambda, \sigma^2) := \frac{N}{2} \ln |C| + \frac{N}{2} \mathrm{tr}(C^{-1} \hat{\Sigma}) - \ln |G^T d\Theta|$$
+# Constraint of Angles
+
+Note that the angles need to be constrained to lie within some interval. For a given $i$, the first angle $\theta_{i,i+1}$ e.g. $\theta_{01}$ or $\theta_{34}$ should lie in the interval $[0,2\pi)$. For that same $i$, all angles after that should lie in the interval $[-\pi/2, \pi/2)$. That is if we are sampling on the entire Stiefel manifold (except for a set of measure zero); if we want to do upper orthant, we simply set all intervals to $[0, \pi/2)$.
+
+Because the angles lie in an interval, we must transform them to an unconstrained space using the log-odds transform, see Stan manual section and transformations, specifically of a Lower and Upper bounded scalar. For each angle we define a, unconstrained variable 
+
+$$\theta' := \mathrm{logit}\left( \frac{\theta -a}{b -a} \right)$$
+
+where $logit(u) : = \ln \frac{u}{1-u}$. The inverse of the transform is
+
+$$\theta = a + (b-a)\,\mathrm{logit}^{-1}(\theta')$$
+
+and the absolute value of the derivative of the inverse is
+
+$$\left|\frac{d\theta}{d\theta'} \right| = (b-a)\cdot \mathrm{logit}^{-1}(\theta')\cdot (1 - \mathrm{logit}^{-1}(\theta'))$$
+
+Thus when we sample angles on the logit scale, we can get back the constrained angles and plug them in where they would normally go, but our potential must include extra terms for each angle and thus becomes
+
+$$U(W(\mathrm{logit}(\Theta)), \Lambda, \sigma^2) := \frac{N}{2} \ln |C| + \frac{N}{2} \mathrm{tr}(C^{-1} \hat{\Sigma}) - \ln |G^T d\Theta| - \sum_{i = 0}^{p-1} \sum_{j = i+1}^{n-1} \left|\frac{d\theta}{d\theta'} \right|_{\theta' = \theta_{ij}}$$
+
+# U op Specification
+
 U op needs to take in angles and within it
 
 1. Compute G
@@ -38,5 +60,5 @@ U op needs to take in angles and within it
   + Atzberger's X
   + hierarchical
   + Brian AR
-3. Compare to Byrne (possibly in TF if they have mexp)
+3. Compare to Byrne (TF doesn't have mexp, would require R implementation)
 4. compare to QR sampling (rejection method)
