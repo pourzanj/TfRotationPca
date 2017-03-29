@@ -17,11 +17,13 @@ test_that("Rotation matrix op is correct and its grad is correct", {
 })
 
 test_that("We can create a Givens matrix", {
-  Theta01 <- tf$placeholder(tf$float32)
-  Theta02 <- tf$placeholder(tf$float32)
-  Theta12 <- tf$placeholder(tf$float32)
+  Theta01 <- tf$placeholder(tf$float32, shape = shape())
+  Theta02 <- tf$placeholder(tf$float32, shape = shape())
+  Theta12 <- tf$placeholder(tf$float32, shape = shape())
   
-  G <- CreateGivensMatrix(list(Theta01, Theta02, Theta12), n = 3, p = 2)
+  Theta <- tf$stack(list(Theta01, Theta02, Theta12))
+  
+  G <- CreateGivensMatrix(Theta, n = 3, p = 2)
   
   with(tf$Session() %as% sess, {
     G_out1 <- sess$run(G, feed_dict=dict(Theta01 = 0, Theta02 = 0, Theta12 = 0))
@@ -62,13 +64,15 @@ test_that("We can create a Givens matrix", {
 })
 
 test_that("GetJacobian is correct", {
-  Theta01 <- tf$placeholder(tf$float32)
-  Theta02 <- tf$placeholder(tf$float32)
-  Theta12 <- tf$placeholder(tf$float32)
+  Theta01 <- tf$placeholder(tf$float32, shape = shape())
+  Theta02 <- tf$placeholder(tf$float32, shape = shape())
+  Theta12 <- tf$placeholder(tf$float32, shape = shape())
   
-  G <- CreateGivensMatrix(list(Theta01, Theta02, Theta12), n = 3, p = 2)
+  Theta <- tf$stack(list(Theta01, Theta02, Theta12))
+  
+  G <- CreateGivensMatrix(Theta, n = 3, p = 2)
   G0 <- G[,0]
-  J <- GetJacobian(G0, list(Theta01, Theta02, Theta12))
+  J <- GetJacobian(G0, Theta)
   
   with(tf$Session() %as% sess, {
    J_out <- sess$run(J, feed_dict=dict(Theta01 = 0, Theta02 = 0, Theta12 = 0))

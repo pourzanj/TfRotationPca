@@ -1,3 +1,4 @@
+library(tensorflow)
 sess <- tf$Session()
 
 #assume q is 5 dimensional

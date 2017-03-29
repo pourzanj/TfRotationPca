@@ -17,24 +17,20 @@ CreateRotationMatrix <- function(angle, n, i_in, j_in){
                 shape(as.integer(n), as.integer(n)))
 }
 
-#bug for n=2, p=2
-# CreateGivensMatrix <- function(angles, n, p){
-#   i <- flatten_int(pmap(list(0:(p-1), (n-1):(n-p)), rep))
-#   j <- flatten_int(map(1:p, function(x) x:(n-1)))
-#   
-#   ListRotMatrices <- pmap(list(angles, i, j), CreateRotationMatrix, n = n)
-#   TensorRotMatrices <- tf$stack(ListRotMatrices, axis = 0)
-#   G <- tf$foldl(tf$matmul, TensorRotMatrices)
-#   return(G)
-# }
-
+#angles should be a shape (np-p(p+1)/2,) tensor i.e.
+# Theta01 <- tf$placeholder(tf$float32, shape = shape())
+# Theta02 <- tf$placeholder(tf$float32, shape = shape())
+# Theta12 <- tf$placeholder(tf$float32, shape = shape())
+# Theta <- tf$stack(list(Theta01, Theta02, Theta12))
 CreateGivensMatrix <- function(angles, n, p) {
   
-  idx <- 1
+  idx <- 0
+  #initialize G as the identity then repeatedly
+  #mult. on the right by rotations
   G <- tf$constant(diag(n),dtype = tf$float32)
   for(i in 0:(p-1)) {
     for(j in (i+1):(n-1)) {
-      R <- CreateRotationMatrix(angles[[idx]], n, i, j)
+      R <- CreateRotationMatrix(angles[idx], n, i, j)
       G <- tf$matmul(G, R)
       idx <- idx + 1
     }
@@ -46,9 +42,12 @@ CreateGivensMatrix <- function(angles, n, p) {
 #derivative w.r.t.
 GetJacobian <- function(v, x){
   n <- v$shape$as_list()[[1]]
+  
+  #get elements as an R list of TF scalars then apply gradients to each
   Elements <- lapply(0:(n-1), function(i) v[i])
   JacobianList <- lapply(Elements, function(e) tf$gradients(e,x))
-  Jacobian <- tf$stack(JacobianList)
+  
+  Jacobian <- tf$concat(JacobianList, axis = 0L)
   
   return(Jacobian)
 }

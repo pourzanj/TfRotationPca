@@ -30,3 +30,13 @@ U op needs to take in angles and within it
 1. Compute G
 2. From G compute W (just mult by I_np) and plug in to likelihood
 3. From G compute stiefel area form
+
+# Todo
+
+1. using multiple charts
+2. test datasets/applications
+  + Atzberger's X
+  + hierarchical
+  + Brian AR
+3. Compare to Byrne (possibly in TF if they have mexp)
+4. compare to QR sampling (rejection method)
