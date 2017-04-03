@@ -17,6 +17,28 @@ CreateRotationMatrix <- function(angle, n, i_in, j_in){
                 shape(as.integer(n), as.integer(n)))
 }
 
+#applying this op to a matrix A is equivalent to right multiplying
+#that matrix by a rotation matrix that's a rotation of angle
+#in the i,j plane.
+#the resulting matrix will only differ from A in the ith and jth columns.
+#we can thus split A in to the following five parts i, 1L, j-i-1, 1L, n-j-1
+RotateOp <- function(A, angle, n_in, i_in, j_in){
+  n <- as.integer(n_in)
+  i <- as.integer(i_in)
+  j <- as.integer(j_in)
+
+  SplitCols <- tf$split(A, list(i, 1L, j-i-1L, 1L, n-j-1L), axis = 1L)
+  AColI <- SplitCols[[2]]
+  AColJ <- SplitCols[[4]]
+  
+  SplitCols[[2]] <- cos(angle)*AColI + sin(angle)*AColJ
+  SplitCols[[4]] <- -sin(angle)*AColI + cos(angle)*AColJ
+  
+  Result <- tf$concat(SplitCols, 1L)
+  
+  return(Result)
+}
+
 #angles should be a shape (np-p(p+1)/2,) tensor i.e.
 # Theta01 <- tf$placeholder(tf$float32, shape = shape())
 # Theta02 <- tf$placeholder(tf$float32, shape = shape())
@@ -30,8 +52,7 @@ CreateGivensMatrix <- function(angles, n, p) {
   G <- tf$constant(diag(n),dtype = tf$float32)
   for(i in 0:(p-1)) {
     for(j in (i+1):(n-1)) {
-      R <- CreateRotationMatrix(angles[idx], n, i, j)
-      G <- tf$matmul(G, R)
+      G <- RotateOp(G, angles[idx], n, i, j)
       idx <- idx + 1
     }
   }

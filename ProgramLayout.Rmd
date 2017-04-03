@@ -55,6 +55,14 @@ U op needs to take in angles and within it
 
 # Todo
 
+1. Finish Timing Results. Try to get up to n = 100
+2. Add support for Unknown Variance
+3. Sample Theta on unconstrained space via sigmoid
+4. Try upper orthant
+5. Try true subspace that is close to end of interval
+
+# Todo From Atzberger
+
 1. using multiple charts
 2. test datasets/applications
   + Atzberger's X
