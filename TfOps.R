@@ -52,6 +52,12 @@ CreateGivensMatrix <- function(angles, n, p) {
   G <- tf$constant(diag(n),dtype = tf$float32)
   for(i in 0:(p-1)) {
     for(j in (i+1):(n-1)) {
+      
+      #old way building rotation matrices then multiplying 
+      #R <- CreateRotationMatrix(angles[idx], n, i, j)
+      #G <- tf$matmul(G, R, b_is_sparse=TRUE)
+      
+      #new way to apply a rotation cred. Ben
       G <- RotateOp(G, angles[idx], n, i, j)
       idx <- idx + 1
     }
