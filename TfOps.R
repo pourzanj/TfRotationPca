@@ -62,21 +62,21 @@ CreateDerivativeOfRotationMatrix <- function(angle, n, i_in, j_in){
 # Theta12 <- tf$placeholder(tf$float32, shape = shape())
 # Theta <- tf$stack(list(Theta01, Theta02, Theta12))
 # CreateGivensMatrix <- function(angles, n, p) {
-#   
+# 
 #   idx <- 0
 #   #initialize G as the identity then repeatedly
 #   #mult. on the right by rotations
 #   G <- tf$constant(diag(n),dtype = tf$float32)
 #   for(i in 0:(p-1)) {
 #     for(j in (i+1):(n-1)) {
-#       
-#       #old way building rotation matrices then multiplying 
+# 
+#       #old way building rotation matrices then multiplying
 #       R <- CreateRotationMatrix(angles[idx], n, i, j)
 #       G <- tf$matmul(G, R, b_is_sparse=TRUE)
-#       
+# 
 #       #new way to apply a rotation cred. Ben
 #       #G <- RotateOp(G, angles[idx], n, i, j)
-#       
+# 
 #       idx <- idx + 1
 #     }
 #   }
@@ -97,13 +97,13 @@ CreateGivensMatrix <- function(PartialRotationsAB, n, p) {
 #derivative w.r.t.
 # GetJacobian <- function(v, x){
 #   n <- v$shape$as_list()[[1]]
-#   
+# 
 #   #get elements as an R list of TF scalars then apply gradients to each
 #   Elements <- lapply(0:(n-1), function(i) v[i])
 #   JacobianList <- lapply(Elements, function(e) tf$gradients(e,x))
-#   
+# 
 #   Jacobian <- tf$concat(JacobianList, axis = 0L)
-#   
+# 
 #   return(Jacobian)
 # }
 
@@ -150,16 +150,17 @@ CreatePartialGivens <- function(angles, n, p) {
     }
   })
   
+  StiefelDim <- as.integer(n*p - p*(p+1)/2)
   with(tf$name_scope(paste0('PartialGivensB')), {
     G <- tf$constant(diag(n),dtype = tf$float32, name = 'Id')[,0:(p-1)]
     B <- list(G)
-    idx <- 0
+    idx <- StiefelDim - 1
     for(i in (p-1):0) {
       for(j in (n-1):(i+1)) {
         R <- CreateRotationMatrix(angles[idx], n, i, j)
         G <- tf$matmul(R, G, a_is_sparse=TRUE, name = paste0('P_',i,j,'_',p-1,n-1))
         B <- c(G, B)
-        idx <- idx + 1
+        idx <- idx - 1
       }
     }
   })
@@ -252,14 +253,30 @@ GetStiefelAreaForm <- function(G, GivensJacobians, n, p) {
   return(det)
 }
 
-
+n <- 4
+p <- 3
+d <- n*p-p*(p+1)/2
 sess <- tf$Session()
-Theta <- tf$placeholder(tf$float32, shape = shape(10), name = 'Theta')
+Theta <- tf$placeholder(tf$float32, shape = shape(d), name = 'Theta')
 
-PartialRotations <- CreatePartialGivens(Theta, 5, 4)
-G <- CreateGivensMatrix(PartialRotations, 5, 4)
-GivensJacobians <- GetGivensJacobians(PartialRotations, Theta, 5, 4)
-StiefelAreaForm <- GetStiefelAreaForm(G, GivensJacobians, 5, 4)
-writer <- tf$summary$FileWriter("./TfLogs", sess$graph)
+PartialRotations <- CreatePartialGivens(Theta, n, p)
+G <- CreateGivensMatrix(PartialRotations, n, p)
+GOld <- CreateGivensMatrix(Theta, n, p)
+GivensJacobians <- GetGivensJacobians(PartialRotations, Theta, n, p)
+JacobianOld <- GetJacobian(G[,0], Theta)
 
-out <- sess$run(PartialRotations, feed_dict = dict(Theta = c(pi/4,0,0,0,0,0,0,-pi/4,pi/2,0)))
+StiefelAreaForm <- GetStiefelAreaForm(G, GivensJacobians, n, p)
+#writer <- tf$summary$FileWriter("./TfLogs", sess$graph)
+
+#grad <- tf$gradients(StiefelAreaForm, Theta)
+sess$run(list(GivensJacobians[[1]], JacobianOld), feed_dict = dict(Theta = c(0.1,pi/4,-pi/4,0,pi/2,0.2)))
+
+sess$run(PartialRotations$B, feed_dict = dict(Theta = c(0,pi/4,0,0,0,0)))
+
+G1 <- sess$run(G, feed_dict = dict(Theta = c(0,pi/4,0,0,0,0)))
+eps <- 1e-4
+G2 <- sess$run(G, feed_dict = dict(Theta = c(eps,pi/4,0,0,0,0)))
+(G2-G1)/eps
+# system.time(
+# for(i in 1:1000) sess$run(grad, feed_dict = dict(Theta = rep(0, d)))
+# )
