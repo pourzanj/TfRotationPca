@@ -1,4 +1,3 @@
-tf$reset_default_graph()
 
 TimeGradLogArea <- function(n, p, NumRuns) {
   
@@ -40,6 +39,8 @@ TimeGradLogArea <- function(n, p, NumRuns) {
   print("Finished Setting Up Graph. Setup Time:")
   print(SetupTime)
   
+  writer <<- tf$summary$FileWriter(logdir = "./TfLogs", graph = sess$graph)
+  
   TimingResult <- system.time(
     for(i in 1:NumRuns)
       sess$run(GradLogArea, feed_dict = dict(Theta = ThetaInput, LambdaVec = list(5,3), SigmaSq = 1))
@@ -50,5 +51,6 @@ TimeGradLogArea <- function(n, p, NumRuns) {
   
   return(NumRuns/TimingResult[3])
 }
+
 
 #TimeGradLogArea(10,2, 10)
