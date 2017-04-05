@@ -253,30 +253,69 @@ GetStiefelAreaForm <- function(G, GivensJacobians, n, p) {
   return(det)
 }
 
-n <- 4
-p <- 3
+CreateThetaConstrained <- function(ThetaUnconstrained, n, p) {
+  
+  ThetaConstrainedList <- list()
+  ThetaConstrainedDerivativeList <- list()
+  
+  with(tf$name_scope('ThetaConstrained'), {
+    Pi <- tf$constant(pi, name = 'Pi')
+    Pi2 <- tf$constant(pi/2, name = 'Pi/2')
+    idx <- 0
+    for(i in 0:(p-1)) {
+      for(j in (i+1):(n-1)) {
+          #first rotation of the column should go from -pi to pi
+          if(j == i+1) {
+            a <- -Pi
+            b <- Pi
+          }
+          else {
+            a <- -Pi2
+            b <- Pi2
+          }
+        with(tf$name_scope(paste0('ThetaConstrained',i,j)), {
+          ThetaConstrained <- a + (b-a)*tf$sigmoid(ThetaUnconstrained[idx])
+          ThetaConstrainedList <- c(ThetaConstrainedList, ThetaConstrained)
+        })
+          
+        with(tf$name_scope(paste0('ThetaConstrainedDerivative',i,j)), {
+          ThetaConstrainedDerivative <- (b-a)*tf$sigmoid(ThetaUnconstrained[idx])*(1-tf$sigmoid(ThetaUnconstrained[idx]))
+          ThetaConstrainedDerivativeList <- c(ThetaConstrainedDerivativeList, ThetaConstrainedDerivative)
+            
+          idx <- idx + 1
+        })
+      }
+    }
+    
+    ThetaConstrained <- tf$stack(ThetaConstrainedList, name = 'ThetaConstrained')
+    ThetaConstrainedDerivative <- tf$stack(ThetaConstrainedDerivativeList, name = 'ThetaConstrainedDerivative')
+  })
+  
+  return(list(ThetaConstrained = ThetaConstrained, ThetaConstrainedDerivative = ThetaConstrainedDerivative))
+}
+
+
+
+n <- 3
+p <- 2
 d <- n*p-p*(p+1)/2
 sess <- tf$Session()
-Theta <- tf$placeholder(tf$float32, shape = shape(d), name = 'Theta')
+ThetaUnconstrained <- tf$placeholder(tf$float32, shape = shape(d), name = 'ThetaUnconstrained')
+ThetaConstrained <- CreateThetaConstrained(ThetaUnconstrained, n, p)
+ThetaConstrainedDerivative <- ThetaConstrained$ThetaConstrainedDerivative
+ThetaConstrained <- ThetaConstrained$ThetaConstrained
 
-PartialRotations <- CreatePartialGivens(Theta, n, p)
+PartialRotations <- CreatePartialGivens(ThetaConstrained, n, p)
 G <- CreateGivensMatrix(PartialRotations, n, p)
-GOld <- CreateGivensMatrix(Theta, n, p)
-GivensJacobians <- GetGivensJacobians(PartialRotations, Theta, n, p)
-JacobianOld <- GetJacobian(G[,0], Theta)
+GivensJacobians <- GetGivensJacobians(PartialRotations, ThetaConstrained, n, p)
+LogStiefelAreaForm <- tf$log(GetStiefelAreaForm(G, GivensJacobians, n, p))
+#GradLogAreaForm <- tf$gradients(tf$log(StiefelAreaForm), ThetaConstrained)
 
-StiefelAreaForm <- GetStiefelAreaForm(G, GivensJacobians, n, p)
+U <- - LogStiefelAreaForm - tf$reduce_sum(tf$log(ThetaConstrainedDerivative))
+
 #writer <- tf$summary$FileWriter("./TfLogs", sess$graph)
+sess$run(U, feed_dict = dict(ThetaUnconstrained = c(0,0,0)))
 
-#grad <- tf$gradients(StiefelAreaForm, Theta)
-sess$run(list(GivensJacobians[[1]], JacobianOld), feed_dict = dict(Theta = c(0.1,pi/4,-pi/4,0,pi/2,0.2)))
-
-sess$run(PartialRotations$B, feed_dict = dict(Theta = c(0,pi/4,0,0,0,0)))
-
-G1 <- sess$run(G, feed_dict = dict(Theta = c(0,pi/4,0,0,0,0)))
-eps <- 1e-4
-G2 <- sess$run(G, feed_dict = dict(Theta = c(eps,pi/4,0,0,0,0)))
-(G2-G1)/eps
 # system.time(
-# for(i in 1:1000) sess$run(grad, feed_dict = dict(Theta = rep(0, d)))
+# for(i in 1:100) sess$run(grad, feed_dict = dict(Theta = rep(0, d)))
 # )
