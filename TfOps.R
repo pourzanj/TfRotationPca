@@ -265,14 +265,17 @@ CreateThetaConstrained <- function(ThetaUnconstrained, n, p) {
     for(i in 0:(p-1)) {
       for(j in (i+1):(n-1)) {
           #first rotation of the column should go from -pi to pi
-          if(j == i+1) {
-            a <- -Pi
-            b <- Pi
-          }
-          else {
-            a <- -Pi2
-            b <- Pi2
-          }
+          # if(j == i+1) {
+          #   a <- -Pi
+          #   b <- Pi
+          # }
+          # else {
+          #   a <- -Pi2
+          #   b <- Pi2
+          # }
+        a <- -Pi2
+        b <- Pi2
+        
         with(tf$name_scope(paste0('ThetaConstrained',i,j)), {
           ThetaConstrained <- a + (b-a)*tf$sigmoid(ThetaUnconstrained[idx])
           ThetaConstrainedList <- c(ThetaConstrainedList, ThetaConstrained)
@@ -294,28 +297,30 @@ CreateThetaConstrained <- function(ThetaUnconstrained, n, p) {
   return(list(ThetaConstrained = ThetaConstrained, ThetaConstrainedDerivative = ThetaConstrainedDerivative))
 }
 
+CreateLambdaConstrained <- function(LambdaUnconstrained, p) {
+  
+  LambdaConstrainedList <- list()
 
+  #transform for ordered vector in section VI of Stan manual
+  with(tf$name_scope('LambdaConstrained'), {
 
-n <- 3
-p <- 2
-d <- n*p-p*(p+1)/2
-sess <- tf$Session()
-ThetaUnconstrained <- tf$placeholder(tf$float32, shape = shape(d), name = 'ThetaUnconstrained')
-ThetaConstrained <- CreateThetaConstrained(ThetaUnconstrained, n, p)
-ThetaConstrainedDerivative <- ThetaConstrained$ThetaConstrainedDerivative
-ThetaConstrained <- ThetaConstrained$ThetaConstrained
+    ExpLambdaUnconstrained <- tf$exp(LambdaUnconstrained)
+    
+    for(i in (p-1):0) {
+      with(tf$name_scope(paste0('LambdaConstrained',i)), {
+        if(i == p-1) LambdaConstrained <- LambdaUnconstrained[i]
+        #i index should be i -1 but R does from 1 indexing
+        else LambdaConstrained <- LambdaConstrainedList[[1]] + ExpLambdaUnconstrained[i]
+        
+        #add to the front of the list because last Lambda will be highest
+        LambdaConstrainedList <- c(LambdaConstrained, LambdaConstrainedList)
+      })
+    }
 
-PartialRotations <- CreatePartialGivens(ThetaConstrained, n, p)
-G <- CreateGivensMatrix(PartialRotations, n, p)
-GivensJacobians <- GetGivensJacobians(PartialRotations, ThetaConstrained, n, p)
-LogStiefelAreaForm <- tf$log(GetStiefelAreaForm(G, GivensJacobians, n, p))
-#GradLogAreaForm <- tf$gradients(tf$log(StiefelAreaForm), ThetaConstrained)
+    LambdaConstrained <- tf$stack(LambdaConstrainedList, name = 'LambdaConstrained')
+    LambdaConstrainedDerivative <- tf$reduce_prod(ExpLambdaUnconstrained, name = 'LambdaConstrainedDerivative')
+  })
+  
+  return(list(LambdaConstrained = LambdaConstrained, LambdaConstrainedDerivative = LambdaConstrainedDerivative))
+}
 
-U <- - LogStiefelAreaForm - tf$reduce_sum(tf$log(ThetaConstrainedDerivative))
-
-#writer <- tf$summary$FileWriter("./TfLogs", sess$graph)
-sess$run(U, feed_dict = dict(ThetaUnconstrained = c(0,0,0)))
-
-# system.time(
-# for(i in 1:100) sess$run(grad, feed_dict = dict(Theta = rep(0, d)))
-# )

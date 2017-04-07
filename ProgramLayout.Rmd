@@ -25,9 +25,10 @@ the density at the W, that corresponds to some $\Theta$. We also have to multipl
 Stiefel area form. Giving us finally
 
 $$U(W(\Theta), \Lambda, \sigma^2) := \frac{N}{2} \ln |C| + \frac{N}{2} \mathrm{tr}(C^{-1} \hat{\Sigma}) - \ln |G^T d\Theta|$$
+
 # Constraint of Angles
 
-Note that the angles need to be constrained to lie within some interval. For a given $i$, the first angle $\theta_{i,i+1}$ e.g. $\theta_{01}$ or $\theta_{34}$ should lie in the interval $[0,2\pi)$. For that same $i$, all angles after that should lie in the interval $[-\pi/2, \pi/2)$. That is if we are sampling on the entire Stiefel manifold (except for a set of measure zero); if we want to do upper orthant, we simply set all intervals to $[0, \pi/2)$.
+Note that the angles need to be constrained to lie within some interval. For a given $i$, the first angle $\theta_{i,i+1}$ e.g. $\theta_{01}$ or $\theta_{34}$ should lie in the interval $[-\pi,\pi)$. For that same $i$, all angles after that (e.g. $\theta_{02}, \theta_{03}, \cdots$ and $\theta_{35}, \theta_{36}, \cdots$) should lie in the interval $[-\pi/2, \pi/2)$. That is if we are sampling on the entire Stiefel manifold (except for a set of measure zero); if we want to do upper orthant, we simply set all intervals to $[0, \pi/2)$.
 
 Because the angles lie in an interval, we must transform them to an unconstrained space using the log-odds transform, see Stan manual section and transformations, specifically of a Lower and Upper bounded scalar. For each angle we define a, unconstrained variable 
 
