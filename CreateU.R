@@ -1,8 +1,8 @@
 library(tensorflow)
 
-n <- 150
-p <- 3
-d <- n*p-p*(p+1)/2
+#n <- 150
+#p <- 3
+#d <- n*p-p*(p+1)/2
 
 #generate quick synthetic data (for testing)
 N <- 1000
