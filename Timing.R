@@ -1,4 +1,6 @@
 
+system.time(for(i in 1:10) sess$run(GradU, dict(ThetaUnconstrained = rep(0,d), LambdaUnconstrainedVec = rep(0.1,p), SigmaSq = 1)))
+
 TimeGradLogArea <- function(n, p, NumRuns) {
   
   print("Theta Dimension:")

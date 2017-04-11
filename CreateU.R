@@ -1,8 +1,15 @@
 library(tensorflow)
 
-n <- 2
-p <- 1
+n <- 150
+p <- 3
 d <- n*p-p*(p+1)/2
+
+#generate quick synthetic data (for testing)
+N <- 1000
+W <- InverseGivensTransform(rep(0,d),n,p)
+X <- GenerateHighDimData(n, p, W, rep(1,p), 1, 1000)$x %>% as.matrix
+SigmaHat_ <- (1/N)*t(X) %*% X
+
 sess <- tf$Session()
 ThetaUnconstrained <- tf$placeholder(tf$float32, shape = shape(d), name = 'ThetaUnconstrained')
 ThetaConstrained <- CreateThetaConstrained(ThetaUnconstrained, n, p)
@@ -36,7 +43,7 @@ GradU <- tf$gradients(U, list(ThetaUnconstrained, LambdaUnconstrainedVec))
 #U <- - LogStiefelAreaForm - tf$reduce_sum(tf$log(ThetaConstrainedDerivative))
 #GradU <- tf$gradients(U, ThetaUnconstrained)
 
-writer <- tf$summary$FileWriter("./TfLogs", sess$graph)
+#writer <- tf$summary$FileWriter("./TfLogs", sess$graph)
 #sess$run(GradU, feed_dict = dict(ThetaUnconstrained = c(pi/2,0,0), LambdaVec = c(5,3), SigmaSq = 1))
 
 # system.time(
