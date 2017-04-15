@@ -9,7 +9,7 @@ functions {
         
         return R;
     }
-    
+  
     matrix left_rotation(matrix A, real angle, int n, int p, int i, int j) {
         matrix[n, p] RA;
         RA = A;
@@ -53,9 +53,9 @@ functions {
         partial_givens[1] = G;
         for(i in 1:p){
             for(j in i+1:n){
-                //R = rotation_matrix(angles[idx], n, i, j);
-                //G = G * R;
-                G = right_rotation(G, angles[idx], n, i, j);
+                R = rotation_matrix(angles[idx], n, i, j);
+                G = G * R;
+                //G = right_rotation(G, angles[idx], n, i, j);
                 partial_givens[idx + 1] = G;
                 idx = idx + 1;
             }
@@ -80,9 +80,9 @@ functions {
         for(i in 1:p){
             int i_st = p - i + 1;
             for(j in i_st+1:n){
-                //R = rotation_matrix(angles[idx], n, i_st, n - j + i_st + 1);
-                //G = R * G;
-                G = left_rotation(G, angles[idx], n, p, i_st, n - j + i_st + 1);
+                R = rotation_matrix(angles[idx], n, i_st, n - j + i_st + 1);
+                G = R * G;
+                //G = left_rotation(G, angles[idx], n, p, i_st, n - j + i_st + 1);
                 partial_givens[idx] = G;
                 idx = idx - 1;
             }
@@ -121,20 +121,20 @@ functions {
         
     }
     
-    real area_form(vector angles, int n, int p) {
+    real area_form(matrix[] partial_givens_forward, matrix[] partial_givens_reverse, vector angles, int n, int p) {
         int d = n*p - p*(p+1)/2;
         int idx;
         matrix[n, n] givens;
-        matrix[n, n] partial_givens_forward[d+1];
-        matrix[n, p] partial_givens_reverse[d+1];
+        //matrix[n, n] partial_givens_forward[d+1];
+        //matrix[n, p] partial_givens_reverse[d+1];
         matrix[n, d] givens_jacobians[p];
         matrix[d, d] area_mat;
         /**
          * Create Partial Givens
         */
         
-        partial_givens_forward = generate_forward_pgivens(angles, n, p);
-        partial_givens_reverse = generate_reverse_pgivens(angles, n, p);
+        //partial_givens_forward = generate_forward_pgivens(angles, n, p);
+        //partial_givens_reverse = generate_reverse_pgivens(angles, n, p);
         givens = partial_givens_forward[d+1];
         
         givens_jacobians = generate_givens_jacobians(partial_givens_forward, partial_givens_reverse, angles, n, p);
@@ -158,18 +158,23 @@ data {
     int p;
     int d;
 }
-
 parameters {
-  real<lower = -pi(), upper = pi()> theta01;
-  real<lower = -pi()/2, upper = pi()/2> theta02;
-  real<lower = -pi(), upper = pi()> theta12;
+  vector<lower = -pi()/2, upper = pi()/2>[d] theta;
 }
-
 model {
-  vector[3] theta;
-  theta[1] = theta01;
-  theta[2] = theta02;
-  theta[3] = theta12;
+  matrix[n, n] partial_givens_forward[d+1];
+  matrix[n, p] partial_givens_reverse[d+1];
+  matrix[n, n] G;
+  matrix[n, p] W;
+
+  //add Stiefel "area form" to log probability since we are sampling on angle space
+  //this requires partial matrix multiplications of rotation matrices
+  partial_givens_forward = generate_forward_pgivens(theta, n, p);
+  partial_givens_reverse = generate_reverse_pgivens(theta, n, p);
+  target += area_form(partial_givens_forward, partial_givens_reverse, theta, n, p);
   
-  target += area_form(theta, n, p);
+  //last "partial" multiplication is actually full multiplication that gives us
+  //nxn orthonormal Givens matrix. From it we can slice out nxp orthornomal W
+  G = partial_givens_forward[d+1];
+  W = G[,1:p];
 }
