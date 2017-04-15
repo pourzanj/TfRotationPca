@@ -1,0 +1,53 @@
+---
+title: "Uncertainty Quantification of PCA"
+output: html_notebook
+---
+
+# Generate Synthetic 3D Data that lies on a 2D plane
+
+```{r}
+n <- 3
+p <- 2
+d <- n*p-p*(p+1)/2
+
+source("../../Givens.R")
+source("../../GenerateSynthetic.R")
+W <- InverseGivensTransform(c(0,0,0), 3, 2)
+N <- 15
+#ThreeTwo <- GenerateHighDimData(n = n, p = p, W = W, LambdaVec = c(1, 1), sd = 1.0, N = N)
+#x <- ThreeTwo$x %>% tbl_df
+#save(x, file = "experiments/uncertaintyQuantification/unstableEstimate.Rdata")
+load(file = "unstableEstimate.Rdata")
+
+W_hat <- princomp(x)$loadings
+source("../../Plotting.R")
+points_hat <- GetSurfacePoints(x$V1, x$V2, W_hat[,1:2])
+
+plot_ly(x, x = ~V1, y = ~V2, z = ~V3) %>% add_markers() %>%
+  add_surface(x = ~points_hat$x, y = ~points_hat$y, z = ~points_hat$z, opacity = 0.98)
+
+points_true <- GetSurfacePoints(x$V1, x$V2, W)
+
+plot_ly(showscale = FALSE) %>%
+  add_surface(x = ~points_hat$x, y = ~points_hat$y, z = ~points_hat$z, opacity = 0.98) %>%
+  add_surface(x = ~points_true$x, y = ~points_true$y, z = ~points_true$z)
+```
+
+Because of small amount of data and low signal to noise ratio, maxmimum likelihood estimate is bad. Lambda values are `r princomp(x)$sdev` and would lead us to believe data is two dimensional, but we would pick the wrong subspace with maximum likelihood.
+
+```{r}
+sigmaSqHyperPrior <- 10
+xMat <- as.matrix(x[,1:3])
+SigmaHat <- (1/N)*t(xMat) %*% xMat
+data <- list(n = n, p = p, d = d, sigmaSqHyperPrior = sigmaSqHyperPrior, N = N, SigmaHat = SigmaHat)
+
+fit <- stan(file = "../../Stan/StiefelPpca.stan", data = data, chains = 4, iter = 10000)
+```
+
+```{r}
+GivensTransform(W_hat[,1:2])
+s <- extract(fit)
+qplot(s$theta[,1]/pi)
+qplot(s$theta[,2]/pi)
+```
+
