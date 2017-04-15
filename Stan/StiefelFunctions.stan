@@ -11,7 +11,7 @@ functions {
     }
     
     matrix d_rotation_matrix(real angle, int n, int i, int j) {
-        matrix[n, n] dR = diag_matrix(rep_vector(1, n));
+        matrix[n, n] dR = diag_matrix(rep_vector(0, n));
         
         dR[i, i] = -sin(angle);
         dR[i, j] = -cos(angle);
