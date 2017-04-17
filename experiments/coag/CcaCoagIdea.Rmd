@@ -1,0 +1,117 @@
+---
+title: "CCA on Clinical Coag"
+output: html_notebook
+---
+
+* Vital Signs, $x_{\mathrm{vitals}}$
+    + hr, resprate, sbp
+* Blood Panel $x_{\mathrm{bpanel}}$
+    + paco2, pao2, hco3, basedefexc, serumco2, bun, creatinine, lactate
+* Complete Blood Count (CBC) $x_{\mathrm{cbc}}$
+    + wbc, hgb, hct, plts
+* Cascade Proteins $x_{\mathrm{cascade}}$
+    + factorii, factorv, factorvii, factorviii, factorix, factorx, ddimer, pc, atiii, fibrinogen_rlab
+* TEG $x_{\mathrm{teg}}$
+    + R, K, MA, Ly30
+* PT/PTT $x_{\mathrm{pt}}$
+    + pt, ptt
+
+$$
+\begin{pmatrix}
+x_{\mathrm{vitals}}\\
+x_{\mathrm{bpanel}}\\
+x_{\mathrm{cbc}}\\
+x_{\mathrm{cascade}}\\
+x_{\mathrm{teg}}\\
+x_{\mathrm{pt}}
+\end{pmatrix}
+=
+\begin{pmatrix}
+W_{\mathrm{vitals}} & B_{\mathrm{vitals}} & 0 & 0 & 0 & 0 & 0\\
+W_{\mathrm{bpanel}} & 0 & B_{\mathrm{bpanel}} & 0 & 0 & 0 & 0\\
+W_{\mathrm{cbc}} & 0 & 0 & B_{\mathrm{cbc}} & 0 & 0 & 0\\
+W_{\mathrm{cascade}} & 0 & 0 & 0 & B_{\mathrm{cascade}} & 0 & 0\\
+W_{\mathrm{teg}} & 0 & 0 & 0 & 0 & B_{\mathrm{teg}} & 0\\
+W_{\mathrm{pt}}  & 0 & 0 & 0 & 0 & 0 & B_{\mathrm{teg}}\\
+\end{pmatrix}
+\begin{pmatrix}
+z_{\mathrm{common}}\\
+z_{\mathrm{vitals}}\\
+z_{\mathrm{bpanel}}\\
+z_{\mathrm{cbc}}\\
+z_{\mathrm{cascade}}\\
+z_{\mathrm{teg}}\\
+z_{\mathrm{pt}}
+\end{pmatrix}
+$$
+
+$$
+\begin{pmatrix}
+x_{\mathrm{vitals}}\\
+x_{\mathrm{bpanel}}\\
+x_{\mathrm{cbc}}\\
+x_{\mathrm{cascade}}\\
+x_{\mathrm{teg}}\\
+x_{\mathrm{pt}}
+\end{pmatrix}
+=
+\begin{pmatrix}
+W_{\mathrm{vitals}} & B_{\mathrm{vitals}} & 0 & 0 & 0 & 0 & 0\\
+W_{\mathrm{bpanel}} & 0 & B_{\mathrm{bpanel}} & 0 & 0 & 0 & 0\\
+W_{\mathrm{cbc}} & 0 & 0 & B_{\mathrm{cbc}} & 0 & 0 & 0\\
+W_{\mathrm{cascade}} & 0 & 0 & 0 & B_{\mathrm{cascade}} & 0 & 0\\
+W_{\mathrm{teg}} & 0 & 0 & 0 & 0 & B_{\mathrm{teg}} & 0\\
+W_{\mathrm{pt}}  & 0 & 0 & 0 & 0 & 0 & B_{\mathrm{teg}}\\
+\end{pmatrix}
+\begin{pmatrix}
+z_{\mathrm{common}}\\
+z_{\mathrm{vitals}}\\
+z_{\mathrm{bpanel}}\\
+z_{\mathrm{cbc}}\\
+z_{\mathrm{cascade}}\\
+z_{\mathrm{teg}}\\
+z_{\mathrm{pt}}
+\end{pmatrix}
+$$
+
+$$
+\begin{pmatrix}
+x_{\mathrm{teg}}\\
+x_{\mathrm{pt}}
+\end{pmatrix}
+=
+\begin{pmatrix}
+W_{\mathrm{teg}} \Lambda_{\mathrm{teg}} & B_{\mathrm{teg}} \Gamma_{\mathrm{teg}} & 0\\
+W_{\mathrm{pt}} \Lambda_{\mathrm{pt}} & 0 & B_{\mathrm{pt}} \Gamma_{\mathrm{pt}}\\
+\end{pmatrix}
+\begin{pmatrix}
+z_{\mathrm{common}}\\
+z_{\mathrm{teg}}\\
+z_{\mathrm{pt}}
+\end{pmatrix}
+$$
+
+If $x_{\mathrm{teg}}$ is of dimension $n_{\mathrm{teg}}$ and $x_{\mathrm{pt}}$ is of dimension $n_{\mathrm{pt}}$ $W$ will 
+
+$$
+W W^T
+=
+\begin{pmatrix}
+W_{\mathrm{teg}} \Lambda_{\mathrm{teg}} & B_{\mathrm{teg}} \Gamma_{\mathrm{teg}} & 0\\
+W_{\mathrm{pt}} \Lambda_{\mathrm{pt}} & 0 & B_{\mathrm{pt}} \Gamma_{\mathrm{pt}}\\
+\end{pmatrix}
+\begin{pmatrix}
+\Lambda_{\mathrm{teg}} W_{\mathrm{teg}}^T & \Lambda_{\mathrm{pt}} W_{\mathrm{pt}}^T \\
+\Gamma_{\mathrm{teg}} B_{\mathrm{teg}}^T & 0\\
+0 & \Gamma_{\mathrm{pt}} B_{\mathrm{pt}}^T
+\end{pmatrix}
+$$
+
+$$
+W W^T
+=
+\begin{pmatrix}
+W_{\mathrm{teg}} \Lambda_{\mathrm{teg}}^2 W_{\mathrm{teg}}^T + B_{\mathrm{teg}} \Gamma_{\mathrm{teg}}^2  B_{\mathrm{teg}}^T & W_{\mathrm{teg}} \Lambda_{\mathrm{teg}} \Lambda_{\mathrm{pt}} B_{\mathrm{pt}}^T\\
+W_{\mathrm{pt}} \Lambda_{\mathrm{pt}} \Lambda_{\mathrm{teg}} W_{\mathrm{teg}}^T & W_{\mathrm{pt}} \Lambda_{\mathrm{pt}}^2  W_{\mathrm{pt}}^T + B_{\mathrm{pt}} \Gamma_{\mathrm{pt}}^2 B_{\mathrm{pt}}\\
+\end{pmatrix}
+$$
