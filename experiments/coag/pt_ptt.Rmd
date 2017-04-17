@@ -1,0 +1,68 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+N <- 66
+
+log_plus <- function(x) log(x+0.01)
+standardize <- function(x) (x-mean(x))/sd(x)
+
+teg_pt_mvc <- CoagImputed1 %>%
+  select(sample0h_crt_r, sample0h_crt_k, sample0h_crt_ma, sample0h_crt_ly30, hr0_pt, hr0_ptt) %>%
+  mutate_all(log_plus) %>%
+  mutate_all(standardize)
+
+qplot(teg_pt_mvc$sample0h_crt_r)
+qplot(teg_pt_mvc$sample0h_crt_k)
+qplot(teg_pt_mvc$sample0h_crt_ma)
+qplot(teg_pt_mvc$sample0h_crt_ly30)
+qplot(teg_pt_mvc$hr0_pt)
+qplot(teg_pt_mvc$hr0_ptt)
+```
+
+```{r}
+qplot(hr0_pt, hr0_ptt, data = teg_pt_mvc)
+```
+
+```{r}
+library(rstan)
+options(mc.cores = parallel::detectCores())
+
+N<-66
+
+teg_pt_mvc_mat <- teg_pt_mvc %>% as.matrix
+SigmaHat <- (1/N)*t(teg_pt_mvc_mat) %*% teg_pt_mvc_mat
+
+n_teg <- 4
+p_teg <- 2
+n_pt <- 2
+p_pt <- 1
+p_common <- 1
+  
+d_W_teg <- n_teg*p_common - p_common*(p_common+1)/2
+d_B_teg <- n_teg*p_teg - p_teg*(p_teg+1)/2
+d_W_pt <- n_pt*p_common - p_common*(p_common+1)/2
+d_B_pt <- n_pt*p_pt - p_pt*(p_pt+1)/2
+  
+sigmaSqHyperPrior <- 10
+
+data <- list(n_teg = n_teg, p_teg = p_teg, n_pt = n_pt, p_pt= p_pt, p_common=p_common,
+             d_W_teg =d_W_teg, d_B_teg=d_B_teg, d_W_pt=d_W_pt, d_B_pt=d_B_pt,
+             sigmaSqHyperPrior = sigmaSqHyperPrior, N = N, SigmaHat = SigmaHat)
+
+fit <- stan(file = "../../Stan/Cca.stan", data = data, chains = 4, iter = 1000)
+#s <- extract(fit)
+
+#m <- stan_model(file = "../../Stan/Cca.stan")
+#system.time(vi <- vb(m, data = data))
+#thetaMode <- (summary(vi, pars = "theta")$summary)[,"50%"]
+#InverseGivensTransform(thetaMode, 13, 6)
+```
+```{r}
+theta_W_teg <- (summary(vi, pars = "theta_W_teg")$summary)[,"50%"]
+InverseGivensTransform(theta_W_teg, n_teg, p_teg)
+```
+
