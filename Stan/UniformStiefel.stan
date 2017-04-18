@@ -159,5 +159,5 @@ parameters {
 }
 model {
   matrix[n, p] W;
-  W = area_form(theta, n, p);
+  W = area_form_lp(theta, n, p);
 }
