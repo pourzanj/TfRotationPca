@@ -1,0 +1,178 @@
+---
+title: "CCA"
+output: html_notebook
+---
+
+```{r}
+coagTestsStnd %>% names
+```
+
+- Vitals
+    + temp, hr, resprate, sbp
+- BG
+    + paco2, pao2, hco3, serumco2, bun, basedefexc
+- CBC
+    + wbc, hct, hgb, plts
+- Cascade
+    + factorii, factorv, factorvii, factorviii, factorix, factorx, pc, atiii, log_ddimer
+- PT
+    + pt, ptt
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+library(rstan)
+options(mc.cores = parallel::detectCores())
+
+d <- function(n, p) n*p - p*(p+1)/2
+
+n_0 <- 4
+p_0 <- 2
+d_W_0 <- d(n_0, p_common)
+d_B_0 <- d(n_0, p_0)
+
+n_1 <- 6
+p_1 <- 4
+d_W_1 <- d(n_1, p_common)
+d_B_1 <- d(n_1, p_1)
+
+n_2 <- 4
+p_2 <- 2
+d_W_2 <- d(n_2, p_common)
+d_B_2 <- d(n_2, p_2)
+
+n_3 <- 9
+p_3 <- 7
+d_W_3 <- d(n_3, p_common)
+d_B_3 <- d(n_3, p_3)
+
+n_4 <- 2
+p_4 <- 1
+d_W_4 <- d(n_4, p_common)
+d_B_4 <- d(n_4, p_4)
+
+p_common <- 2
+
+sigmaSqHyperPrior <- 1
+ardHyperHyperPrior <- 10
+sparseHyperHyperPrior <- 10
+
+N <- nrow(coagTestsStnd)
+X <- as.matrix(coagTestsStnd)
+SigmaHat <- (1/N)*t(X) %*% X
+
+data <- list(n_0 = n_0, p_0 = p_0, n_1 = n_1, p_1 = p_1, n_2 = n_2, p_2 = p_2, n_3 = n_3, n_4 = n_4, p_4 = p_4, p_common = p_common,
+             d_W_0 = d_W_0, d_B_0 = d_B_0, d_W_1 = d_W_1, d_W_1 = d_W_1, 
+             d_W_2 = d_W_2, d_B_2 = d_B_2, p_3 = p_3, d_W_3 = d_W_3, d_B_3 = d_B_3, 
+             d_W_4 = d_W_4, d_B_4 = d_B_4,
+             sigmaSqHyperPrior = sigmaSqHyperPrior, ardHyperHyperPrior = ardHyperHyperPrior,
+             sparseHyperHyperPrior = sparseHyperHyperPrior, N = N, SigmaHat = SigmaHat)
+
+#fit <- stan(file = "../../Stan/CcaGen.stan", data = data, chains = 4, iter = 10000)
+
+m <- stan_model(file = "../../Stan/CcaGen.stan")
+system.time(vi <- vb(m, data = data))
+```
+
+# Sub Cohorts
+
+```{r}
+
+quant <- function(x, prob) quantile(x, probs = c(prob), na.rm = TRUE)[1]
+
+coagSummary <- CoagImputed1 %>%
+  group_by(mechtype) %>%
+  summarize(n = n(),
+            pctMale = mean(male == "Male"),
+            meanAge = mean(age), sdAge = sd(age),
+            meanBmi = mean(bmi, na.rm = TRUE), sdBmi = sd(bmi, na.rm = TRUE),
+            pctBlunt = mean(blunt == "Blunt"),
+            pctTbi = mean(tbi == "Yes"),
+            meanArrivalGcs = mean(edarrivalgcs, na.rm = TRUE), sdArrivalGcs = sd(edarrivalgcs, na.rm = TRUE),
+            pctHadribfxs = mean(numribfxs > 0,na.rm = TRUE),
+            pctIntubate = mean(admitday_intubated == "Yes"),
+            pctHeadInj = mean(aishead1 > 0),
+            pctFaceInj = mean(aisface2 > 0),
+            pctChestInj = mean(aischest3 > 0),
+            pctAbdomenInj = mean(aisabdomen4 > 0),
+            pctExtremityInj = mean(aisextremity5 > 0),
+            Q10bloodUnits = quant(icu_0to6h_blood_units, 0.1),
+            Q50bloodUnits = quant(icu_0to6h_blood_units, 0.5), 
+            Q900bloodUnits = quant(icu_0to6h_blood_units, 0.9)) %>%
+  arrange(desc(n))
+```
+
+```{r}
+coagTestsStndMechtype <- coagTestsStnd %>% mutate(mechtype = CoagImputed1$mechtype)
+
+n <- n_0+n_1+n_2+n_3+n_4
+J <- 7
+N <- rep(0, J)
+
+
+getSigmaHat <- function(df) {
+  X <- as.matrix(df)
+  N <- nrow(df)
+  return((1/N)*t(X) %*% X)
+}
+
+SigmaHat <- array(0, dim = c(J, n, n))
+
+#GSW
+coagTestsStndGsw <- coagTestsStndMechtype %>% filter(mechtype == "GSW") %>% select(-mechtype)
+SigmaHat[1,,] <- getSigmaHat(coagTestsStndGsw)
+
+#Fall
+coagTestsStndFall <- coagTestsStndMechtype %>% filter(mechtype == "Fall/Crush") %>% select(-mechtype)
+SigmaHat[2,,] <- getSigmaHat(coagTestsStndFall)
+
+#MVC
+coagTestsStndMvc <- coagTestsStndMechtype %>% filter(mechtype == "MVC") %>% select(-mechtype)
+SigmaHat[3,,] <- getSigmaHat(coagTestsStndMvc)
+
+#PVA
+coagTestsStndPva <- coagTestsStndMechtype %>% filter(mechtype == "PVA") %>% select(-mechtype)
+SigmaHat[4,,] <- getSigmaHat(coagTestsStndPva)
+
+#SW
+coagTestsStndSw <- coagTestsStndMechtype %>% filter(mechtype == "SW") %>% select(-mechtype)
+SigmaHat[5,,] <- getSigmaHat(coagTestsStndSw)
+
+#Assault
+coagTestsStndAssault <- coagTestsStndMechtype %>% filter(mechtype == "Assault") %>% select(-mechtype)
+SigmaHat[6,,] <- getSigmaHat(coagTestsStndAssault)
+
+#Bike
+coagTestsStndBike  <- coagTestsStndMechtype %>% filter(mechtype == "BVA/Bike") %>% select(-mechtype)
+SigmaHat[7,,] <- getSigmaHat(coagTestsStndBike)
+
+data <- list(n_0 = n_0, p_0 = p_0, n_1 = n_1, p_1 = p_1, n_2 = n_2, p_2 = p_2, n_3 = n_3, n_4 = n_4, p_4 = p_4, p_common = p_common,
+             d_W_0 = d_W_0, d_B_0 = d_B_0, d_W_1 = d_W_1, d_W_1 = d_W_1, 
+             d_W_2 = d_W_2, d_B_2 = d_B_2, p_3 = p_3, d_W_3 = d_W_3, d_B_3 = d_B_3, 
+             d_W_4 = d_W_4, d_B_4 = d_B_4,
+             sigmaSqHyperPrior = sigmaSqHyperPrior, ardHyperHyperPrior = ardHyperHyperPrior,
+             sparseHyperHyperPrior = sparseHyperHyperPrior, J = J, N = N, SigmaHat = SigmaHat)
+
+m <- stan_model(file = "../../Stan/CcaGenHierarchical.stan")
+system.time(vi <- vb(m, data = data))
+
+```
+
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+gswVitalsStnd <- vitalsStnd %>% filter(mechtype == "GSW")
+
+N <- nrow(coagTestsStnd)
+X <- as.matrix(coagTestsStnd)
+SigmaHat <- (1/N)*t(X) %*% X
+
+data <- list(n_0 = n_0, p_0 = p_0, n_1 = n_1, p_1 = p_1, n_2 = n_2, p_2 = p_2, n_3 = n_3, n_4 = n_4, p_4 = p_4, p_common = p_common,
+             d_W_0 = d_W_0, d_B_0 = d_B_0, d_W_1 = d_W_1, d_W_1 = d_W_1, 
+             d_W_2 = d_W_2, d_B_2 = d_B_2, p_3 = p_3, d_W_3 = d_W_3, d_B_3 = d_B_3, 
+             d_W_4 = d_W_4, d_B_4 = d_B_4,
+             sigmaSqHyperPrior = sigmaSqHyperPrior, ardHyperHyperPrior = ardHyperHyperPrior,
+             sparseHyperHyperPrior = sparseHyperHyperPrior, N = N, SigmaHat = SigmaHat)
+
+#fit <- stan(file = "../../Stan/CcaGen.stan", data = data, chains = 4, iter = 10000)
+
+m <- stan_model(file = "../../Stan/CcaGen.stan")
+system.time(vi <- vb(m, data = data))
+```
