@@ -23,7 +23,7 @@ library(rstan)
 options(mc.cores = parallel::detectCores())
 
 d <- function(n, p) n*p - p*(p+1)/2
-
+p_common <- 2
 n_0 <- 4
 p_0 <- 2
 d_W_0 <- d(n_0, p_common)
@@ -49,7 +49,7 @@ p_4 <- 1
 d_W_4 <- d(n_4, p_common)
 d_B_4 <- d(n_4, p_4)
 
-p_common <- 2
+
 
 sigmaSqHyperPrior <- 1
 ardHyperHyperPrior <- 10
@@ -100,7 +100,7 @@ coagSummary <- CoagImputed1 %>%
   arrange(desc(n))
 ```
 
-```{r}
+```{r, message=FALSE, warning=FALSE, include=FALSE}
 coagTestsStndMechtype <- coagTestsStnd %>% mutate(mechtype = CoagImputed1$mechtype)
 
 n <- n_0+n_1+n_2+n_3+n_4
@@ -151,28 +151,44 @@ data <- list(n_0 = n_0, p_0 = p_0, n_1 = n_1, p_1 = p_1, n_2 = n_2, p_2 = p_2, n
              sigmaSqHyperPrior = sigmaSqHyperPrior, ardHyperHyperPrior = ardHyperHyperPrior,
              sparseHyperHyperPrior = sparseHyperHyperPrior, J = J, N = N, SigmaHat = SigmaHat)
 
+#fit <- stan(file = "../../Stan/CcaGenHierarchical.stan", data = data, chains = 4, iter = 2000, refresh = 10)
+
 m <- stan_model(file = "../../Stan/CcaGenHierarchical.stan")
 system.time(vi <- vb(m, data = data))
 
 ```
 
 
-```{r, message=FALSE, warning=FALSE, include=FALSE}
-gswVitalsStnd <- vitalsStnd %>% filter(mechtype == "GSW")
+```{r}
+mcmc_intervals(posterior, pars = c("theta_W_0[1,1]", "theta_W_0[2,1]", "theta_W_0[3,1]", "theta_W_0[4,1]", "theta_W_0[5,1]", "theta_W_0[6,1]", "theta_W_0[7,1]"))
+mcmc_intervals(posterior, pars = c("theta_W_0[1,2]", "theta_W_0[2,2]", "theta_W_0[3,2]", "theta_W_0[4,2]", "theta_W_0[5,2]", "theta_W_0[6,2]", "theta_W_0[7,2]"))
 
-N <- nrow(coagTestsStnd)
-X <- as.matrix(coagTestsStnd)
-SigmaHat <- (1/N)*t(X) %*% X
+posteriorMedian <- summary(vi)$summary[,"50%"]
+theta_W_0_Gsw_med <- posteriorMedian[1:5]
+theta_W_1_Gsw_med <- (posteriorMedian[grepl("theta_W_1", names(posteriorMedian))])[1:d_W_1]
+theta_W_2_Gsw_med <- (posteriorMedian[grepl("theta_W_2", names(posteriorMedian))])[1:d_W_2]
+theta_W_3_Gsw_med <- (posteriorMedian[grepl("theta_W_3", names(posteriorMedian))])[1:d_W_3]
+theta_W_4_Gsw_med <- (posteriorMedian[grepl("theta_W_4", names(posteriorMedian))])[1:d_W_4]
 
-data <- list(n_0 = n_0, p_0 = p_0, n_1 = n_1, p_1 = p_1, n_2 = n_2, p_2 = p_2, n_3 = n_3, n_4 = n_4, p_4 = p_4, p_common = p_common,
-             d_W_0 = d_W_0, d_B_0 = d_B_0, d_W_1 = d_W_1, d_W_1 = d_W_1, 
-             d_W_2 = d_W_2, d_B_2 = d_B_2, p_3 = p_3, d_W_3 = d_W_3, d_B_3 = d_B_3, 
-             d_W_4 = d_W_4, d_B_4 = d_B_4,
-             sigmaSqHyperPrior = sigmaSqHyperPrior, ardHyperHyperPrior = ardHyperHyperPrior,
-             sparseHyperHyperPrior = sparseHyperHyperPrior, N = N, SigmaHat = SigmaHat)
+InverseGivensTransform(theta_W_0_Gsw_med, n_0, p_common)
+InverseGivensTransform(theta_W_1_Gsw_med, n_1, p_common)
+InverseGivensTransform(theta_W_2_Gsw_med, n_2, p_common)
+InverseGivensTransform(theta_W_3_Gsw_med, n_3, p_common)
+InverseGivensTransform(theta_W_4_Gsw_med, n_4, p_common)
+```
 
-#fit <- stan(file = "../../Stan/CcaGen.stan", data = data, chains = 4, iter = 10000)
 
-m <- stan_model(file = "../../Stan/CcaGen.stan")
-system.time(vi <- vb(m, data = data))
+
+```{r}
+theta_W_0_Mvc_med <- posteriorMedian[(2*d_W_0+1):(3*d_W_0)]
+theta_W_1_Mvc_med <- (posteriorMedian[grepl("theta_W_1", names(posteriorMedian))])[(2*d_W_1+1):(3*d_W_1)]
+theta_W_2_Mvc_med <- (posteriorMedian[grepl("theta_W_2", names(posteriorMedian))])[(2*d_W_2+1):(3*d_W_2)]
+theta_W_3_Mvc_med <- (posteriorMedian[grepl("theta_W_3", names(posteriorMedian))])[(2*d_W_3+1):(3*d_W_3)]
+theta_W_4_Mvc_med <- (posteriorMedian[grepl("theta_W_4", names(posteriorMedian))])[(2*d_W_4+1):(3*d_W_4)]
+
+InverseGivensTransform(theta_W_0_Mvc_med, n_0, p_common)
+InverseGivensTransform(theta_W_1_Mvc_med, n_1, p_common)
+InverseGivensTransform(theta_W_2_Mvc_med, n_2, p_common)
+InverseGivensTransform(theta_W_3_Mvc_med, n_3, p_common)
+InverseGivensTransform(theta_W_4_Mvc_med, n_4, p_common)
 ```
