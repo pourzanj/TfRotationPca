@@ -64,8 +64,8 @@ functions {
               lower_idx = lower_idx + 1;
             }
               
-            partial_idx = partial_idx + 1;  
             partial_givens[partial_idx + 1] = G;
+            partial_idx = partial_idx + 1;  
           }
         }
         
@@ -123,23 +123,45 @@ functions {
         int d = n*p - p*(p+1)/2;
         matrix[n,p] derivative_list[d];
         matrix[n,d] givens_jacobian[p];
-        int idx = 1;
+        int d_idx = 1;
+        int lower_idx = 1;
+        matrix[n,n] a;
+        matrix[n,n] dR;
+        matrix[n,p] b;
         
+        //if we're doing full rank i.e. n = p. The last column has no
+        //degrees of freedom and therefore no angle so we shouldn't include
+        //it in the string of rotation matrix multiplications
         int pp;
         if(p == n) pp = p - 1;
         else pp = p;
         
-        for(i in 1:p){
+        //for each angle get derivatve by replacing it's associated matrix
+        //by the derivative matrix and carrying out string of multiplies
+        for(i in 1:pp){
             for(j in i+1:n){
-                matrix[n,n] dR = d_rotation_matrix(angles[idx], n, i, j);
-                matrix[n,n] a = partial_givens_forward[idx];
-                matrix[n,p] b = partial_givens_reverse[idx + 1];
+              
+                //the first angle of the column is a principal angle
+                //and is separate from the lower angles because we might need it
+                //to go from (-pi,pi) rather than (-pi/2,pi/2)
+                if(j == i+1) {
+                  dR = d_rotation_matrix(principal_angles[i], n, i, j);
+                }
+                else {
+                  dR = d_rotation_matrix(lower_angles[lower_idx], n, i, j);
+                  lower_idx = lower_idx + 1;
+                }
                 
-                derivative_list[idx] = a * dR * b;
-                idx = idx + 1;
+                a = partial_givens_forward[d_idx];
+                b = partial_givens_reverse[d_idx + 1];
+                
+                derivative_list[d_idx] = a * dR * b;
+                d_idx = d_idx + 1;
             }
         }
         
+        //slice appropriately to get a givens_jacobian which is partial deriv.
+        //of each column w.r.t. all angles
         for(i in 1:pp) {
             for(j in 1:d) {
                 vector[n] t = derivative_list[j][,i];
@@ -161,12 +183,19 @@ functions {
         matrix[n, p] partial_givens_reverse[d+1];
         matrix[n, d] givens_jacobians[p];
         matrix[d, d] area_mat;
+        
+        //if we're doing full rank i.e. n = p. The last column has no
+        //degrees of freedom and therefore no angle so we shouldn't include
+        //it in the string of rotation matrix multiplications
+        int pp;
+        if(p == n) pp = p - 1;
+        else pp = p;
 
-        partial_givens_forward = generate_forward_pgivens(angles, n, p);
-        partial_givens_reverse = generate_reverse_pgivens(angles, n, p);
+        partial_givens_forward = generate_forward_pgivens(principal_angles, lower_angles, n, p);
+        partial_givens_reverse = generate_reverse_pgivens(principal_angles, lower_angles, n, p);
         givens = partial_givens_forward[d+1];
         
-        givens_jacobians = generate_givens_jacobians(partial_givens_forward, partial_givens_reverse, angles, n, p);
+        givens_jacobians = generate_givens_jacobians(partial_givens_forward, partial_givens_reverse, principal_angles, lower_angles, n, p);
         
         idx = 1;
         for(i in 1:pp){
@@ -199,7 +228,8 @@ data {
 
 parameters {
   //Proteins
-  vector<lower = -pi()/2, upper = pi()/2>[d] theta_W;
+  vector<lower = -pi()/2, upper = pi()/2>[min(p, n-1)] theta_principal;
+  vector<lower = -pi()/2, upper = pi()/2>[d-min(p, n-1)] theta_lower;
   positive_ordered[p] lambda_reversed;
   
   //hyper-priors
@@ -215,7 +245,7 @@ transformed parameters{
 
   for (i in 1:p) lambda[i] = lambda_reversed[p - i + 1];
 
-  W = area_form_lp(theta_W, n, p);
+  W = area_form_lp(theta_principal, theta_lower, n, p);
 
 }
 
