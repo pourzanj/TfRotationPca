@@ -50,4 +50,3 @@ s <- extract(fit)
 qplot(s$theta[,1]/pi)
 qplot(s$theta[,2]/pi)
 ```
-
