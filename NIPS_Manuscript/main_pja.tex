@@ -145,7 +145,7 @@ We also remark that generative model could also be expanded to the case of non-G
 \section{Bayesian inference of orthonormal matrices}\label{orthonormal}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Unidentifiability and Orthonormal Condition}
+\subsection{Unidentifiability and the Importance of Orthonormality Condition}
 We mention that the orthonormal constraint on the matrix $W$ plays an important role in obtaining robust methods for
 in making inferences in probabilistic PCA.  If one were to relax the orthonomal constraint the likelihood function would assign identical probability to a whole equivalence class of matrices $W \sim V$ where the span is the same linear subspace $\mbox{span}\{W\} = \mbox{span}\{V\}$.  While this might not seem theoretically too problematic, in practice this presents a number of major challenges.  This first is that the matrices in a given equivalence class are not all equally well-conditioned numerically in defining the linear subspace and round-off errors and truncation errors become problematic in practical calculations .  Secondly, these issues with the representation further manifest in the log-likihood objective function where regions arise of particularly large curvature.  This causes significant numerical issues for variational inference (VI) in nonlinear optimization methods and in monte-carlo (MC) approaches with samplers having slow mixing times~
 \citet[chapt.~12.1.3]{murphy2012machine, mohamed2009bayesian,holbrook2016bayesian}.  These issues render making inferences in PPCA with such non-orthonormal matrices impractical resulting from a statistics stand-point in effective unidentifiability.
@@ -159,14 +159,14 @@ The Stiefel Manifold has an intrinsic dimension of $\dim{V^{n,p}} = np-p(p+1)/2$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Related works using HMC}
-Before discusing details of our approach in more detail, we briefly discuss related prior works.  Recently, two approaches to posterior inference of orthonormal matrices and other constrained parameters have been proposed. These methods work by modifying the leap-frog integrator used to simulate Hamiltonian dynamics in HMC to ensure that any trajectory in parameter space remains on the Stiefel manifold. \citet{brubaker2012family} uses the SHAKE integrator \citep{leimkuhler2004simulating} to ensure trajectories through parameter space continuously satisfy the required constraints. The integrator works by repeatedly taking a step forward that may be off the manifold using ordinary leap frog, then projecting back down to the nearest point on the manifold. This projection is done via Newton iterations, which may not converge in practice, possibly jeopardizing the ergodicity of a Markov chain.
+Before discussing details of our approach in more detail, we briefly discuss related prior works.  Recently, two approaches to posterior inference of orthonormal matrices and other constrained parameters have been proposed. These methods work by modifying the leap-frog integrator used to simulate Hamiltonian dynamics in HMC to ensure that any trajectory in parameter space remains on the Stiefel manifold. \citet{brubaker2012family} uses the SHAKE integrator \citep{leimkuhler2004simulating} to ensure trajectories through parameter space continuously satisfy the required constraints. The integrator works by repeatedly taking a step forward that may be off the manifold using ordinary leap frog, then projecting back down to the nearest point on the manifold. This projection is done via Newton iterations, which may not converge in practice, possibly jeopardizing the ergodicity of a Markov chain.
 
 \citet{byrne2013geodesic} took a different approach, exploiting the fact that closed form solutions are known for the geodesic equations over the Stiefel manifold in the embedded coordinates, $W$. While this method is completely explicit, requiring no Newton iterations, in practice we found that for larger step sizes, the integrator steps off the Stiefel manifold, due to the numerical imprecision of the matrix exponential function.
 
 Both methods rely on applying different integrators to constrained parameters. This adds implementation difficulty in practice, as one must keep track of the type of each variable (unconstrained or constrained, and type of constraint), and apply the appropriate integrator. Additionally, we note that even using orthonormal matrices, the PPCA likelihood is equivalent for a matrix $W$ and any permutation of the columns of $W$ being negative. As such, these methods lead to multi-modal posteriors, that can be avoided in a straight-forward way, as we show in the next section, using the Givens transform.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Givens Transform}\label{Givens}
+\section{Givens Transform PPCA (GT-PPCA)} \label{Givens}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 We provide a brief exposition on Givens Reductions, which motivate the Givens Transform, then describe the Givens Transform along with relevant practical considerations.
 
