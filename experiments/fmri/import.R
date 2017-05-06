@@ -144,35 +144,52 @@ save(sRest51, sRest1, sRest2, sRest3,
 
 ######################################
 
-# sRest80 <- fitVi(id = 80, mode = "rest", -pi/2, pi/2)
-# sAtt80 <- fitVi(id = 80, mode = "att1", -pi/2, pi/2)
-# 
-# sRest81 <- fitVi(id = 81, mode = "rest", -pi/2, pi/2)
-# sAtt81 <- fitVi(id = 81, mode = "att1", -pi/2, pi/2)
-# 
-# sRest82 <- fitVi(id = 82, mode = "rest", -pi/2, pi/2)
-# sAtt82 <- fitVi(id = 82, mode = "att1", -pi/2, pi/2)
-# 
-# sRest83 <- fitVi(id = 83, mode = "rest", -pi/2, pi/2)
-# sAtt83 <- fitVi(id = 83, mode = "att1", -pi/2, pi/2)
-# 
-# sRest84 <- fitVi(id = 84, mode = "rest", -pi/2, pi/2)
-# sAtt84 <- fitVi(id = 84, mode = "att1", -pi/2, pi/2)
-# 
-# sRest85 <- fitVi(id = 85, mode = "rest", -pi/2, pi/2)
-# sAtt85 <- fitVi(id = 85, mode = "att1", -pi/2, pi/2)
-# 
-# sRest86 <- fitVi(id = 86, mode = "rest", -pi/2, pi/2)
-# sAtt86 <- fitVi(id = 86, mode = "att1", -pi/2, pi/2)
-# 
-# sRest87 <- fitVi(id = 87, mode = "rest", -pi/2, pi/2)
-# sAtt87 <- fitVi(id = 87, mode = "att1", -pi/2, pi/2)
-# 
-# sRest88 <- fitVi(id = 88, mode = "rest", -pi/2, pi/2)
-# sAtt88 <- fitVi(id = 88, mode = "att1", -pi/2, pi/2)
-# 
-# sRest89 <- fitVi(id = 89, mode = "rest", -pi/2, pi/2)
-# sAtt89 <- fitVi(id = 89, mode = "att1", -pi/2, pi/2)
+sRest80 <- fitVi(id = 80, mode = "rest", -pi/2, pi/2)
+sAtt80 <- fitVi(id = 80, mode = "att1", -pi/2, pi/2)
+
+sRest81 <- fitVi(id = 81, mode = "rest", -pi/2, pi/2)
+sAtt81 <- fitVi(id = 81, mode = "att1", -pi/2, pi/2)
+
+sRest82 <- fitVi(id = 82, mode = "rest", -pi/2, pi/2)
+sAtt82 <- fitVi(id = 82, mode = "att1", -pi/2, pi/2)
+
+sRest83 <- fitVi(id = 83, mode = "rest", -pi/2, pi/2)
+sAtt83 <- fitVi(id = 83, mode = "att1", -pi/2, pi/2)
+
+save(sRest80, sRest81, sRest82, sRest83,
+     sAtt80, sAtt81, sAtt82, sAtt83,
+     file = "experiments/fmri/ViSamples90/s80_83.Rdata")
+
+######################################
+
+sRest84 <- fitVi(id = 84, mode = "rest", -pi/2, pi/2)
+sAtt84 <- fitVi(id = 84, mode = "att1", -pi/2, pi/2)
+
+sRest85 <- fitVi(id = 85, mode = "rest", -pi/2, pi/2)
+sAtt85 <- fitVi(id = 85, mode = "att1", -pi/2, pi/2)
+
+sRest86 <- fitVi(id = 86, mode = "rest", -pi/2, pi/2)
+sAtt86 <- fitVi(id = 86, mode = "att1", -pi/2, pi/2)
+
+sRest87 <- fitVi(id = 87, mode = "rest", -pi/2, pi/2)
+sAtt87 <- fitVi(id = 87, mode = "att1", -pi/2, pi/2)
+
+save(sRest84, sRest85, sRest86, sRest87,
+     sAtt84, sAtt85, sAtt86, sAtt87,
+     file = "experiments/fmri/ViSamples90/s84_87.Rdata")
+
+######################################
+
+sRest88 <- fitVi(id = 88, mode = "rest", -pi/2, pi/2)
+sAtt88 <- fitVi(id = 88, mode = "att1", -pi/2, pi/2)
+
+sRest89 <- fitVi(id = 89, mode = "rest", -pi/2, pi/2)
+sAtt89 <- fitVi(id = 89, mode = "att1", -pi/2, pi/2)
+
+save(sRest88, sRest89,
+     sAtt88, sAtt89,
+     file = "experiments/fmri/ViSamples90/s88_89.Rdata")
+
 
 W1 <- tibble(sampleId = 1:500, rest_78 = sRest78$theta_principal[,1], att_78 = sAtt78$theta_principal[,1],
              rest_64 = sRest64$theta_principal[,1], att_64 = sAtt64$theta_principal[,1],
