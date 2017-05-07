@@ -207,7 +207,7 @@ W1 <- tibble(sampleId = 1:1000,
              rest_64 = sRest64$theta_principal[,1], att_64 = sAtt64$theta_principal[,1],
              rest_32 = sRest32$theta_principal[,1], att_32 = sAtt32$theta_principal[,1],
              rest_42 = sRest42$theta_principal[,1], att_42 = sAtt42$theta_principal[,1],
-             rest_51 = sRest51$theta_principal[,1], att_51 = sAtt91$theta_principal[,1],
+             rest_51 = sRest51$theta_principal[,1], att_51 = sAtt51$theta_principal[,1],
              rest_2 = sRest2$theta_principal[,1], att_2 = sAtt2$theta_principal[,1],
              rest_3 = sRest3$theta_principal[,1], att_3 = sAtt3$theta_principal[,1],
              rest_82 = sRest82$theta_principal[,1], att_82 = sAtt82$theta_principal[,1],
@@ -224,7 +224,7 @@ W1 %>%
   gather(sample, sampleValue, -sampleId) %>%
   separate(sample, c("activity", "id"), sep = "_") %>%
   mutate_at(vars(activity, id), as.factor) %>%
-  filter(id %in% c(51,82,83,84,88)) %>%
+  filter(id %in% c(54,82,83,84,88)) %>%
   group_by(activity, id) %>%
   summarize(Q2_5 = quick_quantile(sampleValue, 0.025),
             Q50 = quick_quantile(sampleValue, 0.5),
@@ -238,39 +238,52 @@ W1 %>%
 
 ##########################################
 #try VI with two patients at once but no prior on them
-m <- stan_model(file = "experiments/fmri/HierPpca.stan")
 
-sigmaHat51 <- (t(restArray[51,,]) %>% cov)[1:n,1:n]
+sigmaHat54 <- (t(restArray[51,,]) %>% cov)[1:n,1:n]
 sigmaHat82 <- (t(restArray[82,,]) %>% cov)[1:n,1:n]
 sigmaHat83 <- (t(restArray[83,,]) %>% cov)[1:n,1:n]
 sigmaHat84 <- (t(restArray[84,,]) %>% cov)[1:n,1:n]
 sigmaHat88 <- (t(restArray[88,,]) %>% cov)[1:n,1:n]
 
+sigmaHat54 <- (t(attArray[54,,]) %>% cov)[1:n,1:n]
+sigmaHat82 <- (t(attArray[82,,]) %>% cov)[1:n,1:n]
+sigmaHat83 <- (t(attArray[83,,]) %>% cov)[1:n,1:n]
+sigmaHat84 <- (t(attArray[84,,]) %>% cov)[1:n,1:n]
+sigmaHat88 <- (t(attArray[88,,]) %>% cov)[1:n,1:n]
+
 dat <- list(n = n, p = p, d = n*p-p*(p+1)/2, sigmaSqHyperPrior = 100, N = 146,
-            lowerAngle51 = -pi/2, upperAngle51 = pi/2,
+            lowerAngle54 = -pi/2, upperAngle54 = pi/2,
             lowerAngle82 = -pi/2, upperAngle82 = pi/2,
             lowerAngle83 = -pi/2, upperAngle83 = pi/2,
             lowerAngle84 = -pi/2, upperAngle84 = pi/2,
             lowerAngle88 = -pi/2, upperAngle88 = pi/2,
             sigma_hier_hyper = 0.2,
-            SigmaHat51 = sigmaHat51,
+            SigmaHat54 = sigmaHat54,
             SigmaHat82 = sigmaHat82, SigmaHat83 = sigmaHat83, SigmaHat84 = sigmaHat84,
             SigmaHat88 = sigmaHat88)
 
-fit <- stan(file = "experiments/fmri/HierPpca.stan", data = dat, chains = 1, iter = 1000, refresh = 10,
-            init = list(list(theta_principal82 = array(0.7), theta_lower82 = array(rep(0.7, n-2)),
-                             theta_principal83 = array(0.7), theta_lower83 = array(rep(0.7, n-2)),
-                             theta_principal84 = array(0.7), theta_lower84 = array(rep(0.7, n-2)))))
-s <- rstan::extract(fit)
+# fit <- stan(file = "experiments/fmri/HierPpca.stan", data = dat, chains = 1, iter = 1000, refresh = 10,
+#             init = list(list(theta_principal82 = array(0.7), theta_lower82 = array(rep(0.7, n-2)),
+#                              theta_principal83 = array(0.7), theta_lower83 = array(rep(0.7, n-2)),
+#                              theta_principal84 = array(0.7), theta_lower84 = array(rep(0.7, n-2)))))
+# s <- rstan::extract(fit)
 
+m <- stan_model(file = "experiments/fmri/HierPpca.stan")
 system.time(vi <- vb(m, data = dat,
-                     init = list(theta_principal51 = array(0.7), theta_lower51 = array(rep(0.7, n-2)),
+                     init = list(theta_principal54 = array(0.7), theta_lower54 = array(rep(0.7, n-2)),
                        theta_principal82 = array(0.7), theta_lower82 = array(rep(0.7, n-2)),
                                 theta_principal83 = array(0.7), theta_lower83 = array(rep(0.7, n-2)),
                                 theta_principal84 = array(0.7), theta_lower84 = array(rep(0.7, n-2)),
                        theta_principal88 = array(0.7), theta_lower88 = array(rep(0.7, n-2)))))
 s <- rstan::extract(vi)
+sAtt <- rstan::extract(viAtt)
 
+sAtt$theta_principal54 %>% qplot
+sAtt$theta_principal82 %>% qplot
+sAtt$theta_principal83 %>% qplot
+sAtt$theta_principal84 %>% qplot
+sAtt$theta_principal88 %>% qplot
+sAtt$mu_hier %>% qplot
 
 # N <- 15
 # W <- InverseGivensTransform(c(0,0), 3, 1)

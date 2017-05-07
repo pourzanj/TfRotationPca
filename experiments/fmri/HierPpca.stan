@@ -224,14 +224,14 @@ data {
   
   int N; //num of observations
   
-  real lowerAngle51; real upperAngle51;
+  real lowerAngle54; real upperAngle54;
   real lowerAngle82; real upperAngle82;
   real lowerAngle83; real upperAngle83;
   real lowerAngle84; real upperAngle84;
   real lowerAngle88; real upperAngle88;
   real sigma_hier_hyper;
   
-  matrix[n,n] SigmaHat51;
+  matrix[n,n] SigmaHat54;
   matrix[n,n] SigmaHat82;
   matrix[n,n] SigmaHat83;
   matrix[n,n] SigmaHat84;
@@ -239,10 +239,10 @@ data {
 }
 
 parameters {
-  vector<lower = lowerAngle51, upper = upperAngle51>[min(p, n-1)] theta_principal51;
-  vector<lower = -pi()/2, upper = pi()/2>[d-min(p, n-1)] theta_lower51;
-  positive_ordered[p] lambda_reversed51;
-  real<lower = 0> sigmaSq51;
+  vector<lower = lowerAngle54, upper = upperAngle54>[min(p, n-1)] theta_principal54;
+  vector<lower = -pi()/2, upper = pi()/2>[d-min(p, n-1)] theta_lower54;
+  positive_ordered[p] lambda_reversed54;
+  real<lower = 0> sigmaSq54;
   
   vector<lower = lowerAngle82, upper = upperAngle82>[min(p, n-1)] theta_principal82;
   vector<lower = -pi()/2, upper = pi()/2>[d-min(p, n-1)] theta_lower82;
@@ -270,17 +270,17 @@ parameters {
 
 transformed parameters{
   
-  matrix[n, p] W51; matrix[n, p] W82; matrix[n, p] W83; matrix[n, p] W84; matrix[n, p] W88; 
-  vector<lower=0>[p] lambdaSq81; vector<lower=0>[p] lambdaSq82;
+  matrix[n, p] W54; matrix[n, p] W82; matrix[n, p] W83; matrix[n, p] W84; matrix[n, p] W88; 
+  vector<lower=0>[p] lambdaSq54; vector<lower=0>[p] lambdaSq82;
   vector<lower=0>[p] lambdaSq83; vector<lower=0>[p] lambdaSq84; vector<lower=0>[p] lambdaSq88;
   
-  for (i in 1:p) lambdaSq81[i] = pow(lambda_reversed81[p - i + 1], 2);
+  for (i in 1:p) lambdaSq54[i] = pow(lambda_reversed54[p - i + 1], 2);
   for (i in 1:p) lambdaSq82[i] = pow(lambda_reversed82[p - i + 1], 2);
   for (i in 1:p) lambdaSq83[i] = pow(lambda_reversed83[p - i + 1], 2);
   for (i in 1:p) lambdaSq84[i] = pow(lambda_reversed84[p - i + 1], 2);
   for (i in 1:p) lambdaSq88[i] = pow(lambda_reversed88[p - i + 1], 2);
   
-  W51 = area_form_lp(theta_principal51, theta_lower51, n, p);
+  W54 = area_form_lp(theta_principal54, theta_lower54, n, p);
   W82 = area_form_lp(theta_principal82, theta_lower82, n, p);
   W83 = area_form_lp(theta_principal83, theta_lower83, n, p);
   W84 = area_form_lp(theta_principal84, theta_lower84, n, p);
@@ -290,29 +290,29 @@ transformed parameters{
 model {
 
   matrix[n, n] Id_n;
-  matrix[n, n] C51; matrix[n, n] C82; matrix[n, n] C83; matrix[n, n] C84; matrix[n, n] C88;
+  matrix[n, n] C54; matrix[n, n] C82; matrix[n, n] C83; matrix[n, n] C84; matrix[n, n] C88;
   
-  sigmaSq51 ~ normal(1, sigmaSqHyperPrior);
+  sigmaSq54 ~ normal(1, sigmaSqHyperPrior);
   sigmaSq82 ~ normal(1, sigmaSqHyperPrior);
   sigmaSq83 ~ normal(1, sigmaSqHyperPrior);
   sigmaSq84 ~ normal(1, sigmaSqHyperPrior);
   sigmaSq88 ~ normal(1, sigmaSqHyperPrior);
   
   Id_n = diag_matrix(rep_vector(1, n));
-  C51 = W51*diag_matrix(lambdaSq51)*W51' + sigmaSq51*Id_n;
+  C54 = W54*diag_matrix(lambdaSq54)*W54' + sigmaSq54*Id_n;
   C82 = W82*diag_matrix(lambdaSq82)*W82' + sigmaSq82*Id_n;
   C83 = W83*diag_matrix(lambdaSq83)*W83' + sigmaSq83*Id_n;
   C84 = W84*diag_matrix(lambdaSq84)*W84' + sigmaSq84*Id_n;
   C88 = W88*diag_matrix(lambdaSq88)*W88' + sigmaSq88*Id_n;
   
-  target += -(N/2)*log(determinant(C51)) -(N/2)*trace(C51\SigmaHat51);
+  target += -(N/2)*log(determinant(C54)) -(N/2)*trace(C54\SigmaHat54);
   target += -(N/2)*log(determinant(C82)) -(N/2)*trace(C82\SigmaHat82);
   target += -(N/2)*log(determinant(C83)) -(N/2)*trace(C83\SigmaHat83);
   target += -(N/2)*log(determinant(C84)) -(N/2)*trace(C84\SigmaHat84);
   target += -(N/2)*log(determinant(C88)) -(N/2)*trace(C88\SigmaHat88);
   
   sigma_hier ~ normal(0.1, sigma_hier_hyper);
-  theta_principal51 ~ normal(mu_hier, sigma_hier);
+  theta_principal54 ~ normal(mu_hier, sigma_hier);
   theta_principal82 ~ normal(mu_hier, sigma_hier);
   theta_principal83 ~ normal(mu_hier, sigma_hier);
   theta_principal84 ~ normal(mu_hier, sigma_hier);
