@@ -59,13 +59,13 @@ m <- stan_model(file = "Stan/Ppca.stan")
 sRest54 <- fitVi(id = 54, mode = "rest", -pi/2, pi/2)
 sAtt54 <- fitVi(id = 54, mode = "att1", -pi/2, pi/2)
 
-sRest55 <- fitVi(id = 55, mode = "rest", -pi/2, pi/2)##doesn't work either way
+sRest55 <- fitVi(id = 55, mode = "rest", -pi/2, pi/2)
 sAtt55 <- fitVi(id = 55, mode = "att1", -pi/2, pi/2)
 
-sRest56 <- fitVi(id = 56, mode = "rest", -pi/2, pi/2)#pi
-sAtt56 <- fitVi(id = 56, mode = "att1", -pi/2, pi/2)#doesn't work either way
+sRest56 <- fitVi(id = 56, mode = "rest", -pi/2, pi/2)
+sAtt56 <- fitVi(id = 56, mode = "att1", -pi/2, pi/2)
 
-sRest57 <- fitVi(id = 57, mode = "rest", -pi/2, pi/2)#doesn't work either way
+sRest57 <- fitVi(id = 57, mode = "rest", -pi/2, pi/2)
 sAtt57 <- fitVi(id = 57, mode = "att1", -pi/2, pi/2)
 
 save(sRest54, sRest55, sRest56, sRest57,
@@ -74,15 +74,15 @@ save(sRest54, sRest55, sRest56, sRest57,
 
 ######################################
 sRest58 <- fitVi(id = 58, mode = "rest", -pi/2, pi/2)
-sAtt58 <- fitVi(id = 58, mode = "att1", -pi/2, pi/2)
+sAtt58 <- fitVi(id = 58, mode = "att1", -pi/2, pi/2)#-1.5 FIXED
 
-sRest59 <- fitVi(id = 59, mode = "rest", -pi/2, pi/2)#pi
-sAtt59 <- fitVi(id = 59, mode = "att1", -pi/2, pi/2)#doesn't work either way
+sRest59 <- fitVi(id = 59, mode = "rest", -pi/2, pi/2)
+sAtt59 <- fitVi(id = 59, mode = "att1", -pi/2, pi/2)
 
 sRest60 <- fitVi(id = 60, mode = "rest", -pi/2, pi/2)
-sAtt60 <- fitVi(id = 60, mode = "att1", -pi/2, pi/2)##doesn't work either way
+sAtt60 <- fitVi(id = 60, mode = "att1", -pi/2, pi/2)
 
-sRest61 <- fitVi(id = 61, mode = "rest", -pi/2, pi/2)
+sRest61 <- fitVi(id = 61, mode = "rest", -pi/2, pi/2)#-1.5 FIXED
 sAtt61 <- fitVi(id = 61, mode = "att1", -pi/2, pi/2)
 
 save(sRest58, sRest59, sRest60, sRest61,
@@ -90,25 +90,25 @@ save(sRest58, sRest59, sRest60, sRest61,
      file = "experiments/fmri/ViSamples90/s58_61.Rdata")
 ######################################
 
-sRest62 <- fitVi(id = 62, mode = "rest", -pi/2, pi/2)#uniform posterior
-sAtt62 <- fitVi(id = 62, mode = "att1", -pi/2, pi/2)#not found (computation failed?)
+#sRest62 <- fitVi(id = 62, mode = "rest", -pi/2, pi/2)#uniform posterior
+#sAtt62 <- fitVi(id = 62, mode = "att1", -pi/2, pi/2)#sgd ill-conditioned
 
-sRest63 <- fitVi(id = 63, mode = "rest", -pi/2, pi/2)#pi
+sRest63 <- fitVi(id = 63, mode = "rest", -pi/2, pi/2)
 sAtt63 <- fitVi(id = 63, mode = "att1", -pi/2, pi/2)
 
 sRest91 <- fitVi(id = 91, mode = "rest", -pi/2, pi/2)
-sAtt91 <- fitVi(id = 91, mode = "att1", -pi/2, pi/2)#doesn't work either way
+sAtt91 <- fitVi(id = 91, mode = "att1", -pi/2, pi/2)
 
-sRest94 <- fitVi(id = 94, mode = "rest", -pi/2, pi/2)#doesn't work either way
-sAtt94 <- fitVi(id = 94, mode = "att1", -pi/2, pi/2)#-pi/2
+sRest94 <- fitVi(id = 94, mode = "rest", -pi/2, pi/2)
+sAtt94 <- fitVi(id = 94, mode = "att1", -pi/2, pi/2)
 
-save(sRest62, sRest63, sRest91, sRest94,
-     sAtt62, sAtt63, sAtt91, sAtt94,
-     file = "experiments/fmri/ViSamples90/s62_94.Rdata")
+save(sRest63, sRest91, sRest94,
+     sAtt63, sAtt91, sAtt94,
+     file = "experiments/fmri/ViSamples90/s63_94.Rdata")
 
 ######################################
 
-sRest78 <- fitVi(id = 78, mode = "rest",  -pi/2, pi/2)#+pi
+sRest78 <- fitVi(id = 78, mode = "rest",  -pi/2, pi/2)
 sAtt78 <- fitVi(id = 78, mode = "att1", -pi/2, pi/2)
 
 sRest64 <- fitVi(id = 64, mode = "rest", -pi/2, pi/2)
@@ -126,20 +126,20 @@ save(sRest78, sRest64, sRest32, sRest42,
 
 ######################################
 
-sRest51 <- fitVi(id = 51, mode = "rest", -pi/2, pi/2)#doesn't work either way
+sRest51 <- fitVi(id = 51, mode = "rest", -pi/2, pi/2)#-1.5 FIXED
 sAtt51 <- fitVi(id = 51, mode = "att1", -pi/2, pi/2)
 
-sRest1 <- fitVi(id = 1, mode = "rest", -pi/2, pi/2)
-sAtt1 <- fitVi(id = 1, mode = "att1", -pi/2, pi/2)
+#sRest1 <- fitVi(id = 1, mode = "rest", -pi/2, pi/2)
+#sAtt1 <- fitVi(id = 1, mode = "att1", -pi/2, pi/2)#sgd error
 
 sRest2 <- fitVi(id = 2, mode = "rest", -pi/2, pi/2)
-sAtt2 <- fitVi(id = 2, mode = "att1",  -pi/2, pi/2)#-pi/2
+sAtt2 <- fitVi(id = 2, mode = "att1",  -pi/2, pi/2)
 
 sRest3 <- fitVi(id = 3, mode = "rest", -pi/2, pi/2)
-sAtt3 <- fitVi(id = 3, mode = "att1", -pi/2, pi/2)#-pi/2
+sAtt3 <- fitVi(id = 3, mode = "att1", -pi/2, pi/2)#-1.5 FIXED
 
-save(sRest51, sRest1, sRest2, sRest3,
-     sAtt51, sAtt1, sAtt2, sAtt3,
+save(sRest51, sRest2, sRest3,
+     sAtt51, sAtt2, sAtt3,
      file = "experiments/fmri/ViSamples90/s51_3.Rdata")
 
 ######################################
@@ -147,7 +147,7 @@ save(sRest51, sRest1, sRest2, sRest3,
 sRest80 <- fitVi(id = 80, mode = "rest", -pi/2, pi/2)
 sAtt80 <- fitVi(id = 80, mode = "att1", -pi/2, pi/2)
 
-sRest81 <- fitVi(id = 81, mode = "rest", -pi/2, pi/2)
+sRest81 <- fitVi(id = 81, mode = "rest", -pi/2, pi/2)#-1.5
 sAtt81 <- fitVi(id = 81, mode = "att1", -pi/2, pi/2)
 
 sRest82 <- fitVi(id = 82, mode = "rest", -pi/2, pi/2)
@@ -168,19 +168,19 @@ sAtt84 <- fitVi(id = 84, mode = "att1", -pi/2, pi/2)
 sRest85 <- fitVi(id = 85, mode = "rest", -pi/2, pi/2)
 sAtt85 <- fitVi(id = 85, mode = "att1", -pi/2, pi/2)
 
-sRest86 <- fitVi(id = 86, mode = "rest", -pi/2, pi/2)
-sAtt86 <- fitVi(id = 86, mode = "att1", -pi/2, pi/2)
+#sRest86 <- fitVi(id = 86, mode = "rest", -pi/2, pi/2)
+#sAtt86 <- fitVi(id = 86, mode = "att1", -pi/2, pi/2)#sgd error
 
 sRest87 <- fitVi(id = 87, mode = "rest", -pi/2, pi/2)
 sAtt87 <- fitVi(id = 87, mode = "att1", -pi/2, pi/2)
 
-save(sRest84, sRest85, sRest86, sRest87,
-     sAtt84, sAtt85, sAtt86, sAtt87,
+save(sRest84, sRest85, sRest87,
+     sAtt84, sAtt85, sAtt87,
      file = "experiments/fmri/ViSamples90/s84_87.Rdata")
 
 ######################################
 
-sRest88 <- fitVi(id = 88, mode = "rest", -pi/2, pi/2)
+sRest88 <- fitVi(id = 88, mode = "rest", -pi/2, pi/2)#-1.5
 sAtt88 <- fitVi(id = 88, mode = "att1", -pi/2, pi/2)
 
 sRest89 <- fitVi(id = 89, mode = "rest", -pi/2, pi/2)
@@ -191,14 +191,32 @@ save(sRest88, sRest89,
      file = "experiments/fmri/ViSamples90/s88_89.Rdata")
 
 
-W1 <- tibble(sampleId = 1:500, rest_78 = sRest78$theta_principal[,1], att_78 = sAtt78$theta_principal[,1],
+W1 <- tibble(sampleId = 1:1000, 
+             rest_54 = sRest54$theta_principal[,1], att_54 = sAtt54$theta_principal[,1],
+             rest_55 = sRest55$theta_principal[,1], att_55 = sAtt55$theta_principal[,1],
+             rest_56 = sRest56$theta_principal[,1], att_56 = sAtt56$theta_principal[,1],
+             rest_57 = sRest57$theta_principal[,1], att_57 = sAtt57$theta_principal[,1],
+             rest_58 = sRest58$theta_principal[,1], att_58 = sAtt58$theta_principal[,1],
+             rest_59 = sRest59$theta_principal[,1], att_59 = sAtt59$theta_principal[,1],
+             rest_60 = sRest60$theta_principal[,1], att_60 = sAtt60$theta_principal[,1],
+             rest_63 = sRest63$theta_principal[,1], att_63 = sAtt63$theta_principal[,1],
+             rest_91 = sRest91$theta_principal[,1], att_91 = sAtt91$theta_principal[,1],
+             rest_94 = sRest94$theta_principal[,1], att_94 = sAtt94$theta_principal[,1],
+             rest_61 = sRest61$theta_principal[,1], att_61 = sAtt61$theta_principal[,1],
+             rest_78 = sRest78$theta_principal[,1], att_78 = sAtt78$theta_principal[,1],
              rest_64 = sRest64$theta_principal[,1], att_64 = sAtt64$theta_principal[,1],
+             rest_32 = sRest32$theta_principal[,1], att_32 = sAtt32$theta_principal[,1],
              rest_42 = sRest42$theta_principal[,1], att_42 = sAtt42$theta_principal[,1],
-             rest_1 = sRest1$theta_principal[,1], att_1 = sAtt1$theta_principal[,1],
+             rest_51 = sRest51$theta_principal[,1], att_51 = sAtt91$theta_principal[,1],
              rest_2 = sRest2$theta_principal[,1], att_2 = sAtt2$theta_principal[,1],
              rest_3 = sRest3$theta_principal[,1], att_3 = sAtt3$theta_principal[,1],
-             rest_58 = sRest58$theta_principal[,1], att_58 = sAtt58$theta_principal[,1],
-             rest_61 = sRest61$theta_principal[,1], att_61 = sAtt61$theta_principal[,1])
+             rest_82 = sRest82$theta_principal[,1], att_82 = sAtt82$theta_principal[,1],
+             rest_83 = sRest83$theta_principal[,1], att_83 = sAtt83$theta_principal[,1],
+             rest_84 = sRest84$theta_principal[,1], att_84 = sAtt84$theta_principal[,1],
+             rest_85 = sRest85$theta_principal[,1], att_85 = sAtt85$theta_principal[,1],
+             rest_87 = sRest87$theta_principal[,1], att_87 = sAtt87$theta_principal[,1],
+             rest_88 = sRest88$theta_principal[,1], att_88 = sAtt88$theta_principal[,1],
+             rest_89 = sRest89$theta_principal[,1], att_89 = sAtt89$theta_principal[,1])
 
 quick_quantile <- function(x, prob) quantile(x, probs = c(prob))[1]
 
@@ -206,7 +224,7 @@ W1 %>%
   gather(sample, sampleValue, -sampleId) %>%
   separate(sample, c("activity", "id"), sep = "_") %>%
   mutate_at(vars(activity, id), as.factor) %>%
-  
+  filter(id %in% c(51,82,83,84,88)) %>%
   group_by(activity, id) %>%
   summarize(Q2_5 = quick_quantile(sampleValue, 0.025),
             Q50 = quick_quantile(sampleValue, 0.5),
@@ -222,28 +240,35 @@ W1 %>%
 #try VI with two patients at once but no prior on them
 m <- stan_model(file = "experiments/fmri/HierPpca.stan")
 
-n <- 40
-sigmaHat2 <- (t(restArray[2,,]) %>% cov)[1:n,1:n]
-sigmaHat3 <- (t(restArray[3,,]) %>% cov)[1:n,1:n]
-sigmaHat64 <- (t(restArray[64,,]) %>% cov)[1:n,1:n]
+sigmaHat51 <- (t(restArray[51,,]) %>% cov)[1:n,1:n]
+sigmaHat82 <- (t(restArray[82,,]) %>% cov)[1:n,1:n]
+sigmaHat83 <- (t(restArray[83,,]) %>% cov)[1:n,1:n]
+sigmaHat84 <- (t(restArray[84,,]) %>% cov)[1:n,1:n]
+sigmaHat88 <- (t(restArray[88,,]) %>% cov)[1:n,1:n]
 
 dat <- list(n = n, p = p, d = n*p-p*(p+1)/2, sigmaSqHyperPrior = 100, N = 146,
-            lowerAngle2 = -pi/2, upperAngle2 = pi/2,
-            lowerAngle3 = -pi/2, upperAngle3 = pi/2,
-            lowerAngle64 = -pi/2, upperAngle64 = pi/2,
+            lowerAngle51 = -pi/2, upperAngle51 = pi/2,
+            lowerAngle82 = -pi/2, upperAngle82 = pi/2,
+            lowerAngle83 = -pi/2, upperAngle83 = pi/2,
+            lowerAngle84 = -pi/2, upperAngle84 = pi/2,
+            lowerAngle88 = -pi/2, upperAngle88 = pi/2,
             sigma_hier_hyper = 0.2,
-            SigmaHat2 = sigmaHat2, SigmaHat3 = sigmaHat3, SigmaHat64 = sigmaHat64)
+            SigmaHat51 = sigmaHat51,
+            SigmaHat82 = sigmaHat82, SigmaHat83 = sigmaHat83, SigmaHat84 = sigmaHat84,
+            SigmaHat88 = sigmaHat88)
 
 fit <- stan(file = "experiments/fmri/HierPpca.stan", data = dat, chains = 1, iter = 1000, refresh = 10,
-            init = list(list(theta_principal2 = array(0.7), theta_lower2 = array(rep(0.7, 38)),
-                             theta_principal3 = array(0.7), theta_lower3 = array(rep(0.7, 38)),
-                             theta_principal64 = array(0.7), theta_lower64 = array(rep(0.7, 38)))))
+            init = list(list(theta_principal82 = array(0.7), theta_lower82 = array(rep(0.7, n-2)),
+                             theta_principal83 = array(0.7), theta_lower83 = array(rep(0.7, n-2)),
+                             theta_principal84 = array(0.7), theta_lower84 = array(rep(0.7, n-2)))))
 s <- rstan::extract(fit)
 
-system.time(vi <- vb(m, data = dat, init = list(theta_principal54 = array(0.7),
-                                                theta_principal91 = array(0.7),
-                                                theta_principal78 = array(0.7),
-                                                mu_hier = 0.7, sigma_hier = 0.1)))
+system.time(vi <- vb(m, data = dat,
+                     init = list(theta_principal51 = array(0.7), theta_lower51 = array(rep(0.7, n-2)),
+                       theta_principal82 = array(0.7), theta_lower82 = array(rep(0.7, n-2)),
+                                theta_principal83 = array(0.7), theta_lower83 = array(rep(0.7, n-2)),
+                                theta_principal84 = array(0.7), theta_lower84 = array(rep(0.7, n-2)),
+                       theta_principal88 = array(0.7), theta_lower88 = array(rep(0.7, n-2)))))
 s <- rstan::extract(vi)
 
 
