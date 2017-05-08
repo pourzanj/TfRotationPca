@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="-137 2 747 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <g class="clips"/>
+  </defs>
+  <rect x="-150" y="-50" width="800" height="600" style="fill: rgb(255, 255, 255); fill-opacity: 1;"/>
+  <g class="bglayer" transform="matrix(1, 0, 0, 1, -150.000061, -49.999981)">
+    <rect class="bg" x="80" y="100" width="640" height="420" style="fill: rgb(255, 255, 255); fill-opacity: 1; stroke-width: 0px;"/>
+  </g>
+  <g class="layer-below" transform="matrix(1, 0, 0, 1, -150.000061, -49.999981)">
+    <g class="imagelayer"/>
+    <g class="shapelayer"/>
+  </g>
+  <g class="cartesianlayer" transform="matrix(1, 0, 0, 1, -150.000061, -49.999981)">
+    <g class="subplot xy">
+      <g class="layer-subplot">
+        <g class="shapelayer"/>
+        <g class="imagelayer"/>
+      </g>
+      <g class="gridlayer" transform="translate(80,100)">
+        <path class="ygrid crisp" d="M0,0h640" transform="translate(0,374.56)" style="stroke: rgb(238, 238, 238); stroke-opacity: 1; stroke-width: 1px;"/>
+        <path class="ygrid crisp" d="M0,0h640" transform="translate(0,329.11)" style="stroke: rgb(238, 238, 238); stroke-opacity: 1; stroke-width: 1px;"/>
+        <path class="ygrid crisp" d="M0,0h640" transform="translate(0,283.67)" style="stroke: rgb(238, 238, 238); stroke-opacity: 1; stroke-width: 1px;"/>
+        <path class="ygrid crisp" d="M0,0h640" transform="translate(0,238.22)" style="stroke: rgb(238, 238, 238); stroke-opacity: 1; stroke-width: 1px;"/>
+        <path class="ygrid crisp" d="M0,0h640" transform="translate(0,192.78)" style="stroke: rgb(238, 238, 238); stroke-opacity: 1; stroke-width: 1px;"/>
+        <path class="ygrid crisp" d="M0,0h640" transform="translate(0,147.33)" style="stroke: rgb(238, 238, 238); stroke-opacity: 1; stroke-width: 1px;"/>
+        <path class="ygrid crisp" d="M0,0h640" transform="translate(0,101.89)" style="stroke: rgb(238, 238, 238); stroke-opacity: 1; stroke-width: 1px;"/>
+        <path class="ygrid crisp" d="M0,0h640" transform="translate(0,56.45)" style="stroke: rgb(238, 238, 238); stroke-opacity: 1; stroke-width: 1px;"/>
+        <path class="ygrid crisp" d="M0,0h640" transform="translate(0,11)" style="stroke: rgb(238, 238, 238); stroke-opacity: 1; stroke-width: 1px;"/>
+      </g>
+      <g class="overgrid"/>
+      <g class="zerolinelayer" transform="translate(80,100)">
+        <path class="yzl zl crisp" d="M0,0h640" transform="translate(0,420)" style="stroke: rgb(68, 68, 68); stroke-opacity: 1; stroke-width: 1px;"/>
+      </g>
+      <g class="overzero"/>
+      <g class="plot" transform="translate(80, 100)" clip-path="url(#clipf43706xyplot)">
+        <g class="imagelayer"/>
+        <g class="maplayer"/>
+        <g class="barlayer">
+          <g class="trace bars" shape-rendering="crispEdges" style="opacity: 1;">
+            <g class="points">
+              <g class="point">
+                <path d="M0,420V227.77H15.61V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M15.61,420V75.99H31.22V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M31.22,420V64.63H46.83V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M46.83,420V137.34H62.44V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M62.44,420V246.86H78.05V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M78.05,420V330.93H93.66V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M93.66,420V377.74H109.27V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M109.27,420V403.19H124.88V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M124.88,420V409.09H140.49V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M140.49,420V410H156.1V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M156.1,420V414.09H171.71V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M171.71,420V414.55H187.32V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M187.32,420V405H202.93V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M202.93,420V393.19H218.54V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M218.54,420V369.56H234.15V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M234.15,420V299.12H249.76V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M249.76,420V221.41H265.37V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M265.37,420V103.25H280.98V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M280.98,420V54.63H296.59V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M296.59,420V21H312.2V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M312.2,420V21.45H327.8V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M327.8,420V31.45H343.41V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M343.41,420V57.81H359.02V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M359.02,420V115.52H374.63V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M374.63,420V224.59H390.24V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M390.24,420V315.48H405.85V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M405.85,420V367.74H421.46V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M421.46,420V400.91H437.07V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M437.07,420V410H452.68V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M452.68,420V410.46H468.29V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M468.29,420V411.37H483.9V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M483.9,420V413.18H499.51V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M499.51,420V412.27H515.12V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M515.12,420V399.55H530.73V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M530.73,420V370.92H546.34V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M546.34,420V309.12H561.95V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M561.95,420V223.68H577.56V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M577.56,420V155.51H593.17V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M593.17,420V87.35H608.78V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M608.78,420V65.54H624.39V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+              <g class="point">
+                <path d="M624.39,420V229.13H640V420Z" style="stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+              </g>
+            </g>
+          </g>
+        </g>
+        <g class="carpetlayer"/>
+        <g class="boxlayer"/>
+        <g class="scatterlayer"/>
+      </g>
+      <g class="overplot"/>
+      <path class="xlines crisp" transform="translate(80,100)" d="M-1,420.5h642" style="fill: none; stroke-width: 1px; stroke: rgb(0, 0, 0); stroke-opacity: 0;"/>
+      <path class="ylines crisp" transform="translate(80,100)" d="M-0.5,-1v421" stroke-width="1px" style="fill: none; stroke: rgb(0, 0, 0); stroke-opacity: 0;"/>
+      <g class="overlines"/>
+      <g class="xaxislayer" transform="translate(80,100)">
+        <g class="xtick" data-bb="387">
+          <text text-anchor="middle" x="0" y="434" transform="translate(7.8,0)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;" data-bb="381">−1</text>
+        </g>
+        <g class="xtick" data-bb="388">
+          <text text-anchor="middle" x="0" y="434" transform="translate(163.9,0)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;" data-bb="382">−0.5</text>
+        </g>
+        <g class="xtick" data-bb="389">
+          <text text-anchor="middle" x="0" y="434" transform="translate(320,0)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;" data-bb="383">0</text>
+        </g>
+        <g class="xtick" data-bb="390">
+          <text text-anchor="middle" x="0" y="434" transform="translate(476.1,0)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;" data-bb="384">0.5</text>
+        </g>
+        <g class="xtick" data-bb="391">
+          <text text-anchor="middle" x="0" y="434" transform="translate(632.2,0)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;" data-bb="385">1</text>
+        </g>
+      </g>
+      <g class="yaxislayer" transform="translate(80,100)">
+        <g class="ytick" data-bb="393">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,420)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">0</text>
+        </g>
+        <g class="ytick" data-bb="394">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,374.56)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">100</text>
+        </g>
+        <g class="ytick" data-bb="395">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,329.11)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">200</text>
+        </g>
+        <g class="ytick" data-bb="396">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,283.67)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">300</text>
+        </g>
+        <g class="ytick" data-bb="397">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,238.22)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">400</text>
+        </g>
+        <g class="ytick" data-bb="398">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,192.78)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">500</text>
+        </g>
+        <g class="ytick" data-bb="399">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,147.33)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">600</text>
+        </g>
+        <g class="ytick" data-bb="400">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,101.89)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">700</text>
+        </g>
+        <g class="ytick" data-bb="401">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,56.45)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">800</text>
+        </g>
+        <g class="ytick" data-bb="402">
+          <text text-anchor="end" x="-2" y="6" transform="translate(0,11)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; visibility: visible; white-space: pre;">900</text>
+        </g>
+      </g>
+      <g class="overaxes"/>
+    </g>
+  </g>
+  <g class="ternarylayer" transform="matrix(1, 0, 0, 1, -150.000061, -49.999981)"/>
+  <g class="geolayer" transform="matrix(1, 0, 0, 1, -150.000061, -49.999981)"/>
+  <g class="layer-above" transform="matrix(1, 0, 0, 1, -150.000061, -49.999981)">
+    <g class="imagelayer"/>
+    <g class="shapelayer"/>
+  </g>
+  <g class="pielayer" transform="matrix(1, 0, 0, 1, -150.000061, -49.999981)"/>
+  <g class="glimages" transform="matrix(1, 0, 0, 1, -150.000061, -49.999981)"/>
+  <g class="infolayer" transform="matrix(1, 0, 0, 1, -150.000061, -49.999981)">
+    <g class="g-gtitle"/>
+    <g class="g-xtitle" data-bb="386">
+      <text class="xtitle" x="400" y="572" text-anchor="middle" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 14px; fill: rgb(68, 68, 68); opacity: 1; font-weight: normal; white-space: pre; visibility: visible;"># of samples</text>
+    </g>
+    <g class="g-ytitle" data-bb="392">
+      <text class="ytitle" transform="rotate(-90,42,310) translate(0, 0)" x="42" y="310" text-anchor="middle" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 14px; fill: rgb(68, 68, 68); opacity: 1; font-weight: normal; white-space: pre; visibility: visible;">Angle</text>
+    </g>
+  </g>
+</svg>
