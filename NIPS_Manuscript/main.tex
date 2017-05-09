@@ -222,32 +222,38 @@ We generated a synthetic, three-dimensional dataset that lies on a two-dimension
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{A hierarchical PPCA model for fMRI data}
+To illustrate the usefulness of GT-PPCA in a real-life setting, we applied it to a brain fMRI dataset and fit a hierarchical model using VI in Stan. We obtained 90-dimensional fMRI scans of five human subjects under an ``active" condition where subjects were asked to perform a task, and a ``resting" condition where subjects were not given any tasks or instructions. Each of the 90 dimensions corresponds to an activity level of a distinct area of the brain. From the data scientists wanted to discern whether fMRI activities were markedly different under the active and resting tasks.
+
+It is well known that brain fMRI data is highly correlated so that our high dimensional data actually lies on some low dimensional subspace. In preliminary analysis we saw that the first principal component was highly tied to brain region 78 when subjects were in the resting state. We sought to test whether under the two states the first principal component had differing correlations to this brain region.  Examining the posterior distribution of the GT parameter $\theta_{1,78}$ we can intuitively understand how correlated with the 78th brain region the first component is. Drawing from our intuition from Figure \ref{fig:GivensReduction}, when this parameter is close to $\pi/2$ or $-\pi/2$ then the first component is highly correlated to the 78th brain region. Figure \ref{fig:fmriHier} show posterior estimates of this angle parameter, $\theta_{1,78}$, for our five subjects under the two states. While it seems as though the resting state is individually higher for this parameter, it is not clear whether this relationship is statistically significant.
+
+A-priori, we know our subjects will have similar principal components when in the resting states and different, but also similar to each other, principal components in the active state. To reflect this prior knowledge we place a truncated normal prior over $\theta_{1,78}^{i}, \, i = 1,\cdots, 5$, and estimate the hyper-parameters $\mu_0, \sigma_0$ of this prior for the active and resting state respectively. Not including the hierarchical prior is a special case of this where the hierarchical prior is completely flat, i.e. $\sigma_0 = \infty$, so that if there is a shared information between subjects our model can pick it up, and if there is not our estimates will be unaffected. Figure \ref{fig:fmriHier} shows posterior estimates for $\theta_{1,78}^{i}$, after we used a hierarchical prior on each respective state. The hierarchical prior has the regularization effect of shrinking together estimates in the two respective states, as information about one individual in the resting state tells us information about other individuals in the resting state.
 
 
 \begin{figure}
     \centering
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{fmriHier.pdf}
+        \includegraphics[width=\textwidth]{fmri.pdf}
         \caption{}
-        \label{fig:GivensReduction}
+        \label{fig:fmri}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
       %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{fmri.pdf}
+        \includegraphics[width=\textwidth]{fmriHier.pdf}
         \caption{}
-        \label{fig:StiefelGeom}
+        \label{fig:fmriHier}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
     %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\textwidth]{hierMean.pdf}
         \caption{}
-        \label{fig:AreaForm}
+        \label{fig:hierMean}
     \end{subfigure}
     \caption{Inferring a hierarchical subspace model for fMRI data. (a) Individual posterior estimates of Givens Transform angle $\theta_{1,78}$. (b) Hierarchical estimates. (c) Posterior mean of hierarchical mean parameter.}\label{fig:fmri}
 \end{figure}
 
+Finally, to test our original hypothesis we compared the posterior distribution of $\mu_0^{\mathrm{resting}}$ and $\mu_0^{\mathrm{active}}$ in Figure \ref{fig:hierMean}. While the posterior median of $\mu_0^{\mathrm{resting}}$ is lower, confidence intervals indicate that we would need more data to be able to conclude this with confidence, a conclusion that would be difficult to discern in a non-probabilistic framework.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{School Network}
