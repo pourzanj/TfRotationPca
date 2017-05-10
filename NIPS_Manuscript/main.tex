@@ -146,15 +146,15 @@ Bayesian dimensionality reduction using orthonormal matrices in Section~\ref{ort
 \commentPJA{Discuss specific approach... PPCA...}
 
 \subsection{Probabilistic Principle Component Analysis (PPCA)}
-In probabilistic principle component analysis (PPCA) one starts by considering a collection of data points in a typically high-dimensional vector space and seeks to find a posterior distribution over a reduced representations of the data using a much lower dimensional subspace.  The central postulate is that for a data vector $\mathbf{x} \in \mathbb{R}^n$ there exists an unknown low-dimensional latent representation $\mathbf{z} \in \mathbb{R}^p$ where $p < n$, (ideally with $p \ll n$).  The two representations are related to each other by a single unknown linear transformation $\mathbf{x} \rightarrow \mathbf{z}$.  Mathematically, we consider a finite collection of sampled data vectors $\mathbf{x}^i \in \mathbb{R}^n$, $i = 1, \cdots, N$ and see and estimate of the subspace.  Formally, in PPCA this consists of using the following generative process
+In probabilistic principle component analysis (PPCA) one starts by considering a collection of data points in a typically high-dimensional vector space and seeks to find a posterior distribution over a reduced representations of the data using a much lower dimensional subspace.  The central postulate is that for a data vector $\mathbf{x} \in \mathbb{R}^n$ there exists an unknown low-dimensional latent representation $\mathbf{z} \in \mathbb{R}^p$ where $p < n$, (ideally with $p \ll n$).  The two representations are related to each other by a single unknown linear transformation $\mathbf{x} \rightarrow \mathbf{z}$.  Mathematically, we consider a finite collection of sampled data vectors $\mathbf{x}^i \in \mathbb{R}^n$, $i = 1, \cdots, N$ and try to estimate this subspace.  Formally, in PPCA this consists of using the following generative process
 \begin{eqnarray}
 \label{eq:PpcaGenerativeProcess}
 p(\mb{z}^i) &\sim& \mathcal{N}_p(0, I) \nonumber\\
 p(\mb{x}^i | \mb{z}^i, W, \Lambda, \sigma^2) &\sim& \mathcal{N}_n(W \Lambda \mb{z}^i, \sigma^2 I).
 \end{eqnarray}
-The $W$ is an $n \times p$ orthonormal matrix and $\Lambda$ is a $p \times p$ diagonal matrix with positive elements.  For simplicity in our presentation of PPCA, we have assumed here that the data has only zero mean but the more general case can also readily be considered (cite).
-%PJA: Avoid footnotes...\footnote{we assume the zero mean case here for simplicity, but the more general case easily follows}. 
-We also remark that generative model could also be expanded to the case of non-Gaussian data by replacing equation \ref{eq:PpcaGenerativeProcess} with an exponential family member whose natural parameters are given by $\mathrm{Expon}(W\Lambda \mb{z}^i)$ where $\mathrm{Expon}(\cdot)$ is an appropriate link function \citep{mohamed2009bayesian}. 
+The $W$ is an $n \times p$ orthonormal matrix and $\Lambda$ is a $p \times p$ diagonal matrix with positive elements.  For simplicity in our presentation of PPCA, we have assumed here that the data has only zero mean but the more general case can also readily be considered \citep[chapt.~12.1]{murphy2012machine}. We also remark that generative model could also be expanded to the case of non-Gaussian data by replacing equation \ref{eq:PpcaGenerativeProcess} with an exponential family member whose natural parameters are given by $\mathrm{Expon}(W\Lambda \mb{z}^i)$ where $\mathrm{Expon}(\cdot)$ is an appropriate link function \citep{mohamed2009bayesian}. 
+
+Inference on $W$ is typically conducted via Maximum A-Posterior (MAP) estimation via a closed-form estimator or Expectation Maximzation\citep[chapt.~12.2]{murphy2012machine}, which unfortunately does not allow for uncertainty quantification and hypothesis testing, and potentially leads to overfitting. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %\subsection{Bayesian inference of orthonormal matrices}
@@ -175,7 +175,7 @@ The Stiefel Manifold has an intrinsic dimension of $\dim{V^{n,p}} = np-p(p+1)/2$
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Givens Transform (GT) approach to PPCA (GT-PPCA)} \label{Givens}
+\section{Givens Transform (GT) approach to PPCA (GT-PPCA)} \label{Givens}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 \commentPJA{I would give a streamlined discussion of the GT-PPCA approach giving the basics of the GT and how the representation is used.}
@@ -213,12 +213,36 @@ The Stiefel Manifold has an intrinsic dimension of $\dim{V^{n,p}} = np-p(p+1)/2$
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Examples}
+\section{Empirical Studies}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Synthetic Data}
-We generated a synthetic, three-dimensional dataset that lies on a two-dimensional plane with $N =15$ observations according the generative process of PPCA \ref{eq:PpcaGenerativeProcess}. We chose $\Lambda = (1, 1)$, $\sigma^2 = 1$, and $W$ to be $I_{3,2}$ which in the Givens representation corresponds to $\theta_{12} = \theta_{13} = \theta_{23} = 0$. A standard classical PCA analysis yields the singular values $\hat{\lambda} = (1.52\, 1.27\, 0.77)$, suggesting that our data lie close to some two-dimensional plane. Figure \ref{fig:MleSubspaceEstimate} illustrates a point estimate of the subspace found by PCA. Meanwhile, Figure \ref{fig:SyntheticPosteriorEstimates} shows posterior intervals of angles and singular values obtained from HMC in Stan.
+We generated a synthetic, three-dimensional dataset that lies on a two-dimensional plane with $N =15$ observations according the generative process of PPCA \ref{eq:PpcaGenerativeProcess}. We chose $\Lambda = (1, 1)$, $\sigma^2 = 1$, and $W$ to be $I_{3,2}$ which in the Givens representation corresponds to $\theta_{12} = \theta_{13} = \theta_{23} = 0$. A standard classical PCA analysis yields the singular values $\hat{\lambda} = (1.52\, 1.27\, 0.77)$, suggesting that our data lie close to some two-dimensional plane. Figure \ref{fig:MleSubspaceEstimate} illustrates a point estimate of the subspace found by PCA. Meanwhile, Figure \ref{fig:SyntheticPosteriorEstimates} shows posterior intervals of angles and singular values obtained from HMC in Stan. Posteriors of singular values can be used to interpret inherent dimensionality
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        %\includegraphics[width=\textwidth]{fmri.pdf}
+        \caption{}
+        \label{fig:MleSubspaceEstimate}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.3\textwidth}
+        %\includegraphics[width=\textwidth]{fmriHier.pdf}
+        \caption{}
+        \label{fig:SyntheticPosteriorEstimates}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+    %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.3\textwidth}
+        %\includegraphics[width=\textwidth]{hierMean.pdf}
+        \caption{}
+        \label{fig:multiModal}
+    \end{subfigure}
+    \caption{Synthetic}\label{fig:synthetic}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{A hierarchical PPCA model for fMRI data}
@@ -256,12 +280,39 @@ A-priori, we know our subjects will have similar principal components when in th
 Finally, to test our original hypothesis we compared the posterior distribution of $\mu_0^{\mathrm{resting}}$ and $\mu_0^{\mathrm{active}}$ in Figure \ref{fig:hierMean}. While the posterior median of $\mu_0^{\mathrm{resting}}$ is lower, confidence intervals indicate that we would need more data to be able to conclude this with confidence, a conclusion that would be difficult to discern in a non-probabilistic framework.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{School Network}
-Mainly here to show we can do exponential families easy too. Possibly make this a change point detection?
+\subsection{Sparse PCA}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Coagulopathy using hierarchical subspace models}
-Don't forget to mention sparse PCA, via Cauchy priors.
+Include figure for CCA probabilistic graphical model.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        %\includegraphics[width=\textwidth]{fmri.pdf}
+        \caption{}
+        \label{fig:nonHierPosteriors}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.3\textwidth}
+        %\includegraphics[width=\textwidth]{fmriHier.pdf}
+        \caption{}
+        \label{fig:hierPosteriors}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+    %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.3\textwidth}
+        %\includegraphics[width=\textwidth]{hierMean.pdf}
+        \caption{}
+        \label{fig:posteriorCosAngle}
+    \end{subfigure}
+    \caption{Synthetic}\label{fig:ccaResults}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{School Network}
+Show $W$ for each of the three states then posterior probabilities of what state you're in. Show probabilistic graphical model. Point how this can be used for disease networks and also recognizing states in fMRI data.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Discussion}
