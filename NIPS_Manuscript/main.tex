@@ -218,66 +218,35 @@ The Stiefel Manifold has an intrinsic dimension of $\dim{V^{n,p}} = np-p(p+1)/2$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Synthetic Data}
-We generated a synthetic, three-dimensional dataset that lies on a two-dimensional plane with $N =15$ observations according the generative process of PPCA \ref{eq:PpcaGenerativeProcess}. We chose $\Lambda = (1, 1)$, $\sigma^2 = 1$, and $W$ to be $I_{3,2}$ which in the Givens representation corresponds to $\theta_{12} = \theta_{13} = \theta_{23} = 0$. A standard classical PCA analysis yields the singular values $\hat{\lambda} = (1.52\, 1.27\, 0.77)$, suggesting that our data lie close to some two-dimensional plane. Figure \ref{fig:MleSubspaceEstimate} illustrates a point estimate of the subspace found by PCA. Meanwhile, Figure \ref{fig:SyntheticPosteriorEstimates} shows posterior intervals of angles and singular values obtained from HMC in Stan. Posteriors of singular values can be used to interpret inherent dimensionality
+We generated a synthetic, three-dimensional dataset that lies on a two-dimensional plane with $N =15$ observations according the generative process of PPCA \ref{eq:PpcaGenerativeProcess}. We chose $\mathrm{diag}(\Lambda) =\mathrm{diag}(1, 1)$, $\sigma^2 = 1$, and $W$ to be $I_{3,2}$ which in the Givens representation corresponds to $\theta_{12} = \theta_{13} = \theta_{23} = 0$. This example illustrates how simply running GT-PPCA in Stan can alleviate overfitting issues in the common use-case where one seeks to carry out dimensionality reduction in a low-observation regime. A standard classical PCA analysis yields the singular values $\mathrm{diag}(\hat{\Lambda}) = (1.52,\, 1.27,\, 0.77)$,  possibly suggesting that our data lie close to some two-dimensional plane, since the third singular value has a larger drop off from the first two than the second has from the first. Figure \ref{fig:MleSubspaceEstimate} illustrates geometrically a point estimate of the subspace found by PCA. This corresponds to the subspace spanned by the PCA point estimates of the latent factor loadings. Because of relatively low signal to noise ratio and modest sample size, the point estimate is drastically affected by only a few observations and is characteristically different from the flat plane, which we know to be the truth in this case. The PCA point estimate $\theta_{13}$, which if we recall from Figure \ref{fig:StiefelGeom} is the Givens Transform angle that controls the upwards tilt of the plane, is $\hat{\theta}_{13} = -0.15$. Meanwhile, posterior HMC samples from GT-PPCA in Stan yields a median value of -0.24 and a 95\% posterior interval of $(-1, 0.78)$. This lets us know that there is high uncertainty around our point estimate given the data, and suggests that any conclusions drawn from point estimates may be overfit to the data, thus protecting us from concluding false-positive results and suggesting to the experimenter that more data is needed to make a conclusive statement. Alternatively, we can incorporate any prior knowledge we have about the problem, such as knowledge about the structure of $W$ or knowledge about the $W$ of a closely related group of samples, in the form of a prior distribution of our angles in our Stan model as we do in the following subsections.
 
 \begin{figure}
     \centering
     \begin{subfigure}[b]{0.3\textwidth}
-        %\includegraphics[width=\textwidth]{fmri.pdf}
+        \includegraphics[width=\textwidth]{uncertainty.pdf}
         \caption{}
         \label{fig:MleSubspaceEstimate}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
       %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.3\textwidth}
-        %\includegraphics[width=\textwidth]{fmriHier.pdf}
+        \includegraphics[width=\textwidth]{syntheticLambdaPosterior.pdf}
         \caption{}
         \label{fig:SyntheticPosteriorEstimates}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
     %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.3\textwidth}
-        %\includegraphics[width=\textwidth]{hierMean.pdf}
+        \includegraphics[width=\textwidth]{multiModal.pdf}
         \caption{}
         \label{fig:multiModal}
     \end{subfigure}
     \caption{Synthetic}\label{fig:synthetic}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{A hierarchical PPCA model for fMRI data}
-To illustrate the usefulness of GT-PPCA in a real-life setting, we applied it to a brain fMRI dataset and fit a hierarchical model using VI in Stan. We obtained 90-dimensional fMRI scans of five human subjects under an ``active" condition where subjects were asked to perform a task, and a ``resting" condition where subjects were not given any tasks or instructions. Each of the 90 dimensions corresponds to an activity level of a distinct area of the brain. From the data scientists wanted to discern whether fMRI activities were markedly different under the active and resting tasks.
+The fully Bayesian approach provided by GT-PPCA in Stan also allows us to examine posterior draws of $\Lambda$ to make probabilistic statements about the inherent dimensionality in our data. Figure \ref{fig:SyntheticPosteriorEstimates} shows estimated densities from posterior draws of $\Lambda$. The posterior of $\Lambda_3$ for example places considerable mass close to zero (58\% of samples were less that 0.5), providing strong evidence that our data is inherently two, not three, dimensional. This is as oppose to classical PCA where we heuristically assess dimensionality based solely on the magnitude of our point estimates.
 
-It is well known that brain fMRI data is highly correlated so that our high dimensional data actually lies on some low dimensional subspace. In preliminary analysis we saw that the first principal component was highly tied to brain region 78 when subjects were in the resting state. We sought to test whether under the two states the first principal component had differing correlations to this brain region.  Examining the posterior distribution of the GT parameter $\theta_{1,78}$ we can intuitively understand how correlated with the 78th brain region the first component is. Drawing from our intuition from Figure \ref{fig:GivensReduction}, when this parameter is close to $\pi/2$ or $-\pi/2$ then the first component is highly correlated to the 78th brain region. Figure \ref{fig:fmriHier} show posterior estimates of this angle parameter, $\theta_{1,78}$, for our five subjects under the two states. While it seems as though the resting state is individually higher for this parameter, it is not clear whether this relationship is statistically significant.
-
-A-priori, we know our subjects will have similar principal components when in the resting states and different, but also similar to each other, principal components in the active state. To reflect this prior knowledge we place a truncated normal prior over $\theta_{1,78}^{i}, \, i = 1,\cdots, 5$, and estimate the hyper-parameters $\mu_0, \sigma_0$ of this prior for the active and resting state respectively. Not including the hierarchical prior is a special case of this where the hierarchical prior is completely flat, i.e. $\sigma_0 = \infty$, so that if there is a shared information between subjects our model can pick it up, and if there is not our estimates will be unaffected. Figure \ref{fig:fmriHier} shows posterior estimates for $\theta_{1,78}^{i}$, after we used a hierarchical prior on each respective state. The hierarchical prior has the regularization effect of shrinking together estimates in the two respective states, as information about one individual in the resting state tells us information about other individuals in the resting state.
-
-
-\begin{figure}
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{fmri.pdf}
-        \caption{}
-        \label{fig:fmri}
-    \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-      %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{fmriHier.pdf}
-        \caption{}
-        \label{fig:fmriHier}
-    \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-    %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{hierMean.pdf}
-        \caption{}
-        \label{fig:hierMean}
-    \end{subfigure}
-    \caption{Inferring a hierarchical subspace model for fMRI data. (a) Individual posterior estimates of Givens Transform angle $\theta_{1,78}$. (b) Hierarchical estimates. (c) Posterior mean of hierarchical mean parameter.}\label{fig:fmri}
-\end{figure}
-
-Finally, to test our original hypothesis we compared the posterior distribution of $\mu_0^{\mathrm{resting}}$ and $\mu_0^{\mathrm{active}}$ in Figure \ref{fig:hierMean}. While the posterior median of $\mu_0^{\mathrm{resting}}$ is lower, confidence intervals indicate that we would need more data to be able to conclude this with confidence, a conclusion that would be difficult to discern in a non-probabilistic framework.
+Lastly, Figure \ref{fig:multiModal} compares posterior samples of our synthetic data from Embedded Manifold HMC (EMHMC) and GT-PPCA in Stan. As explained in section, EMHMC explores the entire Stiefel manifold which includes multiple equivalent modes, where as with GT-PPCA we can eliminate this multi-modal behavior by simply constraining the Givens Transform angle parameters. This is useful both for interpretation and in higher dimensional problems where the number of modes grows exponentially and HMC can not visit all of them. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Sparse PCA}
@@ -545,6 +514,41 @@ Analogously, we can measure volumes on the Stiefel manifold. For $n \times p$ or
 \end{equation}
 
 where $G_j$ is the $j$th column of $G$ and $Y_i$ is the $i$th column of $Y$. To obtain the form in angle coordinates we simply obtain $dY$ in angle coordinates. $dY_i$ can be obtained in terms of the angle coordinates by the following relationship, $dY_i = J_{Y_i}(\Theta)\, d\Theta$, where $J_{Y_i}$ is the Jacobian of $Y_i$ with respect to the angle coordinates. Once we obtain the form \ref{eq:WedgeForm} in terms of the angle coordinates, the result is a wedge product of $np-p(p+1)/2$ vectors that are $np-p(p+1)/2$ dimensional, which reduces to the determinant of these vectors aligned side by side as a $np-p(p+1)/2 \times np-p(p+1)/2$ matrix. This determinant is analogous to and serves the same purpose as Jacobian adjustment that comes from transforming random variables. We can insert it in to the log-probability of a model to avoid the sort of unintended sampling behavior depicted in Figure \ref{fig:AreaForm}. We incorporate the form \ref{eq:WedgeForm} in to the log-probability of all of our Stan examples.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{A hierarchical PPCA model for fMRI data}
+To illustrate the usefulness of GT-PPCA in a real-life setting, we applied it to a brain fMRI dataset and fit a hierarchical model using VI in Stan. We obtained 90-dimensional fMRI scans of five human subjects under an ``active" condition where subjects were asked to perform a task, and a ``resting" condition where subjects were not given any tasks or instructions. Each of the 90 dimensions corresponds to an activity level of a distinct area of the brain. From the data scientists wanted to discern whether fMRI activities were markedly different under the active and resting tasks.
+
+It is well known that brain fMRI data is highly correlated so that our high dimensional data actually lies on some low dimensional subspace. In preliminary analysis we saw that the first principal component was highly tied to brain region 78 when subjects were in the resting state. We sought to test whether under the two states the first principal component had differing correlations to this brain region.  Examining the posterior distribution of the GT parameter $\theta_{1,78}$ we can intuitively understand how correlated with the 78th brain region the first component is. Drawing from our intuition from Figure \ref{fig:GivensReduction}, when this parameter is close to $\pi/2$ or $-\pi/2$ then the first component is highly correlated to the 78th brain region. Figure \ref{fig:fmriHier} show posterior estimates of this angle parameter, $\theta_{1,78}$, for our five subjects under the two states. While it seems as though the resting state is individually higher for this parameter, it is not clear whether this relationship is statistically significant.
+
+A-priori, we know our subjects will have similar principal components when in the resting states and different, but also similar to each other, principal components in the active state. To reflect this prior knowledge we place a truncated normal prior over $\theta_{1,78}^{i}, \, i = 1,\cdots, 5$, and estimate the hyper-parameters $\mu_0, \sigma_0$ of this prior for the active and resting state respectively. Not including the hierarchical prior is a special case of this where the hierarchical prior is completely flat, i.e. $\sigma_0 = \infty$, so that if there is a shared information between subjects our model can pick it up, and if there is not our estimates will be unaffected. Figure \ref{fig:fmriHier} shows posterior estimates for $\theta_{1,78}^{i}$, after we used a hierarchical prior on each respective state. The hierarchical prior has the regularization effect of shrinking together estimates in the two respective states, as information about one individual in the resting state tells us information about other individuals in the resting state.
+
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{fmri.pdf}
+        \caption{}
+        \label{fig:fmri}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{fmriHier.pdf}
+        \caption{}
+        \label{fig:fmriHier}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+    %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{hierMean.pdf}
+        \caption{}
+        \label{fig:hierMean}
+    \end{subfigure}
+    \caption{Inferring a hierarchical subspace model for fMRI data. (a) Individual posterior estimates of Givens Transform angle $\theta_{1,78}$. (b) Hierarchical estimates. (c) Posterior mean of hierarchical mean parameter.}\label{fig:fmri}
+\end{figure}
+
+Finally, to test our original hypothesis we compared the posterior distribution of $\mu_0^{\mathrm{resting}}$ and $\mu_0^{\mathrm{active}}$ in Figure \ref{fig:hierMean}. While the posterior median of $\mu_0^{\mathrm{resting}}$ is lower, confidence intervals indicate that we would need more data to be able to conclude this with confidence, a conclusion that would be difficult to discern in a non-probabilistic framework.
 
 
 
