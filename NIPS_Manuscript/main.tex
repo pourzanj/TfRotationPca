@@ -198,11 +198,11 @@ Intuitively, the elements of $V_{n,p}$ can be thought of not as orthonormal matr
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
     %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.3\textwidth}
-        %\includegraphics[width=\textwidth]{AreaForm.pdf}
+        \includegraphics[width=\textwidth]{AreaForm.pdf}
         \caption{}
         \label{fig:AreaForm}
     \end{subfigure}
-    \caption{Visualizing the Givens Transform. (a) How the Givens Reduction ``zeros out'' a column vector. (b) A geometric view of the Stiefel manifold, two-frame in three dimensions. (c) Sampling without a proper measure adjustment. \commentPJA{I've performed edits of the middle figure to illustrate Givens Transform.  The left and right figure still need work.}}\label{fig:Givens}
+    \caption{Visualizing the Givens Transform. (a) How the Givens Reduction ``zeros out'' a column vector. (b) A geometric view of the Stiefel manifold, two-frame in three dimensions. (c) Sampling without a proper measure adjustment. }\label{fig:Givens}
 \end{figure}
  
 While $n \times p$ orthonormal matrices are represented by $np$ elements, the Stiefel Manifold $V_{n,p}$, has an intrinsic dimension of $np-p(p+1)/2$. This arises from the constraints on the columns of the matrix that impose orthonormality.  This dimensionality can be seen by observing, that the first column of $Y \in V_{n,p}$ must have norm one and hence has one constraint placed on it. The second column must also have norm one and also must be orthogonal to the first column hence with two constraints placed on it.  Continuing to the third column through the $n^{th}$ one arrives at the conclusion that each point of the Stiefel Manifold has only $np - (1+2+\cdots+p) =np-p(p+1)/2$ degrees of freedom.  The Givens transform can be thought of as an $np-p(p+1)/2$-dimensional set of coordinates $\Theta$, that represent elements of the Stiefel manifold.
@@ -248,11 +248,9 @@ Lastly, we note that if the true bases lies near a pole, i.e. $\theta_{ij}$ is c
 
 \paragraph{An analogous Jacobian term using differential forms} As stated earlier, conducting inference on a transform space requires a Jacobian term accounting for how volumes are warped by the transform, but in the case of the Givens Transform this poses a problem because an $n \times p$ orthonormal matrix is $np$-dimensional, but the Givens transform, $\Theta(Y)$, maps this set to an $np - p(p+1)2$-dimensional set of angles $\Theta$. In this more general scenario, one can not simply take the determinant of the Jacobian as the volume morphing factor, because the Jacobian is not even square and hence the determinant is undefined. To obtain the correct factor one must appeal to the calculus of differential forms. 
 
-Intuitively, differential forms measure how a transform warps an infinitesimal volume from one space to another, but they are more general in that they can be applied irrespective of the coordinates we use to describe either space. For example, spherical coordinates $(\theta, \varphi) \mapsto (x(\theta,\varphi), y(\theta,\varphi), z(\theta,\varphi))$ map points in the flat plane, $\mathbb{R}^2$, to points in $\mathbb{R}^3$ that lie on the sphere. $d\theta \wedge d\varphi$ represents a small area in the plane that can be rewritten as a small patch in $\mathbb{R}^3$ by finding $d\theta$ and $d\varphi$ in terms of $dx, dy$, and $dz$ and applying the well defined rules of a wedge product.
+Intuitively, differential forms measure how a transform warps an infinitesimal volume from one space to another, but they are more general in that they can be applied irrespective of the coordinates we use to describe either space. For example, spherical coordinates $(\theta, \varphi) \mapsto (x(\theta,\varphi), y(\theta,\varphi), z(\theta,\varphi))$ map points in the flat plane, $\mathbb{R}^2$, to points in $\mathbb{R}^3$ that lie on the sphere. $d\theta \wedge d\varphi$ represents a small area in the plane that can be rewritten as a small patch in $\mathbb{R}^3$ by finding $d\theta$ and $d\varphi$ in terms of $dx, dy$, and $dz$ and applying the well defined rules of a wedge product. For a thorough account we recommend \citet{muirhead2009aspects}, \citet{edelman200518}, or any standard text in differential geometry.
 
-One can then integrate this over a sub-area of the sphere to obtain the measure of that sub-area. The beauty of differential forms is that a different coordinate system such as polar coordinates, simply correspond to using a different basis for representing forms, which again are vectors. In fact writing a form in a different bases simply involves taking partial derivatives, e.g. $dx = (\partial x/\partial \theta) \, d\theta + (\partial x/ \partial \varphi) \, d\varphi$. If we substitute the forms in the angle bases in to \ref{eq:EuclideanAreaForm} and simplify using the well-defined anti-symmetric and distributive properties of wedge products and differential forms (see \citep{muirhead2009aspects}), we obtain a proper area-form \ref{eq:EuclideanAreaForm} in spherical coordinates, $S(x(\theta, \varphi),y(\theta, \varphi),z(\theta, \varphi))\, d\theta \wedge d\varphi$, that can then be integrated using a double integral in polar coordinates. The absolute value of this area-form evaluated at some point specified in angle coordinates, $(\theta_0, \varphi_0)$, intuitively measures how much the area of tiny square in angle space gets shrunk or stretched when the area is mapped to an area on the sphere.
-
-Analogously, we can measure volumes on the Stiefel manifold. For $n \times p$ orthonormal matrices, there are only $np-p(p+1)/2$ free parameters and so the proper form to measure sets of orthonormal matrices is in fact a $np-p(p+1)/2$-form. For an orthonormal, $n \times p$ matrix, $Y$, we can find an orthonormal $n \times n$ matrix $G$ such that $G^T Y = I_{n,p}$. In fact $G$ just comes from the product of the appropriate rotation matrices that comes from the Givens Reduction \ref{eq:GivensReduction}. \citet{muirhead2009aspects} shows that the correct form comes from wedging the elements of the $n \times p$ matrix $G^T dY$ that lie below the diagonal i.e.
+We can analogously use differential forms and wedge products to measure volumes on the Stiefel manifold. For $n \times p$ orthonormal matrices, there are only $np-p(p+1)/2$ free parameters and so the proper form to measure sets of orthonormal matrices is a $np-p(p+1)/2$-form. For an orthonormal, $n \times p$ matrix, $Y$, we can find an orthonormal $n \times n$ matrix $G$ such that $G^T Y = I_{n,p}$. In fact $G$ just comes from the product of the appropriate rotation matrices that comes from the Givens Reduction \ref{eq:GivensReduction}. \citet{muirhead2009aspects} shows that the correct form for measuring volumes on the Stiefel manifold comes from wedging the elements of the $n \times p$ matrix $G^T dY$ that lie below the diagonal i.e.
 
 \begin{equation}
 \label{eq:WedgeForm}
@@ -260,8 +258,6 @@ Analogously, we can measure volumes on the Stiefel manifold. For $n \times p$ or
 \end{equation}
 
 where $G_j$ is the $j$th column of $G$ and $Y_i$ is the $i$th column of $Y$. To obtain the form in angle coordinates we simply obtain $dY$ in angle coordinates. $dY_i$ can be obtained in terms of the angle coordinates by the following relationship, $dY_i = J_{Y_i}(\Theta)\, d\Theta$, where $J_{Y_i}$ is the Jacobian of $Y_i$ with respect to the angle coordinates. Once we obtain the form \ref{eq:WedgeForm} in terms of the angle coordinates, the result is a wedge product of $np-p(p+1)/2$ vectors that are $np-p(p+1)/2$ dimensional, which reduces to the determinant of these vectors aligned side by side as a $np-p(p+1)/2 \times np-p(p+1)/2$ matrix. This determinant is analogous to and serves the same purpose as Jacobian adjustment that comes from transforming random variables. We can insert it in to the log-probability of a model to avoid the sort of unintended sampling behavior depicted in Figure \ref{fig:AreaForm}. We incorporate the form \ref{eq:WedgeForm} in to the log-probability of all of our Stan examples.
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -296,7 +292,7 @@ We generated a synthetic, three-dimensional dataset that lies on a two-dimension
         \caption{}
         \label{fig:multiModal}
     \end{subfigure}
-    \caption{Inferences for three-dimensional synthetic data. (a) Three-dimensional points, true subspace (grey), and classical PCA point estimate of subspace (colored). (b) Estimated densities from posterior draws of $\Lambda$ parameters A.K.A  the singular values, and point estimates from classical PCA show as colored bars. (c) Avoidance of multi-modal behavior in GT-PPCA versus EMHMC. \commentPJA{This is a good start, but need bigger font size on the fonts in all these plots, since doing 3-panel.  Also use black grid-lines, not white... very hard to read.  Fine tune in Inkscape and also save a .svgz as well as .pdf copy for future edits.}}\label{fig:synthetic}
+    \caption{Inferences for three-dimensional synthetic data. (a) Three-dimensional points, true subspace (grey), and classical PCA point estimate of subspace (colored). (b) Estimated densities from posterior draws of $\Lambda$ parameters A.K.A  the singular values, and point estimates from classical PCA show as colored bars. (c) Avoidance of multi-modal behavior in GT-PPCA versus EMHMC.}\label{fig:synthetic}
 \end{figure}
 
 The fully Bayesian approach provided by GT-PPCA in Stan also allows us to examine posterior draws of $\Lambda$ to make probabilistic statements about the inherent dimensionality in our data. Figure \ref{fig:SyntheticPosteriorEstimates} shows estimated densities from posterior draws of $\Lambda$. The posterior of $\Lambda_3$ for example places considerable mass close to zero (58\% of samples were less that 0.5), providing strong evidence that our data is inherently two, not three, dimensional. This is as oppose to classical PCA where we heuristically assess dimensionality based solely on the magnitude of our point estimates.
@@ -307,7 +303,7 @@ Lastly, Figure \ref{fig:multiModal} compares posterior samples of our synthetic 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Coagulopathy using hierarchical subspace models}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-Include figure for CCA probabilistic graphical model.
+We modeled grouped multi-view hospital data for injured patients using a hierarchical Canonical Correlation Analysis (CCA) model~\citep[chapt.~15.2]{murphy2012machine}. CCA allows to model two types (or views) of data as being a function of two respective latent low dimensional states, but also a common latent state that captures the common information contained in both view. In our case we compared blood protein measurements and clot strength measurements for injured patients belonging to one of four groups depending on the type of injury they had. While the four types of injuries were different enough so that we could not use a single CCA model to capture the characteristics of all models at once, the four groups were not so different as to warrant separate CCA models for each. To share information between the CCA models we placed a hierarchical prior over the orthonormal matrices belonging to the distinct CCA parameters of each group (Figure \ref{fig:CCA}).
 
 \begin{figure}
     \centering
@@ -325,6 +321,8 @@ Include figure for CCA probabilistic graphical model.
     \end{subfigure}
     \caption{Probabilistic graphical models for (a) Hierarchical CCA Model (b) Count Subspace HMM for Network Data.}\label{fig:ccaResults}
 \end{figure}
+
+While distributions on the Stiefel manifold such as the Matrix Langevin distribution \citep{muirhead2009aspects} exist, these distributions are difficult to use in practice as computing their density requires evaluating an expensive matrix sum \citep{hoff2009simulation}. By appealing to the Givens Transform and placing a hierarchical prior over the angles of the different orthonormal matrices, we were able to build a hierarchical model over subspaces, a previously intractable task. The hierachical ``shrinks" the posterior median of the orthonormal matrices towards a common mean in addition to reducing the variance of these estimates (Figure \ref{fig:nonHierPosteriors,fig:hierPosteriors}). This is particularly helpful for groups with only a smaller number of observations such as the SW group which only contains 16 patients in comparison of the GSW group with 86 patients. Comparing the angle between the first principal components for the SW and GSW group illustrates how using a hierarchical prior shrinks estimates of subspaces together towards a common hierarchical subspace (Figure \ref{fig:ccaResults}).
 
 \begin{figure}
     \centering
@@ -353,12 +351,33 @@ Include figure for CCA probabilistic graphical model.
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{School Network}
 %%%%%%%%%%%%%%%%%%%%%%%%%
+We built an HMM subspace for count data to model the hidden time-dependent structure of a network of school children. \citet{stehle2011high} used RF sensors to track the interactions between school children in 12 different classes (two classes for grades 1-6) for an entire school day so as to better understand how disease spreads throughout a network. We collated the number of interactions between each pair of classes in to 10-minute contiguous time windows, giving us 280 symmetric matrices of counts representing the network structure between the different classes throughout the whole day. We modeled the elements of these count matrices as coming from a Poisson distribution whose rate comes from the element-wise exponential of a symmetric matrix$R = \exp (W \Lambda W^T)$, where orthonormal matrix $W$ captures the low-dimensional structure of the network. To model the time varying structure of the network, we posited that the network was always in one of three latent states, that evolve according to a Markov Chain (Figure \ref{fig:HMM}). The three states each have their own associated orthonormal matrix $W_i$ that captures the network structure for that state. 
 
-Show $W$ for each of the three states then posterior probabilities of what state you're in. Show probabilistic graphical model. Point how this can be used for disease networks and also recognizing states in fMRI data.
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{heatmap.pdf}
+        \caption{}
+        \label{fig:CCA}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.45\textwidth}
+        %\includegraphics[width=\textwidth]{HMM.pdf}
+        \caption{}
+        \label{fig:HMM}
+    \end{subfigure}
+    \caption{Probabilistic graphical models for (a) Hierarchical CCA Model (b) Count Subspace HMM for Network Data.}\label{fig:ccaResults}
+\end{figure}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Discussion}
 %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+We introduced the Givens Transform as a theoretical representation of orthonormal matrices as well as a practical tool for building complex PPCA-based models in probabilistic programming language like Stan.
 
 \subsubsection*{Acknowledgments}
 
