@@ -193,7 +193,7 @@ Intuitively, the elements of $V_{n,p}$ can be thought of not as orthonormal matr
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
       %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{GivensReduction.pdf}
+        \includegraphics[width=\textwidth]{GivensReduction_atz.pdf}
         \caption{}
         \label{fig:GivensReductionm}
     \end{subfigure}
@@ -204,7 +204,7 @@ Intuitively, the elements of $V_{n,p}$ can be thought of not as orthonormal matr
         \caption{}
         \label{fig:AreaForm}
     \end{subfigure}
-    \caption{Visualizing the Givens Transform. (a) How the Givens Reduction ``zeros out'' a column vector. (b) A geometric view of the Stiefel manifold, two-frame in three dimensions. (c) Sampling without a proper measure adjustment.}\label{fig:Givens}
+    \caption{Visualizing the Givens Transform. (a) How the Givens Reduction ``zeros out'' a column vector. (b) A geometric view of the Stiefel manifold, two-frame in three dimensions. (c) Sampling without a proper measure adjustment. \commentPJA{The left and right figure still need work.}}\label{fig:Givens}
 \end{figure}
  
 While $n \times p$ orthonormal matrices are represented by $np$ elements, the Stiefel Manifold $V_{n,p}$, has an intrinsic dimension of $np-p(p+1)/2$. This arises from the constraints on the columns of the matrix that impose orthonormality.  This dimensionality can be seen by observing, that the first column of $Y \in V_{n,p}$ must have norm one and hence has one constraint placed on it. The second column must also have norm one and also must be orthogonal to the first column hence with two constraints placed on it.  Continuing to the third column through the $n^{th}$ one arrives at the conclusion that each point of the Stiefel Manifold has only $np - (1+2+\cdots+p) =np-p(p+1)/2$ degrees of freedom.  The Givens transform can be thought of as an $np-p(p+1)/2$-dimensional set of coordinates $\Theta$, that represent elements of the Stiefel manifold.
@@ -281,7 +281,7 @@ We generated a synthetic, three-dimensional dataset that lies on a two-dimension
         \caption{}
         \label{fig:multiModal}
     \end{subfigure}
-    \caption{Inferences for three-dimensional synthetic data. (a) Three-dimensional points, true subspace (grey), and classical PCA point estimate of subspace (colored). (b) Estimated densities from posterior draws of $\Lambda$ parameters A.K.A  the singular values, and point estimates from classical PCA show as colored bars. (c) Avoidance of multi-modal behavior in GT-PPCA versus EMHMC.}\label{fig:synthetic}
+    \caption{Inferences for three-dimensional synthetic data. (a) Three-dimensional points, true subspace (grey), and classical PCA point estimate of subspace (colored). (b) Estimated densities from posterior draws of $\Lambda$ parameters A.K.A  the singular values, and point estimates from classical PCA show as colored bars. (c) Avoidance of multi-modal behavior in GT-PPCA versus EMHMC. \commentPJA{This is a good start, but need bigger font size on the fonts in all these plots, since doing 3-panel.  Also use black grid-lines, not white... very hard to read.  Fine tune in Inkscape and also save a .svgz as well as .pdf copy for future edits.}}\label{fig:synthetic}
 \end{figure}
 
 The fully Bayesian approach provided by GT-PPCA in Stan also allows us to examine posterior draws of $\Lambda$ to make probabilistic statements about the inherent dimensionality in our data. Figure \ref{fig:SyntheticPosteriorEstimates} shows estimated densities from posterior draws of $\Lambda$. The posterior of $\Lambda_3$ for example places considerable mass close to zero (58\% of samples were less that 0.5), providing strong evidence that our data is inherently two, not three, dimensional. This is as oppose to classical PCA where we heuristically assess dimensionality based solely on the magnitude of our point estimates.
