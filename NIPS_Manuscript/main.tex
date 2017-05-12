@@ -119,15 +119,15 @@ In addition to enabling uncertainty quantification and hypothesis testing, proba
 
 While expanded PPCA models have shown promise on a variety of problems, they have not been fully explored because their implementation remains elusive, and most inference schemes such as Expectation Maximization (EM) only provide point estimates. The availability of PPCA in a simple framework for building probabilistic graphical models like Stan \citep{carpenter2016stan} would allow rapid building and prototyping of such models in a fully Bayesian way that provides uncertainty around any point estimates.
 
-\paragraph{Bayesian inference of orthonormal matrices} Many of the difficulties in conducting full Bayesian inference on PPCA and related models stem from having to infer one or more unknown orthonormal matrix parameters.  This is difficult because orthonormal matrices form a rather particular subset (or submanifold) of all possible realizable matrices, analogous to three-dimensional unit vectors lying on the sphere (a submanifold of $\mathbb{R}^3$). This yields a probability distribution on a sub-manifold within the full space of matrices that has a non-trivial geometry.  More specifically, the prior and posterior distributions of an orthonormal matrix $W$ must have support over the set of $n \times p$ orthonormal matrices.  This is known as the Stiefel manifold and denoted $V_{n,p}$ \citep{muirhead2009aspects}.
+\paragraph{Bayesian inference of orthonormal matrices} Many of the difficulties in conducting full Bayesian inference on PPCA and related models stem from having to infer one or more unknown orthonormal matrix parameters.  This is difficult because $n\times p$ orthonormal matrices form a rather particular subset (also submanifold) of all possible $n \times p$ matrices; this is analogous to three-dimensional unit vectors which lie on the sphere (a submanifold of $\mathbb{R}^3$). Thus we require a probability distribution on a sub-manifold within the full space of orthonormal matrices.  More specifically, the prior and posterior distributions of an orthonormal matrix $W$ must have support over the set of $n \times p$ orthonormal matrices i.e. they should assign zero probability to sets of non-orthonormal matrices. This set of orthonormal matrices is known as the Stiefel manifold and denoted $V_{n,p}$ \citep{muirhead2009aspects}. If we naively conduct inference over the elements of $W$ without paying mind to orthonormality constraints, we have no way of obtaining valid posteriors with support over the Stiefel Manifold.
 
-When first considering this problem, it may seem that this geometry may rule out a straightforward use of two of the most prominent techniques for posterior inference posterior inference, Markov Chain Monte Carlo (MCMC) and Variational Inference (VI).  Intuitively, for MCMC, we have no way of guaranteeing that a chain over $W$ will explore only valid regions of parameter space that satisfy the orthonormality constraints. Similarly for Variational Inference, positing a common variational posterior distribution such as a Gaussian over the elements of $W$ is sure to lead to posteriors that assign mass to invalid regions of parameter space.
+%When first considering this problem, it may seem that this geometry may rule out a straightforward use of two of the most prominent techniques for posterior inference posterior inference, Markov Chain Monte Carlo (MCMC) and Variational Inference (VI).  Intuitively, for MCMC, we have no way of guaranteeing that a chain over $W$ will explore only valid regions of parameter space that satisfy the orthonormality constraints. Similarly for Variational Inference, positing a common variational posterior distribution such as a Gaussian over the elements of $W$ is sure to lead to posteriors that assign mass to invalid regions of parameter space.
 
 \paragraph{Transformed random variables} Posterior distributions for constrained parameters in probabilistic graphical models are routinely inferred by transforming such parameters to an unconstrained space and seeking posterior distributions over the transformed parameter~\citep{carpenter2016stan, kucukelbir2014fully}. This requires a smooth one-to-one transformation $f: \mathrm{supp}(z_\mathrm{constr}) \to \mathbb{R}^D$, where $\mathrm{supp}(z_\mathrm{constr})$ is the support of the constrained random variable $z_\mathrm{constr}$. To our knowledge, no such transformation has been proposed to map orthonormal matrices to a comparable unconstrained space.
 
-In this paper we draw on techniques from Differential Geometry and Numerical Analysis to introduce a novel and geometrically elegant way to represent orthonormal matrices.  In our approach we express orthonormal matrices in terms of a sequence of fundamental rotations through given angles. This gives insight into the geometry of the Stiefel manifold, and results in a transform we call the Givens Transform, that maps orthonormal matrices to an unconstrained space. We apply the Givens Transform to inference of PPCA-based models, and collectively refer to this as GT-PPCA.
+\paragraph{GT-PPCA}  In this paper we draw on techniques from Differential Geometry and Numerical Analysis to introduce a novel and geometrically elegant way to represent orthonormal matrices.  In our approach we express orthonormal matrices in terms of a sequence of fundamental rotations through given angles. This gives insight into the geometry of the Stiefel manifold, and results in a transform we call the Givens Transform, that maps orthonormal matrices to an unconstrained space. We apply the Givens Transform to inference of PPCA-based models, and collectively refer to this as GT-PPCA.
 
-\paragraph{GT-PPCA} GT-PPCA is straightforward to implement in stand-alone inference schemes, but is particularly useful in the context of probabilistic programming framework like Stan \citep{carpenter2016stan}, where we can use it for uncertainty quantification and hypothesis testing of PPCA models, as well as extending PPCA to more complex probabilistic graphical models, two previously intractable tasks. We provide Stan code for our example models allowing for use and expansion by researchers and scientists out-of-the-box. We demonstrate how inference of these models in Stan yields good empirical performance on large probabilistic graphical models that were previously intractable to implement especially if fully-Bayesian posterior analysis is desired. Specifically we present a hierarchical subspace model for grouped, multi-view medical data and a PPCA Hidden Markov Model (HMM) for disease-network data.
+GT-PPCA is straightforward to implement in stand-alone inference schemes, but is particularly useful in the context of probabilistic programming framework like Stan \citep{carpenter2016stan}, where we can use it for uncertainty quantification and hypothesis testing of PPCA models, as well as extending PPCA to more complex probabilistic graphical models, two previously intractable tasks. We provide Stan code for our example models allowing for use and expansion by researchers and scientists out-of-the-box. We demonstrate how inference of these models in Stan yields good empirical performance on large probabilistic graphical models that were previously intractable to implement especially if fully-Bayesian posterior analysis is desired. Specifically we present a hierarchical subspace model for grouped, multi-view medical data and a PPCA Hidden Markov Model (HMM) for disease-network data.
 
 In addition to opening the door for straightforward implementation of large PPCA models, GT-PPCA yields insight in to novel and useful ways to work with and interpret our models.  For instance, the elegant geometric representation lets us see how by limiting the range of the parameters in GT-PPCA, we can naturally avoid issues of unidentifiability and multi-modal posteriors that arise in other methods.  GT-PPCA also allows us new and creative ways to generate and use prior distributions on orthonormal matrices.  In the setting of using the matrix directly this task has previously been rather complicated and rather intractable for even small problem sizes.  This is linked to the difficulty of evaluating densities of orthonormal matrix distributions in other representations.  As we shall discuss in more detail, our GT representation provides a rather natural way to specify prior distributions comparable to the Matrix Langevin prior \citep{muirhead2009aspects}.
 
@@ -198,7 +198,7 @@ Intuitively, the elements of $V_{n,p}$ can be thought of not as orthonormal matr
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
     %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{AreaForm.pdf}
+        %\includegraphics[width=\textwidth]{AreaForm.pdf}
         \caption{}
         \label{fig:AreaForm}
     \end{subfigure}
@@ -215,7 +215,7 @@ While $n \times p$ orthonormal matrices are represented by $np$ elements, the St
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-For several types of constrained parameters, posterior distributions are in practice rather routinely inferred using both MCMC and VI by transforming the constrained variables to an unconstrained space using a one-to-one mapping $T: \mathrm{supp}(z_\mathrm{constr}) \to \mathbb{R}^D$, where $\mathrm{supp}(z_\mathrm{constr})$ is the support of the constrained random variable $z_\mathrm{constr}$. One can obtain a posterior over the unconstrained parameter that corresponds to the original constrained parameter of interest, then map inferences back to the original constrained space. This procedure requires computing the Jacobian, $J_{T^{-1}}$ of the transformation, to obtain $f_{Y}(y) = f_{z_\mathrm{constr}}(T^{-1}(y)) J_{T^{-1}}(y)$ where $Y$ is an unconstrained random variable with probability density function (PDF) $f_Y$ and $f_{z_\mathrm{constr}}$ is the probability density of $z_\mathrm{constr}$, which for PPCA comes from equation \ref{eq:PpcaGenerativeProcess}. The extra Jacobian term accounts for how the a unit volume under the transformation changes \citep{kucukelbir2014fully}. Without this extra Jacobian factor, inference between the two spaces is incomparable. For example, uniformly sampling in spherical coordinates (unconstrained space) does not correspond to uniformly sampling on the sphere (constrained space), unless we include an appropriate term accounting for how volumes are warped under the transformation (see Figure \ref{fig:AreaForm}).  Conducting inference in a transformed space is most notably used in ADVI and Stan's HMC routines \citep{carpenter2016stan, kucukelbir2014fully}. In sub-section \ref{GivensSub} we briefly discuss Givens Reductions, motivating the Givens Transform. In sub-section \ref{geomGivens} we discuss geometric aspects of the Givens transform such as avoiding multi-modality and including a term that measures how volume is changed under the transform that is analogous to the Jacobian described above.
+For several types of constrained parameters, posterior distributions are in practice rather routinely inferred using both MCMC and VI by transforming the constrained variables to an unconstrained space using a one-to-one mapping $T: \mathrm{supp}(z_\mathrm{constr}) \to \mathbb{R}^D$, where $\mathrm{supp}(z_\mathrm{constr})$ is the support of the constrained random variable $z_\mathrm{constr}$. One can obtain a posterior over the unconstrained parameter that corresponds to the original constrained parameter of interest, then map inferences back to the original constrained space. This procedure requires computing the Jacobian, $J_{T^{-1}}$ of the transformation, to obtain $f_{Y}(y) = f_{z_\mathrm{constr}}(T^{-1}(y)) J_{T^{-1}}(y)$ where $Y$ is an unconstrained random variable with probability density function (PDF) $f_Y$ and $f_{z_\mathrm{constr}}$ is the probability density of $z_\mathrm{constr}$, which for PPCA comes from equation \ref{eq:PpcaGenerativeProcess}. The extra Jacobian term accounts for how the a unit volume under the transformation changes \citep{kucukelbir2014fully}. Without this extra Jacobian factor, inference between the two spaces is incomparable. For example, uniformly sampling in spherical coordinates (unconstrained space) does not correspond to uniformly sampling on the sphere (constrained space), unless we include an appropriate term accounting for how volumes are warped under the transformation (see Figure \ref{fig:AreaForm}). Intuitively, ares that are near the poles get shrunk far more than areas near the equator, so when mapped back on to the sphere, points will congregate closer to the poles of the sphere. Conducting inference in a transformed space is most notably used in ADVI and Stan's HMC routines \citep{carpenter2016stan, kucukelbir2014fully}. In sub-section \ref{GivensSub} we briefly discuss Givens Reductions, motivating the Givens Transform. In sub-section \ref{geomGivens} we discuss geometric aspects of the Givens transform such as avoiding multi-modality and including a term that measures how volume is changed under the transform that is analogous to the Jacobian described above.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Givens Reductions and the Givens Transform}\label{GivensSub}
@@ -234,15 +234,32 @@ From the perspective of $p$-frames, the Givens Reductions maps all $p$-frames to
 Y = (R_{12} \cdots R_{1n}) \cdots (R_{23} \cdots R_{2n}) (R_{p+1,n} \cdots R_{pn}) I_{n,p}.
 \end{equation}
 
-which we refer to as the Givens Representation of an orthonormal matrix $Y$. Since each of the $np -p(p+1)/2$ rotation matrices have an associated  angle $(\theta_{12} \cdots \theta_{1n}) \cdots (\theta_{23} \cdots \theta_{2n}) (\theta_{p+1,n} \cdots \theta_{pn})$, that we collectively refer to as $\Theta$, we can use these angles to represent any $n \times p$ orthonormal matrix. In this way we have reparameterized all $n \times p$ orthonormal matrices \footnote{other than a set of measure zero, that is thus negligible}, a constrained space, in terms of unconstrained angles \footnote{the angles are themselves constrained to lie in certain intervals e.g. $[0, \pi)$ but these sorts of constraints are routine to deal with using a one-to-one diffeomorphism between intervals and the real line e.g. the sigmoid transform}, using a transform $\Theta: V_{n,p} \to \mathbb{R}^{np -p(p+1)/2}$. We refer to \ref{eq:GivensRepresentation} as the Givens representation or Givens Transform.
+which we refer to as the Givens Representation of an orthonormal matrix $Y$. Since each of the $np -p(p+1)/2$ rotation matrices have an associated  angle $(\theta_{12} \cdots \theta_{1n}) \cdots (\theta_{23} \cdots \theta_{2n}) (\theta_{p+1,n} \cdots \theta_{pn})$, that we collectively refer to as $\Theta$, we can use these angles to represent any $n \times p$ orthonormal matrix. In this way we have reparameterized all $n \times p$ orthonormal matrices \footnote{other than a set of measure zero, that is thus negligible}, a constrained space, in terms of unconstrained angles \footnote{the angles are themselves constrained to lie in certain intervals e.g. $[0, \pi)$ but these sorts of constraints are routine to deal with using a one-to-one diffeomorphism between intervals and the real line e.g. the sigmoid transform}, using a transform $\Theta: V_{n,p} \to \mathbb{R}^{np -p(p+1)/2}$. In a probabilistic programming framework like Stan we can treat $\Theta$ as an unknown parameter and $Y(\Theta)$ is a transformed variable we are free to use in a likelihood such as  the likelihood from \ref{eq:PpcaGenerativeProcess}. We also mention that multiplication by rotation matrices are inexpensive to compute as they are highly sparse (especially in large dimensions) and when applied to a matrix, they only modify two rows of that matrix at a time. We refer to \ref{eq:GivensRepresentation} as the Givens representation or Givens Transform.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Geometry of the Givens Transform}\label{geomGivens}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-limiting angles and area form.
+Topologically, $V_{n,p}$ is locally equivalent to Euclidean space, but not globally equivalent, meaning it is impossible to find a one-to-one map between the Stiefel manifold and Euclidean space. Technically speaking, the Givens transform can map angles to all of $V_{n,p}$ except for a subset $S \subset V_{n,p}$, that in the $n=3, p=2$ case corresponds to a sliver when $\theta_{12} \in (-\pi, \pi)$, $\theta_{13} \in (-\pi/2, \pi/2)$, and $\theta_{23} \in (-\pi/2, \pi/2)$. Luckily this set is of measure zero (under the proper measure for the Stiefel manifold, and thus, with probability one, the orthonormal matrix that describes the true subspace our data lie in will not be in that set. 
 
-\commentPJA{Discuss the basic differential geometry of the Steifel Manifold and how we handle these various issues.  Degenerate regions and metric factors (Jacobians).  Discuss how we use "multi-coordinate charts" when necessary to avoid being close to regions with bad metric factors and degeneracy, etc...}
+In practice, we actually limit the angle $\theta_{12}$ to an interval of length $\pi$ rather than an integral of length $2\pi$, that traverses the entire Stiefel manifold. Examining the angles of the Givens transform reveals geometrically, the insight that in the latter case, two equivalent bases that are the negation of each other can be reached, resulting in a multi-modal posterior that makes sampling and VI more difficult and harder to interpret. To avoid this multi-modality using the modified integrator methods would require a mechanism to avoid boundaries, which are not as intuitively defined in the default embedded coordinates as in the Givens transform.
+
+Lastly, we note that if the true bases lies near a pole, i.e. $\theta_{ij}$ is close to $-\pi/2$ or $\pi/2$, then posteriors will tend to be multi-modal as the region in parameter space close to the boundaries will be close to equally valid, while the region near zero, will not be valid and thus contain little probability mass. In these cases, one can simply change the chart so that $\theta_{ij} \in (0, \pi)$, creating a uni-modal posterior in the new coordinate system, and alleviating numerical issues. In Stan this is straight-forward, as one simply has to change the lower and upper bound of the angle parameter.
+
+\paragraph{An analogous Jacobian term using differential forms} As stated earlier, conducting inference on a transform space requires a Jacobian term accounting for how volumes are warped by the transform, but in the case of the Givens Transform this poses a problem because an $n \times p$ orthonormal matrix is $np$-dimensional, but the Givens transform, $\Theta(Y)$, maps this set to an $np - p(p+1)2$-dimensional set of angles $\Theta$. In this more general scenario, one can not simply take the determinant of the Jacobian as the volume morphing factor, because the Jacobian is not even square and hence the determinant is undefined. To obtain the correct factor one must appeal to the calculus of differential forms. 
+
+Intuitively, differential forms measure how a transform warps an infinitesimal volume from one space to another, but they are more general in that they can be applied irrespective of the coordinates we use to describe either space. For example, spherical coordinates $(\theta, \varphi) \mapsto (x(\theta,\varphi), y(\theta,\varphi), z(\theta,\varphi))$ map points in the flat plane, $\mathbb{R}^2$, to points in $\mathbb{R}^3$ that lie on the sphere. $d\theta \wedge d\varphi$ represents a small area in the plane that can be rewritten as a small patch in $\mathbb{R}^3$ by finding $d\theta$ and $d\varphi$ in terms of $dx, dy$, and $dz$ and applying the well defined rules of a wedge product.
+
+One can then integrate this over a sub-area of the sphere to obtain the measure of that sub-area. The beauty of differential forms is that a different coordinate system such as polar coordinates, simply correspond to using a different basis for representing forms, which again are vectors. In fact writing a form in a different bases simply involves taking partial derivatives, e.g. $dx = (\partial x/\partial \theta) \, d\theta + (\partial x/ \partial \varphi) \, d\varphi$. If we substitute the forms in the angle bases in to \ref{eq:EuclideanAreaForm} and simplify using the well-defined anti-symmetric and distributive properties of wedge products and differential forms (see \citep{muirhead2009aspects}), we obtain a proper area-form \ref{eq:EuclideanAreaForm} in spherical coordinates, $S(x(\theta, \varphi),y(\theta, \varphi),z(\theta, \varphi))\, d\theta \wedge d\varphi$, that can then be integrated using a double integral in polar coordinates. The absolute value of this area-form evaluated at some point specified in angle coordinates, $(\theta_0, \varphi_0)$, intuitively measures how much the area of tiny square in angle space gets shrunk or stretched when the area is mapped to an area on the sphere.
+
+Analogously, we can measure volumes on the Stiefel manifold. For $n \times p$ orthonormal matrices, there are only $np-p(p+1)/2$ free parameters and so the proper form to measure sets of orthonormal matrices is in fact a $np-p(p+1)/2$-form. For an orthonormal, $n \times p$ matrix, $Y$, we can find an orthonormal $n \times n$ matrix $G$ such that $G^T Y = I_{n,p}$. In fact $G$ just comes from the product of the appropriate rotation matrices that comes from the Givens Reduction \ref{eq:GivensReduction}. \citet{muirhead2009aspects} shows that the correct form comes from wedging the elements of the $n \times p$ matrix $G^T dY$ that lie below the diagonal i.e.
+
+\begin{equation}
+\label{eq:WedgeForm}
+\bigwedge_{i=1}^p \bigwedge_{j=i+1}^n G_j^T\, dY_i
+\end{equation}
+
+where $G_j$ is the $j$th column of $G$ and $Y_i$ is the $i$th column of $Y$. To obtain the form in angle coordinates we simply obtain $dY$ in angle coordinates. $dY_i$ can be obtained in terms of the angle coordinates by the following relationship, $dY_i = J_{Y_i}(\Theta)\, d\Theta$, where $J_{Y_i}$ is the Jacobian of $Y_i$ with respect to the angle coordinates. Once we obtain the form \ref{eq:WedgeForm} in terms of the angle coordinates, the result is a wedge product of $np-p(p+1)/2$ vectors that are $np-p(p+1)/2$ dimensional, which reduces to the determinant of these vectors aligned side by side as a $np-p(p+1)/2 \times np-p(p+1)/2$ matrix. This determinant is analogous to and serves the same purpose as Jacobian adjustment that comes from transforming random variables. We can insert it in to the log-probability of a model to avoid the sort of unintended sampling behavior depicted in Figure \ref{fig:AreaForm}. We incorporate the form \ref{eq:WedgeForm} in to the log-probability of all of our Stan examples.
 
 
 
@@ -294,6 +311,23 @@ Include figure for CCA probabilistic graphical model.
 
 \begin{figure}
     \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{CCA.pdf}
+        \caption{}
+        \label{fig:CCA}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{HMM.pdf}
+        \caption{}
+        \label{fig:HMM}
+    \end{subfigure}
+    \caption{Probabilistic graphical models for (a) Hierarchical CCA Model (b) Count Subspace HMM for Network Data.}\label{fig:ccaResults}
+\end{figure}
+
+\begin{figure}
+    \centering
     \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\textwidth]{shrinkageSep.pdf}
         \caption{}
@@ -337,206 +371,6 @@ acknowledgments in the anonymized submission, only in the final paper.
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliographystyle{plainnat} % or try abbrvnat or unsrtnat
 \bibliography{paperDatabase} % refers to example.bib
-
-%%%%%%%%%%%%%%%%%%%%%%%%%
-\section*{Appendix}
-%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-
-\subsection{Reduction Matrices}
-
-\[
-R_{ij} := 
-\begin{blockarray}{cccccccccccc}
- & & & i &  & & & j & & \\
-\begin{block}{(ccccccccccc)c}
-  1 &  &  &  &  & & & &  & & &  \\
-   & \ddots &  &  & & & & &  & & &  \\
-   &  & 1  &  &  & & & &  & & & \\
-   & & & \cos \theta_{ij} &  & &  & -\sin \theta_{ij} &  & & & i \\
-   & & & & 1  & &  & &  & & & \\
-   & & &  & & \ddots  &  & &  & & &  \\
-   & & &  & & & 1 & &  & & &  \\
-   & & & \sin \theta_{ij}  &  & &  & \cos \theta_{ij} &  & & & j \\
-   & & &  &  & &  & & 1 & & & \\
-   & & &  &  & &  & & & \ddots & & \\
-      & & &  &  & &  & & & & 1 & \\
-\end{block}
-\end{blockarray}
- \]
-
-\begin{equation}
-R_{12}^{-1} Y 
-=
-R_{12}^{-1}
-\begin{pmatrix}
-y_{11} & y_{12} & \cdots & y_{1p}\\
-y_{21} & y_{22} & \cdots & y_{2p}\\
-y_{31} & y_{32} & \cdots & y_{3p}\\
-\vdots & \vdots & \vdots & \vdots\\
-y_{p1} & y_{p2} & \cdots & y_{pp}\\
-y_{p+1,1} & y_{p+1,2} & \cdots & y_{p+1,p}\\
-\vdots & \vdots & \vdots & \vdots\\
-y_{n1} & y_{n2} & \cdots & y_{np}\\
-\end{pmatrix}
-=
-\begin{pmatrix}
-* & * & \cdots & *\\
-0 & * & \cdots & *\\
-y_{31} & y_{32} & \cdots & y_{3p}\\
-\vdots & \vdots & \vdots & \vdots\\
-y_{p1} & y_{p2} & \cdots & y_{pp}\\
-y_{p+1,1} & y_{p+1,2} & \cdots & y_{p+1,p}\\
-\vdots & \vdots & \vdots & \vdots\\
-y_{n1} & y_{n2} & \cdots & y_{np}\\
-\end{pmatrix}.
-\end{equation}
-
-\begin{equation}
-(R_{1n}^{-1} \cdots R_{13}^{-1} R_{12}^{-1}) Y 
-=
-\begin{pmatrix}
-1 & 0 & \cdots & 0\\
-0 & * & \cdots & *\\
-0 & * & \cdots & *\\
-\vdots & \vdots & \vdots & \vdots\\
-0 & * & \cdots & *\\
-0 & * & \cdots & *\\
-\vdots & \vdots & \vdots & \vdots\\
-0 & * & \cdots & *\\
-\end{pmatrix}.
-\end{equation}
-
-\begin{equation}
-(R_{2n}^{-1} \cdots R_{23}^{-1})
-(R_{1n}^{-1} \cdots R_{12}^{-1}) Y 
-=
-\begin{pmatrix}
-1 & 0 & \cdots & 0\\
-0 & 1 & \cdots & *\\
-0 & 0 & \cdots & *\\
-\vdots & \vdots & \vdots & \vdots\\
-0 & 0 & \cdots & *\\
-0 & 0 & \cdots & *\\
-\vdots & \vdots & \vdots & \vdots\\
-0 & 0 & \cdots & *\\
-\end{pmatrix}.
-\end{equation}
-
-Continuing in this fashion yields
-
-\begin{equation}
-(R_{pn}^{-1} \cdots R_{p,p+1}^{-1})
-\cdots
-(R_{2n}^{-1} \cdots R_{23}^{-1})
-(R_{1n}^{-1} \cdots R_{12}^{-1}) Y 
-=
-\begin{pmatrix}
-1 & 0 & 0 & 0\\
-0 & 1 & 0 & 0\\
-0 & 0 & \ddots & 0\\
-0 & 0 & 0 & 1\\
-\vdots & \vdots & \vdots & \vdots\\
-0 & 0 & \cdots & 0\\
-0 & 0 & \cdots & 0\\
-\vdots & \vdots & \vdots & \vdots\\
-0 & 0 & \cdots & 0\\
-\end{pmatrix}
-=
-I_{np}.
-\end{equation}
-
-\section{Misc LaTeX}
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Givens Reductions}
-%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Practical considerations of topology and angles}
-Topologically, $V_{n,p}$ is locally equivalent to Euclidean space, but not globally equivalent, meaning it is impossible to find a one-to-one map between the Stiefel manifold and Euclidean space. Technically speaking, the Givens transform can map angles to all of $V_{n,p}$ except for a subset $S \subset V_{n,p}$, that in the $n=3, p=2$ case corresponds to a sliver when $\theta_{12} \in (-\pi, \pi)$, $\theta_{13} \in (-\pi/2, \pi/2)$, and $\theta_{23} \in (-\pi/2, \pi/2)$. Luckily this set is of measure zero (under the proper measure for the Stiefel manifold, see section \ref{differentialFormsSection}), and thus, with probability one, the orthonormal matrix that describes the true subspace our data lie in will not be in that set. 
-
-In practice, we actually limit the angle $\theta_{12}$ to an interval of length $\pi$ rather than an integral of length $2\pi$, that traverses the entire Stiefel manifold. Examining the angles of the Givens transform makes it evident that in the latter case, two equivalent bases that are the negation of each other can be reached, resulting in a multi-modal posterior that makes sampling and VI more difficult and harder to interpret. To avoid this multi-modality using the modified integrator methods would require a mechanism to avoid boundaries, which are not as intuitively defined in the default embedded coordinates as in the Givens transform.
-
-Lastly, we note that if the true bases lies near a pole, i.e. $\theta_{ij}$ is close to $-\pi/2$ or $\pi/2$, then posteriors will tend to be multi-modal as the region in parameter space close to the boundaries will be close to equally valid, while the region near zero, will not be valid and thus contain little probability mass. In these cases, one can simply change the chart so that $\theta_{ij} \in (0, \pi)$, creating a uni-modal posterior in the new coordinate system, and alleviating numerical issues. In Stan this is straight-forward, as one simply has to change the lower and upper bound of the angle parameter.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Jacobian under a change of variables}
-The Givens transform \ref{eq:GivensRepresentation} allows us to represent orthonormal matrices as angles $Y(\Theta)$. This in turn allows us to write probability densities $p_Y(Y)$ in terms of angles, so that we can conduct inference in an unconstrained space. It is well known in probability theory that the transform of a random variable is in general not the density of the transform, i.e. $p_\Theta(\Theta) \neq p_Y(Y(\Theta))$\citep[chapt.~2.6]{murphy2012machine}. To be more precise, densities are measured against volumes and integrated to get actual probabilities (otherwise known as probability mass). Under a transformation, densities are unaffected, but volumes (or rather the way in which volumes are measured) may change. This is important in the context of posterior inference, as not including the Jacobian adjustment would result in different priors than we intend.
-
-Figure \ref{fig:AreaForm} depicts how samples that are uniform in the angle space are not uniform on the sphere. Samples congregate at the poles of the sphere because a patch of area in the angle space that is near the top corresponds to a very tiny patch of the sphere near the pole. In practice this would lead to posteriors that bias towards the poles, when what we really intend is a prior that is uniform on the Stiefel manifold.
-
-For a $K$-dimensional random vector $Y$ and a transformation $f: \mathrm{supp}(Y) \to \mathbb{R}^K$ the proper way to measure probability under a transform is by multiplying by the determinant of the Jacobian of the the inverse transform:
-
-\begin{equation}
-\int p_\Theta(\Theta)\, d\Theta = \int p_Y(Y(\Theta)) |\det J_{f^{-1}}(\Theta)|\, d\Theta.
-\end{equation}
-
-In our case this poses a problem however, because an $n \times p$ orthonormal matrix is $np$-dimensional, but the Givens transform, $\Theta(Y)$, maps this set to a $np - p(p+1)2$-dimensional set. In this more general scenario, one can not simply take the determinant of the Jacobian as the volume morphing factor, because the Jacobian is not even square and hence the determinant is undefined. To obtain the correct factor one must appeal to the calculus of differential forms. 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Differential forms}\label{differentialFormsSection}
-
-We offer an intuitive high-level overview of differential forms. For a thorough account we recommend \citet{muirhead2009aspects}, \citet{edelman200518}, or any standard text in differential geometry. The simplest non-trivial example of differential-forms between spaces of different sizes arises when trying to measure probablity using spherical coordinates. Spherical coordinates give us a map from $\mathbb{R}^2$ to the sphere, $(\theta, \varphi) \mapsto (x(\theta,\varphi), y(\theta,\varphi), z(\theta,\varphi))$. Although a sphere lies in 3-D space, if we have a density $p_\mathrm{Euc}(x,y,z)$ on the sphere, the ``natural'' way to measure the probability of a spherical random variable falling within some area on the surface of that sphere is by first covering that area with tiny rectangles tangent to the sphere, taking the average density of each rectangle, multiplying that density by the area of that rectangle, and summing over the resulting products. The probability of the random variable falling within that area is defined to be the limit of that result as the size of the rectangles go to zero. Area forms, or two-forms can be thought of as these infitessimal rectangles. They are written as the wedge product of two differentials, e.g. $dx \wedge dy$, and they are objects that are inserted into integrals to obtain measures. Differential forms form (no pun intended) a vector space useful for measuring areas and high-dimensional volumes. For example, the area forms on a sphere can be written as a linear combination of the standard-basis two forms
-
-\begin{equation}
-\label{eq:EuclideanAreaForm}
-a(x,y,z)\, dx \wedge dy + b(x,y,z)\, dx \wedge dz + c(x,y,z)\, dy \wedge dz.
-\end{equation}
-
-One can then integrate this over a sub-area of the sphere to obtain the measure of that sub-area. The beauty of differential forms is that a different coordinate system such as polar coordinates, simply correspond to using a different basis for representing forms, which again are vectors. In fact writing a form in a different bases simply involves taking partial derivatives, e.g. $dx = (\partial x/\partial \theta) \, d\theta + (\partial x/ \partial \varphi) \, d\varphi$. If we substitute the forms in the angle bases in to \ref{eq:EuclideanAreaForm} and simplify using the well-defined anti-symmetric and distributive properties of wedge products and differential forms (see \citep{muirhead2009aspects}), we obtain a proper area-form \ref{eq:EuclideanAreaForm} in spherical coordinates, $S(x(\theta, \varphi),y(\theta, \varphi),z(\theta, \varphi))\, d\theta \wedge d\varphi$, that can then be integrated using a double integral in polar coordinates. The absolute value of this area-form evaluated at some point specified in angle coordinates, $(\theta_0, \varphi_0)$, intuitively measures how much the area of tiny square in angle space gets shrunk or stretched when the area is mapped to an area on the sphere.
-
-Analogously, we can measure volumes on the Stiefel manifold. For $n \times p$ orthonormal matrices, there are only $np-p(p+1)/2$ free parameters and so the proper form to measure sets of orthonormal matrices is in fact a $np-p(p+1)/2$-form. For an orthonormal, $n \times p$ matrix, $Y$, we can find an orthonormal $n \times n$ matrix $G$ such that $G^T Y = I_{n,p}$. In fact $G$ just comes from the product of the appropriate rotation matrices that comes from the Givens Reduction \ref{eq:GivensReduction}. \citet{muirhead2009aspects} shows that the correct form comes from wedging the elements of the $n \times p$ matrix $G^T dY$ that lie below the diagonal i.e.
-
-\begin{equation}
-\label{eq:WedgeForm}
-\bigwedge_{i=1}^p \bigwedge_{j=i+1}^n G_j^T\, dY_i
-\end{equation}
-
-where $G_j$ is the $j$th column of $G$ and $Y_i$ is the $i$th column of $Y$. To obtain the form in angle coordinates we simply obtain $dY$ in angle coordinates. $dY_i$ can be obtained in terms of the angle coordinates by the following relationship, $dY_i = J_{Y_i}(\Theta)\, d\Theta$, where $J_{Y_i}$ is the Jacobian of $Y_i$ with respect to the angle coordinates. Once we obtain the form \ref{eq:WedgeForm} in terms of the angle coordinates, the result is a wedge product of $np-p(p+1)/2$ vectors that are $np-p(p+1)/2$ dimensional, which reduces to the determinant of these vectors aligned side by side as a $np-p(p+1)/2 \times np-p(p+1)/2$ matrix. This determinant is analogous to and serves the same purpose as Jacobian adjustment that comes from transforming random variables. We can insert it in to the log-probability of a model to avoid the sort of unintended sampling behavior depicted in Figure \ref{fig:AreaForm}. We incorporate the form \ref{eq:WedgeForm} in to the log-probability of all of our Stan examples.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{A hierarchical PPCA model for fMRI data}
-To illustrate the usefulness of GT-PPCA in a real-life setting, we applied it to a brain fMRI dataset and fit a hierarchical model using VI in Stan. We obtained 90-dimensional fMRI scans of five human subjects under an ``active" condition where subjects were asked to perform a task, and a ``resting" condition where subjects were not given any tasks or instructions. Each of the 90 dimensions corresponds to an activity level of a distinct area of the brain. From the data scientists wanted to discern whether fMRI activities were markedly different under the active and resting tasks.
-
-It is well known that brain fMRI data is highly correlated so that our high dimensional data actually lies on some low dimensional subspace. In preliminary analysis we saw that the first principal component was highly tied to brain region 78 when subjects were in the resting state. We sought to test whether under the two states the first principal component had differing correlations to this brain region.  Examining the posterior distribution of the GT parameter $\theta_{1,78}$ we can intuitively understand how correlated with the 78th brain region the first component is. Drawing from our intuition from Figure \ref{fig:GivensReduction}, when this parameter is close to $\pi/2$ or $-\pi/2$ then the first component is highly correlated to the 78th brain region. Figure \ref{fig:fmriHier} show posterior estimates of this angle parameter, $\theta_{1,78}$, for our five subjects under the two states. While it seems as though the resting state is individually higher for this parameter, it is not clear whether this relationship is statistically significant.
-
-A-priori, we know our subjects will have similar principal components when in the resting states and different, but also similar to each other, principal components in the active state. To reflect this prior knowledge we place a truncated normal prior over $\theta_{1,78}^{i}, \, i = 1,\cdots, 5$, and estimate the hyper-parameters $\mu_0, \sigma_0$ of this prior for the active and resting state respectively. Not including the hierarchical prior is a special case of this where the hierarchical prior is completely flat, i.e. $\sigma_0 = \infty$, so that if there is a shared information between subjects our model can pick it up, and if there is not our estimates will be unaffected. Figure \ref{fig:fmriHier} shows posterior estimates for $\theta_{1,78}^{i}$, after we used a hierarchical prior on each respective state. The hierarchical prior has the regularization effect of shrinking together estimates in the two respective states, as information about one individual in the resting state tells us information about other individuals in the resting state.
-
-
-\begin{figure}
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{fmri.pdf}
-        \caption{}
-        \label{fig:fmri}
-    \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-      %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{fmriHier.pdf}
-        \caption{}
-        \label{fig:fmriHier}
-    \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-    %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{hierMean.pdf}
-        \caption{}
-        \label{fig:hierMean}
-    \end{subfigure}
-    \caption{Inferring a hierarchical subspace model for fMRI data. (a) Individual posterior estimates of Givens Transform angle $\theta_{1,78}$. (b) Hierarchical estimates. (c) Posterior mean of hierarchical mean parameter.}\label{fig:fmri}
-\end{figure}
-
-Finally, to test our original hypothesis we compared the posterior distribution of $\mu_0^{\mathrm{resting}}$ and $\mu_0^{\mathrm{active}}$ in Figure \ref{fig:hierMean}. While the posterior median of $\mu_0^{\mathrm{resting}}$ is lower, confidence intervals indicate that we would need more data to be able to conclude this with confidence, a conclusion that would be difficult to discern in a non-probabilistic framework.
-
 
 
 \end{document}
