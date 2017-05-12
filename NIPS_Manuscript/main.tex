@@ -222,8 +222,21 @@ For several types of constrained parameters, posterior distributions are in prac
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Givens Reductions and the Givens Transform}\label{GivensSub}
 %%%%%%%%%%%%%%%%%%%%%%%%%
+The Givens Reduction is a numerical analysis technique for reducing a square matrix $A$ to upper-triangular form \citep{meyer2000matrix}. The technique works by applying a series of rotation of matrices to $A$ such that elements below the diagonal are ``zeroed out" starting with the second element of the first column, and moving down the first column before zeroing out the appropriate elemnents of the subsequent columns. For example if $A$ is a $3 \times 3$ matrix and its first column is $(0.84, 0.48, 0.26)^T$, the Givens Reduction would would apply a rotation in the $(1,2)$-plane, $R_{12}^{-1}$ so as to annhilate the second element of this column (Figure \ref{fig:GivensReductionm}). For an $n \times p$ orthonormal matrix $Y$, applying the Givens Reduction requires mulltiplication by $(n-1)+(n-2)+\cdots+(n-p) = np -p(p+1)/2$ rotations matrices each with their own respective angles and results in the matrix$I_{n,p}$, whose columns are the first $p$ standard basis vectors.
 
-\commentPJA{Give a basic description of the background on Givens reductions of a matrix that we can refer to with additional details than we need in the main text.}
+\begin{equation}
+\label{eq:GivensReduction}
+(R_{pn}^{-1} \cdots R_{p,p+2}^{-1} R_{p,p+1}^{-1}) \cdots (R_{2n}^{-1} \cdots R_{24}^{-1} R_{23}^{-1})(R_{1n}^{-1} \cdots R_{13}^{-1}  R_{12}^{-1})Y = I_{n,p},
+\end{equation}
+
+From the perspective of $p$-frames, the Givens Reductions maps all $p$-frames to the canonical $p$-frame $I_{n,p}$. Geometrically, this is because if $Y$ is already orthonormal then applying rotation matrices will rigidly rotate all columns of $Y$ at once preserving their orthogonality, and leaving their length unchanged. Because rotations are invertible we can rewrite \ref{eq:GivensReduction} as
+
+\begin{equation}
+\label{eq:GivensRepresentation}
+Y = (R_{12} \cdots R_{1n}) \cdots (R_{23} \cdots R_{2n}) (R_{p+1,n} \cdots R_{pn}) I_{n,p}.
+\end{equation}
+
+which we refer to as the Givens Representation of an orthonormal matrix $Y$. Since each of the $np -p(p+1)/2$ rotation matrices have an associated  angle $(\theta_{12} \cdots \theta_{1n}) \cdots (\theta_{23} \cdots \theta_{2n}) (\theta_{p+1,n} \cdots \theta_{pn})$, that we collectively refer to as $\Theta$, we can use these angles to represent any $n \times p$ orthonormal matrix. In this way we have reparameterized all $n \times p$ orthonormal matrices \footnote{other than a set of measure zero, that is thus negligible}, a constrained space, in terms of unconstrained angles \footnote{the angles are themselves constrained to lie in certain intervals e.g. $[0, \pi)$ but these sorts of constraints are routine to deal with using a one-to-one diffeomorphism between intervals and the real line e.g. the sigmoid transform}, using a transform $\Theta: V_{n,p} \to \mathbb{R}^{np -p(p+1)/2}$. We refer to \ref{eq:GivensRepresentation} as the Givens representation or Givens Transform.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Geometry of the Givens Transform}\label{geomGivens}
@@ -451,42 +464,6 @@ I_{np}.
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Givens Reductions}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-
-\commentPJA{I've temporarily moved this to the misc text section, to be added back into the main exposition in a more streamlined way.}
-We provide a brief exposition on Givens Reductions, which motivate the Givens Transform, then describe the Givens Transform along with relevant practical considerations.
-
-Define $R_{ij}$ to be the $n \times n$ rotation matrix that performs a counter-clockwise rotation in the $(i,j)$-plane of $\mathbb{R}^n$, where $j > i$. In $\mathbb{R}^3$, there are three such matrices, $R_{12}$, $R_{13}$, and $R_{23}$. They perform counter-clockwise rotation of angle $\theta_{ij}$ in the $(x,y)$, $(x,z)$ and $(y,z)$ planes respectively. Rotation matrices have the following key properties:
-
-\begin{enumerate}
-\item They preserve length and angles between vectors, i.e. for two vectors $u,v \in \mathbb{R}^n$, $R_{ij} u, R_{ij} v$ are the same length as $u$ and $v$ respectively, and if $u$ and $v$ are orthogonal then so are $R_{ij}u$ and $R_{ij}v$.
-\item They are invertible and their inverse is their transpose $R_{ij}^{-1} = R_{ij}^T$. Their inverse corresponds to a clockwise rotation in the $(i,j)$-plane.
-\end{enumerate}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%
-Now we consider an $n \times p$ matrix $Y$, with orthonormal columns. In general, the first column is a vector in $\mathbb{R}^n$ with a non-zero second element. However, we can apply an invertible clockwise rotation in the $(1,2)$-plane, $R_{12}^{-1}$, to ``zero out" the second element of the first column. Figure \ref{fig:GivensReduction} depicts this visually for a 3D vector projected on to the $(1,2)$-plane.
-
-
-Similarly, we can apply consecutive rotations $R_{13}^{-1}, R_{14}^{-1}, \cdots, R_{1n}^{-1}$ to this result so that all entries of the first column besides the first element are zero. The first column of the resulting matrix, $R_{1n}^{-1} \cdots R_{13}^{-1}  R_{12}^{-1}Y$, will be the length one vector $(1 \, 0 \, \cdots \, 0)^T$ which lies entirely along the first axis. If one takes the perspective that these rotations are applied to the columns of $Y$, then with the two properties of rotation matrices we mentioned earlier, it is evident that columns 2 through $n$ must have zero in their first element because they will be orthogonal to the first column, $(1 \, 0 \, \cdots \, 0)^T$.
-
-To ``zero out" the elements of the second column, one can similarly apply rotations $R_{23}^{-1}, \cdots, R_{2n}^{-1}$. These rotations will leave the first column and first row unaffected, as the first column no lies entirely on the 1st axis, which these rotations do not involve. Continuing in this fashion yields
-
-\begin{equation}
-\label{eq:GivensReduction}
-(R_{pn}^{-1} \cdots R_{p,p+2}^{-1} R_{p,p+1}^{-1}) \cdots (R_{2n}^{-1} \cdots R_{24}^{-1} R_{23}^{-1})(R_{1n}^{-1} \cdots R_{13}^{-1}  R_{12}^{-1})Y = I_{n,p},
-\end{equation}
-
-where $I_{n,p}$ consists of the first $p$ columns of the $n \times n$ identity matrix. This process of applying consecutive rotation matrices to a matrix is known in numerical analysis as the Givens reduction \citep{meyer2000matrix}, and is applied more generally to square matrices for matrix-vector solves. In total we will have applied $(n-1)+(n-2)+\cdots+(n-p) = np -p(p+1)/2$ rotations matrices. We note that because rotation matrices are very sparse in high dimensions, multiplication by a rotation matrix is computationally much less intensive than matrix multiplication otherwise would be.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Givens Transform}
-Because rotation matrices are invertible, equation \ref{eq:GivensReduction} implies that we can rewrite the $n \times p$ orthonormal matrix $Y$ as the product of counter-clockwise rotation matrices and $I_{n,p}$:
-
-\begin{equation}
-\label{eq:GivensRepresentation}
-Y = (R_{12} \cdots R_{1n}) \cdots (R_{23} \cdots R_{2n}) (R_{p+1,n} \cdots R_{pn}) I_{n,p}.
-\end{equation}
-
-Recall that each of the $np -p(p+1)/2$ rotation matrices have an associated  angle $(\theta_{12} \cdots \theta_{1n}) \cdots (\theta_{23} \cdots \theta_{2n}) (\theta_{p+1,n} \cdots \theta_{pn})$, that we collectively refer to as $\Theta$. In this way we have reparameterized all $n \times p$ orthonormal matrices \footnote{other than a set of measure zero we explain in the next subsection}, a constrained space, in terms of unconstrained angles \footnote{the angles are themselves constrained to lie in certain intervals e.g. $[0, \pi)$ but these sorts of constraints are routine to deal with using a one-to-one diffeomorphism between intervals and the real line e.g. the sigmoid transform}, using a transform $\Theta: V_{n,p} \to \mathbb{R}^{np -p(p+1)/2}$. We refer to \ref{eq:GivensRepresentation} as the Givens representation or Givens transform.
 
 
 
