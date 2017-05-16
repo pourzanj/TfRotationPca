@@ -104,7 +104,7 @@
 \maketitle
 
 \begin{abstract}
-Probabilistic PCA (PPCA) is a probabilistic generative model used for finding low dimensional representations of high-dimensional data. While PPCA is highly flexible in theory, in practice, the orthonormality constraints on the matrix parameter makes it difficult to build complex PPCA-like models and conduct fully-Bayesian inference on them, even using modern algorithms like NUTS and ADVI. To address this computational challenge, we present the geometrically-motivated Givens Transform (GT) that represents orthonormal matrices in terms of unconstrained parameters. Our approach, that we refer to as GT-PPCA, allows us to rapidly build and prototype a wide range of PPCA-related models in a probabilistic programming framework like Stan, opening up the possibility for fully-Bayesian inference on a wide-class of models using a variety of different inference algorithms. The geometric insight provided by GT-PPCA also allows us to make useful improvements to related methods such as the reduction of superfluous multi-modality in the posterior, and the introduction of new prior distributions useful for hierarchical modeling. We demonstrate these improvements and show how we use GT-PPCA in Stan (code provided) to build a hierarchical multi-view model for medical data, and a Hidden Markov Subspace Model for time-dependent disease network data.
+Probabilistic PCA (PPCA) is a probabilistic generative model used for finding low dimensional representations of high-dimensional data. While PPCA is highly flexible in theory, in practice, the orthonormality constraints on the matrix parameter makes it difficult to build complex PPCA-like models and conduct fully-Bayesian inference on them using modern algorithms like NUTS and ADVI. To address this computational challenge, we present the geometrically-motivated Givens Transform (GT) that represents orthonormal matrices in terms of unconstrained parameters. Our approach, that we refer to as GT-PPCA, allows us to rapidly build and prototype PPCA and related models in a probabilistic programming framework like Stan, opening up the possibility for fully-Bayesian inference on a wide-class of dimensionality reduction models using a variety of different inference algorithms. The geometric insight provided by GT-PPCA also allows us to address previously unresolved issues arising in Bayesian dimensionality such as unidentifiability of matrix parameters and tractable hierarchical modeling of subspaces. We demonstrate these improvements and show how we use GT-PPCA in Stan (code provided) to build a hierarchical multi-view model for medical data, and a Hidden Markov Subspace Model for time-dependent disease network data.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -113,14 +113,14 @@ Probabilistic PCA (PPCA) is a probabilistic generative model used for finding lo
 
 Probabilistic PCA (PPCA) \citep{tipping1999probabilistic} posits a probabilistic generative model where high-dimensional data is determined by a linear function of some low-dimensional latent state. This generative model readily allows us to extend PPCA to describe the generative process of our data as we see fit. For example, one can extend the standard PPCA generative process to obtain Sparse PCA \citep{hoff2009simulation}, Bayesian Exponential PCA \citep{mohamed2009bayesian}, Mixtures of Factor Analyzers \citep{ghahramani1996algorithm}, or Canonical Correlation Analysis. This ability to extend is crucial for describing complex datasets arising in domains such as medicine where data may be stratified, consist of multiple views, or may vary over time. However, despite the demonstrated flexibility of PPCA, computational and statistical challenges that stem from the orthonormal matrix parameters stand in the way of making it a part of a routine modeling workflow. Ideally, one would be able to rapidly prototype diverse Bayesian linear dimensionality-reduction models in the framework of a probabilistic programming language like Stan, and subsequently infer these models using state-of-the-art inference algorithms like NUTS or ADVI. 
 
-We draw on techniques from differential geometry and numerical analysis to introduce the Givens Transform, a novel way to represent orthonormal matrices that lets us easily build complex extensions to PPCA in Stan. We provide Stan code for our example models allowing for use and expansion by researchers and scientists out-of-the-box. We demonstrate how inference of these models in Stan yields good empirical performance on large probabilistic graphical models that were previously intractable to implement, especially if fully-Bayesian posterior analysis is desired. Specifically we present a hierarchical subspace model for stratified, multi-view medical data and a PPCA Hidden Markov Model (HMM) for disease-network data.
+We draw on techniques from differential geometry and numerical analysis to introduce the Givens Transform, a novel way to represent orthonormal matrices that lets us easily build complex extensions to PPCA in Stan. We provide Stan code for our example models allowing for use and expansion by researchers and scientists out-of-the-box. We demonstrate how inference of these models in Stan yields good empirical performance on complex probabilistic graphical models that were previously intractable to implement, especially if fully-Bayesian posterior analysis is desired. Specifically we present a hierarchical subspace model for stratified, multi-view medical data and a PPCA Hidden Markov Model (HMM) for disease-network data.
 
 The Givens Transform represents orthonormal matrices in terms of a sequence of fundamental rotations through given angles, yielding insight into novel and useful ways to work with and interpret Bayesian dimensionality reduction models.  The elegant geometric representation lets us see how by limiting the range of the parameters in GT-PPCA, we can naturally avoid issues of unidentifiability and multi-modal posteriors that arise in working with orthonormal matrices.  GT-PPCA also allows us new and creative ways to generate and use prior distributions on orthonormal matrices, and thus subspaces, a task that had previously been rather complicated due to the difficulty of evaluating densities of orthonormal matrix distributions for even small problem sizes.  As we shall discuss in more detail, our GT representation provides a rather natural way to specify prior distributions comparable to the Matrix Langevin prior \citep{muirhead2009aspects}.
 
 %When first considering this problem, it may seem that this geometry may rule out a straightforward use of two of the most prominent techniques for posterior inference posterior inference, Markov Chain Monte Carlo (MCMC) and Variational Inference (VI).  Intuitively, for MCMC, we have no way of guaranteeing that a chain over $W$ will explore only valid regions of parameter space that satisfy the orthonormality constraints. Similarly for Variational Inference, positing a common variational posterior distribution such as a Gaussian over the elements of $W$ is sure to lead to posteriors that assign mass to invalid regions of parameter space.
 
 
-\paragraph{Related work} While previous methods have been developed for posterior sampling of orthonormal matrices, they can at times suffer from numerical issues, are difficult to implement on large probabilistic graphical models, and are not generally adaptable to the widely available inference schemes such as NUTS or VI. \citet{brubaker2012family} and \citet{byrne2013geodesic} developed different approaches to modify the Leap-Frog integrator typically used in Hamiltonian Monte Carlo (HMC), so that Hamiltonian exploration, and thus MCMC samples of posteriors, satisfied any necessary constraints at all times. Specifically,~\citet{brubaker2012family} uses the SHAKE integrator \citep{leimkuhler2004simulating} to simulate Hamiltonian dynamics and generate proposals. The integrator works by repeatedly taking a step forward that may be off the manifold using ordinary leap frog, then projecting back down to the nearest point on the manifold. The projection is done via Newton iterations, which may converge to the wrong local minimum in practice or possibly not converge at all, jeopardizing the ergodicity of a Markov Chain, and the integrity of samples~\citep{betancourt2017divergences}. \citet{byrne2013geodesic}~ exploit the fact that closed form solutions are known for the geodesic equations over the Stiefel manifold \commentLP{Need short explanation of what is a Stiefel Manifold.} in the embedded coordinates, $W$, and use their derived Embedded Manifold HMC (EMHMC) sampler to perform posterior inference. While this method is completely explicit, requiring no Newton iterations, in practice we found that for larger step sizes, the integrator steps off the Stiefel manifold, due to the numerical imprecision of the matrix exponential function. Because these methods use modified integrators for constrained parameters, in practice they require additional book keeping to track the support and the integrator of each variable, adding a layer of implementation complexity, especially for large complex models with many parameters.  Additionally, this makes it difficult to implement these methods within a probabilistic programming language such as Stan, which typically do not expose the underlying inference algorithm to the user. This precludes the rapid prototyping and building of models as well as the flexibility to use different inference schemes that Stan provides. Lastly, we remark that for inference on orthonormal matrices, these methods can lead to multi-modal posteriors, that can be avoided in a straight-forward way using the Givens transform.
+\paragraph{Related work} While previous methods have been developed for posterior sampling of orthonormal matrices, they can at times suffer from numerical issues, are difficult to implement on large probabilistic graphical models, and are not generally adaptable to the widely available inference schemes such as NUTS or VI. \citet{brubaker2012family} and \citet{byrne2013geodesic} developed different approaches to modify the Leap-Frog integrator typically used in Hamiltonian Monte Carlo (HMC), so that Hamiltonian exploration, and thus MCMC samples of posteriors, satisfied any necessary constraints at all times. Specifically,~\citet{brubaker2012family} uses the SHAKE integrator \citep{leimkuhler2004simulating} to simulate Hamiltonian dynamics and generate proposals. The integrator works by repeatedly taking a step forward that may be off the manifold using ordinary leap frog, then projecting back down to the nearest point on the manifold. The projection is done via Newton iterations, which may converge to the wrong local minimum in practice or possibly not converge at all causing divergences~\citep{betancourt2017divergences}. While both of these possibilities jeopardize the ergodicity of a Markov Chain, and the integrity of samples the former is more dangerous as it occurs without warning. \citet{byrne2013geodesic}~ exploit the fact that closed form solutions are known for the geodesic equations in the space of orthonormal matrices in the embedded coordinates, $W$, and use their derived Embedded Manifold HMC (EMHMC) sampler to perform posterior inference. While this method is completely explicit, requiring no Newton iterations, in practice we found that for larger step sizes, the integrator steps off the Stiefel manifold, due to the numerical imprecision of the matrix exponential function. Because these methods use modified integrators for constrained parameters, in practice they require additional book keeping to track the support and the integrator of each variable, adding a layer of implementation complexity, especially for large complex models with many parameters.  Additionally, this makes it difficult to implement these methods within a probabilistic programming language such as Stan, which typically do not expose the underlying inference algorithm to the user. This precludes the rapid prototyping and building of models as well as the flexibility to use different inference schemes that Stan provides. Lastly, we remark that for inference on orthonormal matrices, these methods can lead to multi-modal posteriors, that can be avoided in a straight-forward way using the Givens transform.
 
 \paragraph{Paper outline} A brief overview of probabilistic dimensionality reduction is provided in Section~\ref{Probabilistic dimensionality reduction}. The geometry of the Stiefel Manifold is discussed in Section~\ref{geometry} and the Givens Transform (GT) is introduced in Section~\ref{Givens}. Empirical studies where GT-PPCA was used in Stan for practical uncertainty quantification and hypothesis testing, as well as for building complex probabilistic graphical models is presented in Section~\ref{examples}.
 
@@ -140,10 +140,10 @@ PPCA posits the following generative process for how a sequence of high-dimensio
 p(\mb{z}_i) &\sim& \mathcal{N}_p(0, I) \nonumber\\
 p(\mb{x}_i | \mb{z}_i, W, \Lambda, \sigma^2) &\sim& \mathcal{N}_n(W \Lambda \mb{z}_i, \sigma^2 I).
 \end{eqnarray}
-Here $W$ is an $n \times p$ orthonormal matrix and $\Lambda$ is a $p \times p$ diagonal matrix with positive elements.  For simplicity, we have presented the case where the data has zero mean, but the more general case can also readily be considered \citep[chapt.~12.1]{murphy2012machine}. \commentRJ{Mention how the MLE converges to classical PCA in the limit of 0 noise.  Also mention how, if there is no distribution over W, PPCA methods can still do inference proceed.} $W$ matrix has a distribution, but usually people just get a point estimate.
+Here $W$ is an $n \times p$ orthonormal matrix and $\Lambda$ is a $p \times p$ diagonal matrix with positive elements.  For simplicity, we have presented the case where the data has zero mean, but the more general case can also readily be considered \citep[chapt.~12.1]{murphy2012machine}. We note that in the limit of $\sigma^2$ going to zero, the maxima likelihood estimator $\hat{W}$ of $W$ converges to the matrix given by classical PCA~\citep{tipping1999probabilistic}. Inference for PPCA and extensions is usually conducted in practice by obtaining point estimates of $W$ via Expectation Maximization (EM) \citep[chapt.~12.2.5]{murphy2012machine}.
 
 \paragraph{Extensions to PPCA}
-As mentioned previously, PPCA as a generative model can be flexibly expanded in several ways to produce new models. To build a probabilistic sparse PCA, one can place a Laplace or Cauchy prior over the elements of $W$. \citet{mohamed2009bayesian} showed that we can model non-Gaussian data, $\mb{x}_i$, by replacing equation \ref{eq:PpcaGenerativeProcess} with any distribution from the exponential family whose natural parameters are given by $\mathrm{Expon}(W\Lambda \mb{z}_i)$ and $\mathrm{Expon}(\cdot)$ the appropriate link function.\citet{ghahramani1996algorithm} use a mixture of several $W$ matrices for different regions of data space to extend PPCA to the non-linear case. In the context of a probabilistic programming language such as Stan, these extensions to the base PPCA model become easy to implement as we illustrate with examples in Section \ref{examples}. \commentRJ{Should this also include something about GT-PPCA?}
+As mentioned previously, PPCA as a generative model can be flexibly expanded in several ways to produce new models. To build a probabilistic sparse PCA, one can place a Laplace or Cauchy prior over the elements of $W$. \citet{mohamed2009bayesian} showed that we can model non-Gaussian data, $\mb{x}_i$, by replacing equation \ref{eq:PpcaGenerativeProcess} with any distribution from the exponential family whose natural parameters are given by $\mathrm{Expon}(W\Lambda \mb{z}_i)$ and $\mathrm{Expon}(\cdot)$ the appropriate link function. \citet{ghahramani1996algorithm} use a mixture of several $W$ matrices for different regions of data space to extend PPCA to the non-linear case. In the context of a probabilistic programming language such as Stan, these extensions to the base PPCA model become easy to implement as we illustrate with examples in Section \ref{examples}. \commentRJ{Should this also include something about GT-PPCA?}
 
 \paragraph{Importance of the Orthonormality Condition}
 The orthonormal constraint on the matrix $W$ plays an important role in obtaining robust methods for making inferences in probabilistic PCA because it alleviates identifiability and numerical issues.  If one were to relax the orthonormality constraint and naively conduct inference in the space of all $n\times p$ matrices, the likelihood function would assign identical probability to a whole equivalence class of matrices $W \sim V$ where the span is the same linear subspace $\mbox{span}\{W\} = \mbox{span}\{V\}$ (see \citet[chapt.~12.1.3]{murphy2012machine}).  In addition to this resulting in an unidentifiable model, in practice this presents a number of major challenges.  First, matrices in a given equivalence class are not all equally well-conditioned numerically, thus round-off errors and truncation errors become problematic in practical calculations.  Secondly, these issues with the representation further manifest in the log-likelihood objective function where regions of particularly large curvature arise, as pointed out by \citep{holbrook2016bayesian}. We note that, while most identifiability issues and numerical issues are alleviated by constraining inference to orthonormal matrices, the PPCA likelihood is equivalent for an orthonormal matrix $W$ and any permutation of the columns of $W$ being negative as remarked by both \citet[chapt.~12.1.3]{murphy2012machine} and  \citet{holbrook2016bayesian}. As such, even the methods of \citet{brubaker2012family} and \citet{byrne2013geodesic} will lead to multi-modal posteriors that can be avoided in a straightforward manner by appealing to insights revealed by the Givens Transform, as shown in Section~\ref{Givens}.
@@ -176,11 +176,11 @@ Intuitively, the elements of $V_{n,p}$ can be thought of not as orthonormal matr
         \label{fig:StiefelGeom}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-      %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{GivensReduction_atz.pdf}
+    %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.32\textwidth}
+        \includegraphics[width=\textwidth]{uncertainty.pdf}
         \caption{}
-        \label{fig:GivensReductionm}
+        \label{fig:MleSubspaceEstimate}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
     %(or a blank line to force the subfigure onto a new line)
@@ -207,7 +207,7 @@ Posterior distributions for several types of constrained parameters are routinel
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Givens Reductions and the Givens Transform}\label{GivensSub}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-By appealing to the Givens Reduction, we are able to re-parameterize $n \times p$ orthonormal matrices, a constrained space, in terms of unconstrained angles. The Givens Reduction is a numerical analysis technique for reducing a square matrix $A$ to upper-triangular form \citep{meyer2000matrix}. The technique works by applying a series of rotation of matrices to $A$ such that elements below the diagonal are ``zeroed out" starting with the second element of the first column, and moving down the first column before zeroing out the appropriate elemnents of the subsequent columns. For example if $A$ is a $3 \times 3$ matrix and its first column is $(0.84, 0.48, 0.26)^T$, the Givens Reduction would would apply a rotation in the $(1,2)$-plane, $R_{12}^{-1}$ so as to annhilate the second element of this column (Figure \ref{fig:GivensReductionm}). For an $n \times p$ orthonormal matrix $Y$, obtaining the Givens Reduction requires multiplication by $(n-1)+(n-2)+\cdots+(n-p) = np -p(p+1)/2$ rotation matrices each with their own respective angles. Since each rotation rigidly rotates the orthonormal columns of $Y$, they remain orthonormal, resulting in the matrix $I_{n,p}$, whose columns are the first $p$ columns of the $p \times p$ identity matrix:
+By appealing to the Givens Reduction, we are able to re-parameterize $n \times p$ orthonormal matrices, a constrained space, in terms of unconstrained angles. The Givens Reduction is a numerical analysis technique for reducing a square matrix $A$ to upper-triangular form \citep{meyer2000matrix}. The technique works by applying a series of rotation of matrices to $A$ such that elements below the diagonal are ``zeroed out" starting with the second element of the first column, and moving down the first column before zeroing out the appropriate elemnents of the subsequent columns. For example if $A$ is a $3 \times 3$ matrix and its first column is $(0.84, 0.48, 0.26)^T$, the Givens Reduction would would apply a rotation in the $(1,2)$-plane, $R_{12}^{-1}$ so as to annihilate the second element of this column producing $(0.93, 0.00 0.26)^T$ (Figure \ref{fig:GivensReductionm}). For an $n \times p$ orthonormal matrix $Y$, obtaining the Givens Reduction requires multiplication by $(n-1)+(n-2)+\cdots+(n-p) = np -p(p+1)/2$ rotation matrices each with their own respective angles. Since each rotation rigidly rotates the orthonormal columns of $Y$, they remain orthonormal, resulting in the matrix $I_{n,p}$, whose columns are the first $p$ columns of the $p \times p$ identity matrix:
 
 \begin{equation}
 \label{eq:GivensReduction}
@@ -260,24 +260,17 @@ We apply GT-PPCA in Stan to a synthetic dataset to show how GT-PPCA naturally av
 
 \begin{figure}
     \centering
-    \begin{subfigure}[b]{0.32\textwidth}
+    \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{multiModal.pdf}
         \caption{}
         \label{fig:multiModal}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
       %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.32\textwidth}
+    \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{syntheticLambdaPosterior.pdf}
         \caption{}
         \label{fig:SyntheticPosteriorEstimates}
-    \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-    %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.32\textwidth}
-        \includegraphics[width=\textwidth]{uncertainty.pdf}
-        \caption{}
-        \label{fig:MleSubspaceEstimate}
     \end{subfigure}
     \caption{Inferences for three-dimensional synthetic data. (a) Avoidance of multi-modal behavior in GT-PPCA versus EMHMC. (b) Estimated densities from posterior draws of $\Lambda$ parameters A.K.A  the singular values, and point estimates from classical PCA show as colored bars. (c) Three-dimensional points, true subspace (grey), and classical PCA point estimate of subspace (colored). }\label{fig:synthetic}
 \end{figure}
@@ -287,7 +280,7 @@ Posterior samples of $\theta_{13}$, which if we recall from Figure \ref{fig:Stie
 The fully Bayesian approach provided by GT-PPCA in Stan also allows us to examine posterior draws of $\Lambda$ in Equation \ref{eq:PpcaGenerativeProcess} to make probabilistic statements about the inherent dimensionality in our data. The posterior of $\Lambda_3$ for example places considerable mass close to zero (58\% of samples were less that 0.5), providing strong evidence that our data is inherently two, not three, dimensional (Figure \ref{fig:SyntheticPosteriorEstimates}). In comparison, the standard classical PCA analysis yields the singular values $\mathrm{diag}(\hat{\Lambda}) = (1.52,\, 1.27,\, 0.77)$, possibly, but ambiguously, suggesting that our data lie close to some two-dimensional plane, if one uses the heuristic that the third singular value has a larger drop off from the first two than the second has from the first.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Coagulopathy using hierarchical subspace models}
+\subsection{Hierarchical subspace models for grouped multi-view medical data}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 We modeled grouped multi-view hospital data for injured patients using a hierarchical Canonical Correlation Analysis (CCA) model~\citep[chapt.~15.2]{murphy2012machine}. CCA can model two types (or views) of data as being a function of two respective latent low dimensional states, but also a common latent state that captures the common information contained in both view. In our case we compared blood protein measurements and clot strength measurements for injured patients belonging to one of four groups depending on the type of injury they had. While the four types of injuries were different enough so that we could not use a single CCA model to capture the characteristics of all models at once, the four groups were not so different as to warrant separate CCA models for each. To share information between the CCA models we placed a hierarchical prior over the orthonormal matrices belonging to the distinct CCA parameters of each group (Figure \ref{fig:CCA}).
 
@@ -312,21 +305,21 @@ While distributions on the Stiefel manifold such as the Matrix Langevin distribu
 
 \begin{figure}
     \centering
-    \begin{subfigure}[b]{0.3\textwidth}
+    \begin{subfigure}[b]{0.24\textwidth}
         \includegraphics[width=\textwidth]{shrinkageSep.pdf}
         \caption{}
         \label{fig:nonHierPosteriors}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
       %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.3\textwidth}
+    \begin{subfigure}[b]{0.24\textwidth}
         \includegraphics[width=\textwidth]{shrinkageHier.pdf}
         \caption{}
         \label{fig:hierPosteriors}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
     %(or a blank line to force the subfigure onto a new line)
-    \begin{subfigure}[b]{0.3\textwidth}
+    \begin{subfigure}[b]{0.40\textwidth}
         \includegraphics[width=\textwidth]{posteriorCosAngle.pdf}
         \caption{}
         \label{fig:posteriorCosAngle}
@@ -337,14 +330,14 @@ While distributions on the Stiefel manifold such as the Matrix Langevin distribu
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{School Network}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-We built an HMM subspace for count data to model the hidden time-dependent structure of a network of school children. RF sensors \citep{stehle2011high} were used to track the interactions between school children in 12 different classes (two classes for grades 1-6) for an entire school day so as to better understand how disease spreads throughout a network. We collated the number of interactions between each pair of classes in to 11-minute contiguous time windows, giving us 177 symmetric matrices of counts representing the network structure between the different classes throughout the whole day. We modeled the elements of these count matrices as coming from a Poisson distribution whose rate comes from the element-wise exponential of a symmetric matrix$R = \exp (W \Lambda W^T)$, where orthonormal matrix $W$ captures the low-dimensional structure of the network. To model the time varying structure of the network, we posited that the network was always in one of three latent states, that evolve according to a Markov Chain (Figure \ref{fig:HMM}). The three states each have their own associated orthonormal matrix $W_i$ that captures the network structure for that state. 
+We built an HMM subspace for count data to model the hidden time-dependent structure of a network of school children. RF sensors \citep{stehle2011high} were used to track the interactions between school children in 12 different classes (two classes for grades 1-6) for an entire school day so as to better understand how disease spreads throughout a network. We collated the number of interactions between each pair of classes in to 11-minute contiguous time windows, giving us 177 symmetric matrices of counts representing the network structure between the different classes throughout the whole day (Figure\ref{fig:heatmap}). We modeled the elements of these count matrices as each coming from a Poisson distribution whose rate comes from the element-wise exponential of a symmetric matrix$R = \exp (W \Lambda W^T)$, where the orthonormal matrix $W$ captures the low-dimensional structure of the network. To model the time varying structure of the network, we posited that the network was always in one of three latent states, that evolve according to a Markov Chain (Figure \ref{fig:HMM}). The three states each have their own associated orthonormal matrix $W_i$ that captures the low-dimensional latent network structure for that state.
 
 \begin{figure}
     \centering
     \begin{subfigure}[b]{0.40\textwidth}
         \includegraphics[width=\textwidth]{heatmap.pdf}
         \caption{}
-        \label{fig:CCA}
+        \label{fig:heatmap}
     \end{subfigure}
     ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
       %(or a blank line to force the subfigure onto a new line)
@@ -360,8 +353,11 @@ We built an HMM subspace for count data to model the hidden time-dependent struc
         \caption{}
         \label{fig:SchoolStatePosterior}
     \end{subfigure}
-    \caption{Probabilistic graphical models for (a) Hierarchical CCA Model (b) Count Subspace HMM for Network Data.}\label{fig:ccaResults}
+    \caption{(a) MAP Estimated rate matrices for the three states (top) and examples of count matrices belonging to each of these three states (bottom). (b) Posterior intervals for the first two columns of the rate matrix for the first hidden state. (c) }\label{fig:ccaResults}
 \end{figure}
+
+Maximum A-Posteriori estimates were able to capture the latent structure of the rate matrices of the three hidden state (Figure \ref{fig:heatmap}), while NUTS sampling in Stan provides full Bayesian posteriors for each of the elements of these rate matrices. Stan also allows us to generate samples from posterior samples of the Markov Chain, allowing us to provide a posterior over which of the hidden states the network is in at a given time (Figure \ref{fig:SchoolStatePosterior}), a common inference task in disease networks as well as fMRI networks.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
