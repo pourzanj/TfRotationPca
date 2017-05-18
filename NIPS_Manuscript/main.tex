@@ -293,7 +293,7 @@ We modeled grouped multi-view hospital data for injured patients using a hierarc
     \caption{Probabilistic graphical models for (a) Hierarchical CCA Model (b) Network HMM.}\label{fig:ccaResults}
 \end{figure}
 
-While distributions on the Stiefel Manifold such as the Matrix Langevin distribution \citep{muirhead2009aspects} exist, these distributions are difficult to use in practice, as computing their density requires evaluating an expensive matrix sum \citep{hoff2009simulation}. By appealing to the Givens Transform and placing a hierarchical prior over the angles of the different orthonormal matrices, we were able to build a hierarchical model over subspaces, a previously intractable task. The hierachical prior ``shrinks" the posterior median of the orthonormal matrices towards a common mean in addition to reducing the variance of these estimates (Figure \ref{fig:nonHierPosteriors,fig:hierPosteriors}). This is particularly helpful for groups with only a smaller number of observations such as the SW group, which only contains 16 patients in comparison of the GSW group with 86 patients. Comparing the angle between the first principal components for the SW and GSW group illustrates how using a hierarchical prior shrinks estimates of subspaces together towards a common hierarchical subspace (Figure \ref{fig:ccaResults}).
+While distributions on the Stiefel Manifold such as the Matrix Langevin distribution \citep{muirhead2009aspects} exist, these distributions are difficult to use in practice, as computing their density requires evaluating an expensive matrix sum \citep{hoff2009simulation}. By appealing to the Givens Transform and placing a hierarchical prior over the angles of the different orthonormal matrices, we were able to build a hierarchical model over subspaces, a previously intractable task. The hierachical prior ``shrinks" the posterior median of the orthonormal matrices towards a common mean in addition to reducing the variance of these estimates (Figure \ref{fig:nonHierPosteriors},\ref{fig:hierPosteriors}). This is particularly helpful for groups with only a smaller number of observations such as the SW group, which only contains 16 patients in comparison of the GSW group with 86 patients. Comparing the angle between the first principal components for the SW and GSW group illustrates how using a hierarchical prior shrinks estimates of subspaces together towards a common hierarchical subspace (Figure \ref{fig:posteriorCosAngle}).
 
 \begin{figure}
     \centering
@@ -302,14 +302,14 @@ While distributions on the Stiefel Manifold such as the Matrix Langevin distribu
         \caption{}
         \label{fig:nonHierPosteriors}
     \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+    \quad %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
       %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.22\textwidth}
         \includegraphics[width=\textwidth]{shrinkageHier.pdf}
         \caption{}
         \label{fig:hierPosteriors}
     \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+    \quad %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
     %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.37\textwidth}
         \includegraphics[width=\textwidth]{posteriorCosAngle.pdf}
@@ -326,19 +326,19 @@ We built an HMM subspace for count data to model the hidden time-dependent struc
 
 \begin{figure}
     \centering
-    \begin{subfigure}[b]{0.37\textwidth}
+    \begin{subfigure}[b]{0.29\textwidth}
         \includegraphics[width=\textwidth]{heatmap.pdf}
         \caption{}
         \label{fig:heatmap}
     \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+    \qquad %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
       %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.21\textwidth}
         \includegraphics[width=\textwidth]{SchoolRateMatrix.pdf}
         \caption{}
         \label{fig:SchoolRateMatrix}
     \end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+    \qquad %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
       %(or a blank line to force the subfigure onto a new line)
     \begin{subfigure}[b]{0.21\textwidth}
         \includegraphics[width=\textwidth]{SchoolStatePosterior.pdf}
