@@ -43,7 +43,7 @@ def generate_plot_plane_sphere(n, r = 1, width = 8, height = 6,
 
     plt.grid(True)
     plt.rc('grid', linestyle='-', color= grid_color)
-    plt.scatter(theta, phi, color = marker_color)
+    plt.scatter(theta, phi, color = point_color)
     plt.savefig('plane.svg', transparent = True)
 
 generate_plot_plane_sphere(1000)
