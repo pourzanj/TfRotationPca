@@ -1,0 +1,76 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+% \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading nips_2017
+%
+% to avoid loading the natbib package, add option nonatbib:
+% \usepackage[nonatbib]{nips_2017}
+
+\PassOptionsToPackage{numbers, compress}{natbib}
+\usepackage{nips_2017}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+% \usepackage[final]{nips_2017}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\begin{document}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\section{Appendix}
+
+\subsection{Pseudo-code for Computation of Differential Form for GT-PPCA}
+
+We detail the algorithm for computing the differential form correction necessary to sample on angles that correspond to orthonormal matrices on the Stiefel Manifold below. We omit the finer details for the functions \textit{GenerateCumulativeForwardRotations}, \textit{GenerateCumulativeReverseRotations}, and \textit{GenerateGivensJacobians}. \textit{GenerateCumulativeForwardRotations} and \textit{GenerateCumulativeReverseRotations} computes the quantity 
+\begin{equation}
+\label{eq:GivensReduction}
+(R_{pn}^{-1} \cdots R_{p,p+2}^{-1} R_{p,p+1}^{-1}) \cdots (R_{2n}^{-1} \cdots R_{24}^{-1} R_{23}^{-1})(R_{1n}^{-1} \cdots R_{13}^{-1}  R_{12}^{-1})Y
+\end{equation}
+from the left and from the right, saving the cumulative products at each step.  \textit{GenerateGivensJacobians} computes the Jacobian using these saved partial products noting that the Jacobian for the $i, j$-th entry is simply replacing the $i,j$-th rotation matrix in (\ref{eq:GivensReduction}) by the derivative of the $i,j$-th matrix.
+
+For a complete implementation in Stan, we also include the complete code for the computation as Supplementary Material.
+
+\begin{algorithm}
+\caption{Given's Differential Form}\label{alg:diffForm}
+\begin{algorithmic}[1]
+\Require
+	\Statex $\theta$, \textit{vector of angles}
+	\Statex $n$, \textit{first dimension of matrix}
+	\Statex $p$, \textit{second dimension of matrix}
+\Ensure
+	\Statex $LD$, \textit{value of differential form to add to the log probability}
+\Function{GivensDifferentialForm}{$\theta,n,p$}
+\State $d = np - \frac{p(p+1)}{2}$
+\State $AreaMatrix\gets Identity(d)$
+\State $GF\gets GenerateCumulativeForwardRotations(\theta)$
+\State $GR\gets GenerateCumulativeReverseRotations(\theta)$
+\State $GJ\gets GenerateGivensJacobians(GF, GR,\theta)$
+\State $Givens\gets GF[d]$
+
+\State $idx\gets 0$
+\For{i = 0 to p}
+	\State $OneForms\gets (Givens[i+1:n,:]^T * GJ[i])^T$
+	\For{j = 0 to n}
+		\State $AreaMatrix[:,idx] = OneForms[:,j]$
+		\State $idx = idx + 1$
+	\EndFor
+\EndFor
+\State $LD\gets log(det(AreaMatrix))$
+\State \textbf{return} $LD$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\end{document} 
