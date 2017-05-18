@@ -273,6 +273,14 @@ parameters {
   positive_ordered[p_common] mu_lambda_4_reversed;
   vector<lower = 0>[p_common] Sigma_lambda_4_reversed;
   
+  vector<lower = -pi()/2, upper = pi()/2>[d_B_4] theta_B_4[J];
+  vector<lower = -pi()/2, upper = pi()/2>[d_B_4] mu_theta_B_4;
+  vector<lower = 0>[d_B_4] Sigma_theta_B_4;
+  
+  //positive_ordered[p_4] gamma_4_reversed[J];
+  //positive_ordered[p_4] mu_gamma_4_reverse;
+  //vector<lower = 0>[p_4] Sigma_gamma_4_reverse;
+  
   //PT doesn't have private latent variables
   
   //hyper-priors
@@ -298,7 +306,7 @@ transformed parameters{
   vector<lower=0>[p_3] gamma_3[J];
 
   vector<lower=0>[p_common] lambda_4[J];
-  //vector<lower=0>[p_4] gamma_4;
+  //vector<lower=0>[p_4] gamma_4[J];
   
   for(j in 1:J) {
     for (i in 1:p_common) lambda_0[j][i] = lambda_0_reversed[j][p_common - i + 1];
@@ -314,7 +322,7 @@ transformed parameters{
     for (i in 1:p_3) gamma_3[j][i] = gamma_3_reversed[j][p_3 - i + 1];
   
     for (i in 1:p_common) lambda_4[j][i] = lambda_4_reversed[j][p_common - i + 1];
-    //for (i in 1:p_4) gamma_4[i] = gamma_4_reversed[p_4 - i + 1];
+    //for (i in 1:p_4) gamma_4[j][i] = gamma_4_reversed[j][p_4 - i + 1];
   }
 }
 
@@ -336,7 +344,7 @@ model {
   matrix[n_3, p_3] B_3[J];
 
   matrix[n_4, p_common] W_4[J];
-  //matrix[n_4, p_4] B_4;
+  //matrix[n_4, p_4] B_4[J];
   
   matrix[n_0 + n_1 + n_2 + n_3 + n_4, p_common + p_0 + p_1 + p_2 + p_3 + p_4] W[J];
   matrix[n_0 + n_1 + n_2 + n_3 + n_4, n_0 + n_1 + n_2 + n_3 + n_4] Id_n;
@@ -380,7 +388,8 @@ model {
   
     theta_W_4[j] ~ multi_normal(mu_theta_W_4, diag_matrix(Sigma_theta_W_4));
     W_4[j] = area_form_lp(theta_W_4[j], n_4, p_common);
-    //B_4 = area_form_lp(theta_B_4, n_4, p_4);
+    //theta_B_4[j] ~ multi_normal(mu_theta_B_4, diag_matrix(Sigma_theta_B_4));
+    //B_4[j] = area_form_lp(theta_B_4[j], n_4, p_4);
     
     //create empty grand W for sub-cohort
     W[j] = rep_matrix(0, n_total, p_total);
@@ -396,7 +405,7 @@ model {
     W[j,n_0 + 1:n_0 + n_1, p_common + p_0 + 1:p_common + p_0 + p_1] = B_1[j] * diag_matrix(gamma_1[j]);
     W[j,n_0 + n_1 + 1:n_0 + n_1 + n_2, p_common + p_0 + p_1 + 1:p_common + p_0 + p_1 + p_2] = B_2[j] * diag_matrix(gamma_2[j]);
     W[j,n_0 + n_1 + n_2 + 1:n_0 + n_1 + n_2 + n_3, p_common + p_0 + p_1 + p_2 + 1:p_common + p_0 + p_1 + p_2 + p_3] = B_3[j] * diag_matrix(gamma_3[j]);
-    //W[n_0 + n_1 + n_2 + n_3 + 1:n_total, p_common + p_0 + p_1 + p_2 + p_3 + 1:p_total] = B_4 * diag_matrix(gamma_4);
+    //W[j,n_0 + n_1 + n_2 + n_3 + 1:n_total, p_common + p_0 + p_1 + p_2 + p_3 + 1:p_total] = B_4[j] * diag_matrix(gamma_4[j]);
     
     // sparsity prior on entries of W and B (sparse PCA)
     for(i in 1:p_common) {
@@ -411,6 +420,7 @@ model {
     for(i in 1:p_1) B_1[j][,i] ~ cauchy(0, sparseHyperPrior);
     for(i in 1:p_2) B_2[j][,i] ~ cauchy(0, sparseHyperPrior);
     for(i in 1:p_3) B_3[j][,i] ~ cauchy(0, sparseHyperPrior);
+    //for(i in 1:p_4) B_4[j][,i] ~ cauchy(0, sparseHyperPrior);
 
     //control on lambda size for regularization
     lambda_0_reversed[j] ~ cauchy(0, ardHyperPrior);
@@ -439,6 +449,9 @@ model {
     
     gamma_3_reversed[j] ~ cauchy(0, ardHyperPrior);
     gamma_3_reversed[j] ~ multi_normal(mu_gamma_3_reverse, diag_matrix(Sigma_gamma_3_reverse));
+    
+    //gamma_4_reversed[j] ~ cauchy(0, ardHyperPrior);
+    //gamma_4_reversed[j] ~ multi_normal(mu_gamma_4_reverse, diag_matrix(Sigma_gamma_4_reverse));
     
     //gamma_4_reversed ~ cauchy(0, ardHyperPrior);
     
