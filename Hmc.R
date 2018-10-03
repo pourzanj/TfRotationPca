@@ -1,14 +1,13 @@
 library(boot) #for ivnerse logit
 library(tensorflow)
-sess <- tf$Session()
 
 #assume q is 3 dimensional
 U_R <- function(q) {
-  return(sess$run(U,  feed_dict = dict(ThetaUnconstrained = c(q[1],q[2],q[3]), LambdaUnconstrainedVec = c(q[4],q[5]), SigmaSq = 1)))
+  return(sess$run(U,  feed_dict = dict(ThetaUnconstrained = q[1:d], LambdaUnconstrainedVec = q[(d+1):(d+p)], SigmaSq = 1)))
 }
 
 GradU_R <- function(q) {
-  return(unlist(sess$run(GradU, dict(ThetaUnconstrained = c(q[1],q[2],q[3]), LambdaUnconstrainedVec = c(q[4],q[5]), SigmaSq = 1))))
+  return(unlist(sess$run(GradU, dict(ThetaUnconstrained = q[1:d], LambdaUnconstrainedVec = q[(d+1):(d+p)], SigmaSq = 1))))
 } 
 
 

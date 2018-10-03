@@ -1,18 +1,20 @@
 library(tensorflow)
 
-#n <- 150
-#p <- 3
-#d <- n*p-p*(p+1)/2
+# n <- 10
+# p <- 8
+# d <- n*p-p*(p+1)/2
 
 #generate quick synthetic data (for testing)
-N <- 1000
-W <- InverseGivensTransform(rep(0,d),n,p)
-X <- GenerateHighDimData(n, p, W, rep(1,p), 1, 1000)$x %>% as.matrix
-SigmaHat_ <- (1/N)*t(X) %*% X
+# N <- 1000
+# W <- InverseGivensTransform(rep(0,d),n,p)
+# X <- GenerateHighDimData(n, p, W, rep(1,p), 1, 1000)$x %>% as.matrix
+# SigmaHat_ <- (1/N)*t(X) %*% X
 
 sess <- tf$Session()
 ThetaUnconstrained <- tf$placeholder(tf$float32, shape = shape(d), name = 'ThetaUnconstrained')
-ThetaConstrained <- CreateThetaConstrained(ThetaUnconstrained, n, p)
+#p-1 rather than p when n==p because of a bug in CreateTheta Unconstrained where when p==n
+#extra angle variables are created in the loop that creates the angles
+ThetaConstrained <- CreateThetaConstrained(ThetaUnconstrained, n, ifelse(p == n, p-1, p))
 ThetaConstrainedDerivative <- ThetaConstrained$ThetaConstrainedDerivative
 ThetaConstrained <- ThetaConstrained$ThetaConstrained
 
@@ -24,20 +26,20 @@ LambdaConstrainedVec <- LambdaConstrained$LambdaConstrained
 Lambda <- tf$diag(LambdaConstrainedVec, name = 'Lambda')
 LambdaSq <- Lambda^2
 
-SigmaSq <- tf$placeholder(tf$float32, name = 'SigmaSq')
+LogSigmaSq <- tf$placeholder(tf$float32, name = 'LogSigmaSq')
 Id <- tf$constant(diag(n),dtype = tf$float32, name = 'Id_n')
 
-PartialRotations <- CreatePartialGivens(ThetaConstrained, n, p)
+PartialRotations <- CreatePartialGivens(ThetaConstrained, n, ifelse(p == n, p-1, p))
 G <- CreateGivensMatrix(PartialRotations, n, p)
 W <- G[,0:(p-1)]
-GivensJacobians <- GetGivensJacobians(PartialRotations, ThetaConstrained, n, p)
-LogStiefelAreaForm <- tf$log(GetStiefelAreaForm(G, GivensJacobians, n, p))
+GivensJacobians <- GetGivensJacobians(PartialRotations, ThetaConstrained, n, ifelse(p == n, p-1, p))
+LogStiefelAreaForm <- tf$log(GetStiefelAreaForm(G, GivensJacobians, n, ifelse(p == n, p-1, p)))
 
-C <- tf$matmul(W, tf$matmul(LambdaSq, tf$transpose(W))) + SigmaSq*Id
+C <- tf$matmul(W, tf$matmul(LambdaSq, tf$transpose(W))) + tf$exp(LogSigmaSq)*Id
 SigmaHat <- tf$constant(SigmaHat_, dtype = tf$float32)
 
-U <- (N/2)*log(tf$matrix_determinant(C)) + (N/2)*tf$trace(tf$matrix_solve(C, SigmaHat)) - LogStiefelAreaForm - tf$reduce_sum(tf$log(ThetaConstrainedDerivative)) - tf$log(LambdaConstrainedDerivative)
-GradU <- tf$gradients(U, list(ThetaUnconstrained, LambdaUnconstrainedVec))
+U <- (N/2)*log(tf$matrix_determinant(C)) + (N/2)*tf$trace(tf$matrix_solve(C, SigmaHat)) - LogStiefelAreaForm - tf$reduce_sum(tf$log(ThetaConstrainedDerivative)) - tf$log(LambdaConstrainedDerivative) - LogSigmaSq
+GradU <- tf$gradients(U, list(ThetaUnconstrained, LambdaUnconstrainedVec, LogSigmaSq))
 
 #for testing uniform on the Stiefel
 #U <- - LogStiefelAreaForm - tf$reduce_sum(tf$log(ThetaConstrainedDerivative))

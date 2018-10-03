@@ -312,9 +312,9 @@ model {
   target += -(N/2)*log(determinant(C88)) -(N/2)*trace(C88\SigmaHat88);
   
   sigma_hier ~ normal(0.1, sigma_hier_hyper);
-  theta_principal54 ~ normal(mu_hier, sigma_hier);
-  theta_principal82 ~ normal(mu_hier, sigma_hier);
-  theta_principal83 ~ normal(mu_hier, sigma_hier);
-  theta_principal84 ~ normal(mu_hier, sigma_hier);
-  theta_principal88 ~ normal(mu_hier, sigma_hier);
+  theta_lower54[78] ~ normal(mu_hier, sigma_hier);
+  theta_lower82[78] ~ normal(mu_hier, sigma_hier);
+  theta_lower83[78] ~ normal(mu_hier, sigma_hier);
+  theta_lower84[78] ~ normal(mu_hier, sigma_hier);
+  theta_lower88[78] ~ normal(mu_hier, sigma_hier);
 }

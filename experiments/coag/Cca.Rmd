@@ -49,8 +49,6 @@ p_4 <- 1
 d_W_4 <- d(n_4, p_common)
 d_B_4 <- d(n_4, p_4)
 
-
-
 sigmaSqHyperPrior <- 1
 ardHyperHyperPrior <- 10
 sparseHyperHyperPrior <- 10
@@ -66,11 +64,146 @@ data <- list(n_0 = n_0, p_0 = p_0, n_1 = n_1, p_1 = p_1, n_2 = n_2, p_2 = p_2, n
              sigmaSqHyperPrior = sigmaSqHyperPrior, ardHyperHyperPrior = ardHyperHyperPrior,
              sparseHyperHyperPrior = sparseHyperHyperPrior, N = N, SigmaHat = SigmaHat)
 
-#fit <- stan(file = "../../Stan/CcaGen.stan", data = data, chains = 4, iter = 10000)
+#fit <- stan(file = "../../Stan/CcaGen.stan", data = data, chains = 8, iter = 10000)
 
 m <- stan_model(file = "../../Stan/CcaGen.stan")
-system.time(vi <- vb(m, data = data))
+#system.time(vi <- vb(m, data = data))
 ```
+
+# MAP Estimate
+
+```{r}
+system.time(op <- optimizing(m, data = data, iter = 10000))
+
+summary(vi, pars = c("ardHyperPrior", "sparseHyperPrior"))$summary
+op$par[c("ardHyperPrior", "sparseHyperPrior")]
+
+map <- op$par
+theta_W_0 <- map[1:5]
+theta_W_1 <- (map[grepl("theta_W_1", names(map))])[1:d_W_1]
+theta_W_2 <- (map[grepl("theta_W_2", names(map))])[1:d_W_2]
+theta_W_3 <- (map[grepl("theta_W_3", names(map))])[1:d_W_3]
+theta_W_4 <- (map[grepl("theta_W_4", names(map))])[1:d_W_4]
+
+lambda_0_med <- c(map["lambda_0[1]"],map["lambda_0[2]"])
+lambda_1_med <- c(map["lambda_1[1]"],map["lambda_1[2]"])
+lambda_2_med <- c(map["lambda_2[1]"],map["lambda_2[2]"])
+lambda_3_med <- c(map["lambda_3[1]"],map["lambda_3[2]"])
+lambda_4_med <- c(map["lambda_4[1]"],map["lambda_4[2]"])
+
+W_0 <- InverseGivensTransform(theta_W_0, n_0, p_common)
+dimnames(W_0) <- list(names(coagTestsStnd)[1:4], c("Latent1", "Latent2"))
+W_0 * lambda_0
+
+W_1 <- InverseGivensTransform(theta_W_1, n_1, p_common)
+dimnames(W_1) <- list(names(coagTestsStnd)[5:10], c("Latent1", "Latent2"))
+W_1 * lambda_1
+
+W_2 <- InverseGivensTransform(theta_W_2, n_2, p_common)
+dimnames(W_2) <- list(names(coagTestsStnd)[11:14], c("Latent1", "Latent2"))
+W_2 * lambda_2
+
+W_3 <- InverseGivensTransform(theta_W_3, n_3, p_common)
+dimnames(W_3) <- list(names(coagTestsStnd)[15:23], c("Latent1", "Latent2"))
+W_3 * lambda_3
+
+#InverseGivensTransform(theta_W_4_Gsw_med, n_4, p_common)
+
+RightRotateCounterClockwise(diag(2), theta_W_4,1,2) * lambda_4
+```
+
+# Most Representative Sample
+
+```{r}
+s <- extract(vi)
+
+getSamplesCloseToMed <- function(x) {
+  lower <- quantile(x, probs = c(0.4,0.6))[1]
+  upper <- quantile(x, probs = c(0.4,0.6))[2]
+  
+  return(which(x >= lower & x <= upper))
+}
+
+getSamplesCloseToMed(s$theta_W_0[,2]) %>%
+  intersect(getSamplesCloseToMed(s$theta_W_1[,2])) %>%
+  intersect(getSamplesCloseToMed(s$theta_W_2[,2])) %>%
+  intersect(getSamplesCloseToMed(s$theta_W_3[,2]))
+
+sampleId <- 204
+
+theta_W_0 <- s$theta_W_0[sampleId,]
+theta_W_1 <- s$theta_W_1[sampleId,]
+theta_W_2 <- s$theta_W_2[sampleId,]
+theta_W_3 <- s$theta_W_3[sampleId,]
+theta_W_4 <- s$theta_W_4[sampleId,]
+
+lambda_0 <- s$lambda_0[sampleId,]
+lambda_1 <- s$lambda_1[sampleId,]
+lambda_2 <- s$lambda_2[sampleId,]
+lambda_3 <- s$lambda_3[sampleId,]
+lambda_4 <- s$lambda_4[sampleId,]
+
+W_0 <- InverseGivensTransform(theta_W_0, n_0, p_common)
+dimnames(W_0) <- list(names(coagTestsStnd)[1:4], c("Latent1", "Latent2"))
+W_0 * lambda_0
+
+W_1 <- InverseGivensTransform(theta_W_1, n_1, p_common)
+dimnames(W_1) <- list(names(coagTestsStnd)[5:10], c("Latent1", "Latent2"))
+W_1 * lambda_1
+
+W_2 <- InverseGivensTransform(theta_W_2, n_2, p_common)
+dimnames(W_2) <- list(names(coagTestsStnd)[11:14], c("Latent1", "Latent2"))
+W_2 * lambda_2
+
+W_3 <- InverseGivensTransform(theta_W_3, n_3, p_common)
+dimnames(W_3) <- list(names(coagTestsStnd)[15:23], c("Latent1", "Latent2"))
+W_3 * lambda_3
+
+#InverseGivensTransform(theta_W_4_Gsw_med, n_4, p_common)
+
+RightRotateCounterClockwise(diag(2), theta_W_4,1,2) * lambda_4
+```
+
+# Posterior Marginal Medians
+
+```{r}
+posterior <- as.array(vi)
+#mcmc_intervals(posterior, pars = c("lambda_0[1]", "lambda_0[2]"))
+
+posteriorMedian <- summary(vi)$summary[,"50%"]
+theta_W_0_Gsw_med <- posteriorMedian[1:5]
+theta_W_1_Gsw_med <- (posteriorMedian[grepl("theta_W_1", names(posteriorMedian))])[1:d_W_1]
+theta_W_2_Gsw_med <- (posteriorMedian[grepl("theta_W_2", names(posteriorMedian))])[1:d_W_2]
+theta_W_3_Gsw_med <- (posteriorMedian[grepl("theta_W_3", names(posteriorMedian))])[1:d_W_3]
+theta_W_4_Gsw_med <- (posteriorMedian[grepl("theta_W_4", names(posteriorMedian))])[1:d_W_4]
+
+lambda_0_med <- c(posteriorMedian["lambda_0[1]"],posteriorMedian["lambda_0[2]"])
+lambda_1_med <- c(posteriorMedian["lambda_1[1]"],posteriorMedian["lambda_1[2]"])
+lambda_2_med <- c(posteriorMedian["lambda_2[1]"],posteriorMedian["lambda_2[2]"])
+lambda_3_med <- c(posteriorMedian["lambda_3[1]"],posteriorMedian["lambda_3[2]"])
+lambda_4_med <- c(posteriorMedian["lambda_4[1]"],posteriorMedian["lambda_4[2]"])
+
+W_0_Gsw_med <- InverseGivensTransform(theta_W_0_Gsw, n_0, p_common)
+dimnames(W_0_Gsw_med) <- list(names(coagTestsStnd)[1:4], c("Latent1", "Latent2"))
+W_0_Gsw * lambda_0_med
+
+W_1_Gsw_med <- InverseGivensTransform(theta_W_1_Gsw, n_1, p_common)
+dimnames(W_1_Gsw_med) <- list(names(coagTestsStnd)[5:10], c("Latent1", "Latent2"))
+W_1_Gsw * lambda_1_med
+
+W_2_Gsw_med <- InverseGivensTransform(theta_W_2_Gsw, n_2, p_common)
+dimnames(W_2_Gsw_med) <- list(names(coagTestsStnd)[11:14], c("Latent1", "Latent2"))
+W_2_Gsw * lambda_2_med
+
+W_3_Gsw_med <- InverseGivensTransform(theta_W_3_Gsw, n_3, p_common)
+dimnames(W_3_Gsw_med) <- list(names(coagTestsStnd)[15:23], c("Latent1", "Latent2"))
+W_3_Gsw_med * lambda_3_med
+
+RightRotateCounterClockwise(diag(2), theta_W_4_Gsw_med,1,2) * lambda_4_med
+
+dimnames(SigmaHat) <- list(names(coagTestsStnd), names(coagTestsStnd))
+```
+
 
 # Sub Cohorts
 
@@ -103,6 +236,8 @@ coagSummary <- CoagImputed1 %>%
 ```{r, message=FALSE, warning=FALSE, include=FALSE}
 coagTestsStndMechtype <- coagTestsStnd %>% mutate(mechtype = CoagImputed1$mechtype)
 
+ardHyperHyperPrior <- 0.2
+sparseHyperHyperPrior <- 0.2
 n <- n_0+n_1+n_2+n_3+n_4
 J <- 7
 N <- rep(0, J)
@@ -119,30 +254,37 @@ SigmaHat <- array(0, dim = c(J, n, n))
 #GSW
 coagTestsStndGsw <- coagTestsStndMechtype %>% filter(mechtype == "GSW") %>% select(-mechtype)
 SigmaHat[1,,] <- getSigmaHat(coagTestsStndGsw)
+N[1] <- nrow(coagTestsStndGsw) 
 
 #Fall
 coagTestsStndFall <- coagTestsStndMechtype %>% filter(mechtype == "Fall/Crush") %>% select(-mechtype)
 SigmaHat[2,,] <- getSigmaHat(coagTestsStndFall)
+N[2] <- nrow(coagTestsStndGsw) 
 
 #MVC
 coagTestsStndMvc <- coagTestsStndMechtype %>% filter(mechtype == "MVC") %>% select(-mechtype)
 SigmaHat[3,,] <- getSigmaHat(coagTestsStndMvc)
+N[3] <- nrow(coagTestsStndMvc) 
 
 #PVA
 coagTestsStndPva <- coagTestsStndMechtype %>% filter(mechtype == "PVA") %>% select(-mechtype)
 SigmaHat[4,,] <- getSigmaHat(coagTestsStndPva)
+N[4] <- nrow(coagTestsStndPva) 
 
 #SW
 coagTestsStndSw <- coagTestsStndMechtype %>% filter(mechtype == "SW") %>% select(-mechtype)
 SigmaHat[5,,] <- getSigmaHat(coagTestsStndSw)
+N[5] <- nrow(coagTestsStndSw) 
 
 #Assault
 coagTestsStndAssault <- coagTestsStndMechtype %>% filter(mechtype == "Assault") %>% select(-mechtype)
 SigmaHat[6,,] <- getSigmaHat(coagTestsStndAssault)
+N[6] <- nrow(coagTestsStndAssault) 
 
 #Bike
 coagTestsStndBike  <- coagTestsStndMechtype %>% filter(mechtype == "BVA/Bike") %>% select(-mechtype)
 SigmaHat[7,,] <- getSigmaHat(coagTestsStndBike)
+N[7] <- nrow(coagTestsStndBike) 
 
 data <- list(n_0 = n_0, p_0 = p_0, n_1 = n_1, p_1 = p_1, n_2 = n_2, p_2 = p_2, n_3 = n_3, n_4 = n_4, p_4 = p_4, p_common = p_common,
              d_W_0 = d_W_0, d_B_0 = d_B_0, d_W_1 = d_W_1, d_W_1 = d_W_1, 
@@ -153,14 +295,109 @@ data <- list(n_0 = n_0, p_0 = p_0, n_1 = n_1, p_1 = p_1, n_2 = n_2, p_2 = p_2, n
 
 #fit <- stan(file = "../../Stan/CcaGenHierarchical.stan", data = data, chains = 4, iter = 2000, refresh = 10)
 
-m <- stan_model(file = "../../Stan/CcaGenHierarchical.stan")
-system.time(vi <- vb(m, data = data))
+mHier <- stan_model(file = "../../Stan/CcaGenHierarchicalPi.stan")
+system.time(viHier <- vb(mHier, data = data))
+#system.time(opHier <- optimizing(mHier, data = data, iter = 10000))
+```
 
+# MAP Estimate
+
+```{r}
+opHier$par[c("Sigma_theta_W_0")]
+
+map <- opHier$par
+theta_W_0_Gsw_med <- map[1:5]
+theta_W_1_Gsw_med <- (map[grepl("theta_W_1", names(map))])[1:d_W_1]
+theta_W_2_Gsw_med <- (map[grepl("theta_W_2", names(map))])[1:d_W_2]
+theta_W_3_Gsw_med <- (map[grepl("theta_W_3", names(map))])[1:d_W_3]
+theta_W_4_Gsw_med <- (map[grepl("theta_W_4", names(map))])[1:d_W_4]
+
+lambda_0_med <- c(map["lambda_0[1,1]"],map["lambda_0[1,2]"])
+lambda_1_med <- c(map["lambda_1[1,1]"],map["lambda_1[1,2]"])
+lambda_2_med <- c(map["lambda_2[1,1]"],map["lambda_2[1,2]"])
+lambda_3_med <- c(map["lambda_3[1,1]"],map["lambda_3[1,2]"])
+lambda_4_med <- c(map["lambda_4[1,1]"],map["lambda_4[1,2]"])
+
+W_0_Gsw_med <- InverseGivensTransform(theta_W_0_Gsw, n_0, p_common)
+dimnames(W_0_Gsw_med) <- list(names(coagTestsStnd)[1:4], c("Latent1", "Latent2"))
+W_0_Gsw * lambda_0_med
+
+W_1_Gsw_med <- InverseGivensTransform(theta_W_1_Gsw, n_1, p_common)
+dimnames(W_1_Gsw_med) <- list(names(coagTestsStnd)[5:10], c("Latent1", "Latent2"))
+W_1_Gsw * lambda_1_med
+
+W_2_Gsw_med <- InverseGivensTransform(theta_W_2_Gsw, n_2, p_common)
+dimnames(W_2_Gsw_med) <- list(names(coagTestsStnd)[11:14], c("Latent1", "Latent2"))
+W_2_Gsw * lambda_2_med
+
+W_3_Gsw_med <- InverseGivensTransform(theta_W_3_Gsw, n_3, p_common)
+dimnames(W_3_Gsw_med) <- list(names(coagTestsStnd)[15:23], c("Latent1", "Latent2"))
+W_3_Gsw_med * lambda_3_med
+
+#InverseGivensTransform(theta_W_4_Gsw_med, n_4, p_common)
+
+RightRotateCounterClockwise(diag(2), theta_W_4_Gsw,1,2) * lambda_4_med
+```
+
+# Most Representative Sample
+
+```{r}
+s <- extract(viHier)
+#sampleId <- floor(runif(1,1,1000))
+sampleId <- 75
+
+getSamplesCloseToMed(s$theta_W_0[,2,2]) %>%
+  intersect(getSamplesCloseToMed(s$theta_W_1[,2,2])) %>%
+  intersect(getSamplesCloseToMed(s$theta_W_2[,2,2])) %>%
+  intersect(getSamplesCloseToMed(s$theta_W_3[,2,2]))
+
+getSamplesCloseToMed <- function(x) {
+  lower <- quantile(x, probs = c(0.4,0.6))[1]
+  upper <- quantile(x, probs = c(0.4,0.6))[2]
+  
+  return(which(x >= lower & x <= upper))
+}
+
+theta_W_0_Gsw <- s$theta_W_0[sampleId,1,]
+theta_W_1_Gsw <- s$theta_W_1[sampleId,1,]
+theta_W_2_Gsw <- s$theta_W_2[sampleId,1,]
+theta_W_3_Gsw <- s$theta_W_3[sampleId,1,]
+theta_W_4_Gsw <- s$theta_W_4[sampleId,1,]
+
+lambda_0 <- s$lambda_0[sampleId,1,]
+lambda_1 <- s$lambda_1[sampleId,1,]
+lambda_2 <- s$lambda_2[sampleId,1,]
+lambda_3 <- s$lambda_3[sampleId,1,]
+lambda_4 <- s$lambda_4[sampleId,1,]
+
+W_0_Gsw <- InverseGivensTransform(theta_W_0_Gsw, n_0, p_common)
+dimnames(W_0_Gsw) <- list(names(coagTestsStnd)[1:4], c("Latent1", "Latent2"))
+W_0_Gsw * lambda_0
+
+W_1_Gsw <- InverseGivensTransform(theta_W_1_Gsw, n_1, p_common)
+dimnames(W_1_Gsw) <- list(names(coagTestsStnd)[5:10], c("Latent1", "Latent2"))
+W_1_Gsw * lambda_1
+
+W_2_Gsw <- InverseGivensTransform(theta_W_2_Gsw, n_2, p_common)
+dimnames(W_2_Gsw) <- list(names(coagTestsStnd)[11:14], c("Latent1", "Latent2"))
+W_2_Gsw * lambda_2
+
+W_3_Gsw <- InverseGivensTransform(theta_W_3_Gsw, n_3, p_common)
+dimnames(W_3_Gsw) <- list(names(coagTestsStnd)[15:23], c("Latent1", "Latent2"))
+W_3_Gsw * lambda_3
+
+#InverseGivensTransform(theta_W_4_Gsw_med, n_4, p_common)
+
+RightRotateCounterClockwise(diag(2), theta_W_4_Gsw,1,2) * lambda_4
 ```
 
 
+# Median Samples
+
 ```{r}
+posterior <- as.array(viHier)
 mcmc_intervals(posterior, pars = c("theta_W_0[1,1]", "theta_W_0[2,1]", "theta_W_0[3,1]", "theta_W_0[4,1]", "theta_W_0[5,1]", "theta_W_0[6,1]", "theta_W_0[7,1]"))
+mcmc_intervals(posterior, pars = c("theta_W_4[1,1]", "theta_W_4[2,1]", "theta_W_4[3,1]", "theta_W_4[4,1]", "theta_W_4[5,1]", "theta_W_4[6,1]", "theta_W_4[7,1]"))
 mcmc_intervals(posterior, pars = c("theta_W_0[1,2]", "theta_W_0[2,2]", "theta_W_0[3,2]", "theta_W_0[4,2]", "theta_W_0[5,2]", "theta_W_0[6,2]", "theta_W_0[7,2]"))
 
 posteriorMedian <- summary(vi)$summary[,"50%"]
@@ -170,14 +407,38 @@ theta_W_2_Gsw_med <- (posteriorMedian[grepl("theta_W_2", names(posteriorMedian))
 theta_W_3_Gsw_med <- (posteriorMedian[grepl("theta_W_3", names(posteriorMedian))])[1:d_W_3]
 theta_W_4_Gsw_med <- (posteriorMedian[grepl("theta_W_4", names(posteriorMedian))])[1:d_W_4]
 
-InverseGivensTransform(theta_W_0_Gsw_med, n_0, p_common)
-InverseGivensTransform(theta_W_1_Gsw_med, n_1, p_common)
-InverseGivensTransform(theta_W_2_Gsw_med, n_2, p_common)
-InverseGivensTransform(theta_W_3_Gsw_med, n_3, p_common)
-InverseGivensTransform(theta_W_4_Gsw_med, n_4, p_common)
+lambda_0_med <- c(posteriorMedian["lambda_0[1,1]"],posteriorMedian["lambda_0[1,2]"])
+lambda_1_med <- c(posteriorMedian["lambda_1[1,1]"],posteriorMedian["lambda_1[1,2]"])
+lambda_2_med <- c(posteriorMedian["lambda_2[1,1]"],posteriorMedian["lambda_2[1,2]"])
+lambda_3_med <- c(posteriorMedian["lambda_3[1,1]"],posteriorMedian["lambda_3[1,2]"])
+lambda_4_med <- c(posteriorMedian["lambda_4[1,1]"],posteriorMedian["lambda_4[1,2]"])
+
+W_0_Gsw_med <- InverseGivensTransform(theta_W_0_Gsw, n_0, p_common)
+dimnames(W_0_Gsw_med) <- list(names(coagTestsStnd)[1:4], c("Latent1", "Latent2"))
+W_0_Gsw * lambda_0_med
+
+W_1_Gsw_med <- InverseGivensTransform(theta_W_1_Gsw, n_1, p_common)
+dimnames(W_1_Gsw_med) <- list(names(coagTestsStnd)[5:10], c("Latent1", "Latent2"))
+W_1_Gsw * lambda_1_med
+
+W_2_Gsw_med <- InverseGivensTransform(theta_W_2_Gsw, n_2, p_common)
+dimnames(W_2_Gsw_med) <- list(names(coagTestsStnd)[11:14], c("Latent1", "Latent2"))
+W_2_Gsw * lambda_2_med
+
+W_3_Gsw_med <- InverseGivensTransform(theta_W_3_Gsw, n_3, p_common)
+dimnames(W_3_Gsw_med) <- list(names(coagTestsStnd)[15:23], c("Latent1", "Latent2"))
+W_3_Gsw_med * lambda_3_med
+
+#InverseGivensTransform(theta_W_4_Gsw_med, n_4, p_common)
+
+RightRotateCounterClockwise(diag(2), theta_W_4_Gsw_med,1,2) * lambda_4_med
+
+mcmc_intervals(posterior, pars = c("lambda_4_reversed[1,1]", "lambda_4_reversed[1,2]"))
+#mcmc_intervals(posterior, pars = c("gamma_4_reversed[1,1]", "gamma_4_reversed[1,2]"))
 ```
 
-
+Component 1: high bp; low BUN, low basedefexc, low pao2; high wbc, high hematocrit; low D-dimer; high PT
+Component 2:
 
 ```{r}
 theta_W_0_Mvc_med <- posteriorMedian[(2*d_W_0+1):(3*d_W_0)]
@@ -192,3 +453,15 @@ InverseGivensTransform(theta_W_2_Mvc_med, n_2, p_common)
 InverseGivensTransform(theta_W_3_Mvc_med, n_3, p_common)
 InverseGivensTransform(theta_W_4_Mvc_med, n_4, p_common)
 ```
+
+
+```{r}
+mcmc_intervals(posterior, pars = c("lambda_0_reversed[1,1]", "lambda_0_reversed[2,1]", "lambda_0_reversed[3,1]", "lambda_0_reversed[4,1]", "lambda_0_reversed[5,1]", "lambda_0_reversed[6,1]", "lambda_0_reversed[7,1]"))
+mcmc_intervals(posterior, pars = c("lambda_0_reversed[1,2]", "lambda_0_reversed[2,2]", "lambda_0_reversed[3,2]", "lambda_0_reversed[4,2]", "lambda_0_reversed[5,2]", "lambda_0_reversed[6,2]", "lambda_0_reversed[7,2]"))
+```
+
+```{r}
+mcmc_intervals(posterior, pars = c("theta_W_3[1,1]", "theta_W_3[2,1]", "theta_W_3[3,1]", "theta_W_3[4,1]", "theta_W_3[5,1]", "theta_W_3[6,1]", "theta_W_3[7,1]"))
+mcmc_intervals(posterior, pars = c("theta_W_3[1,2]", "theta_W_3[2,2]", "theta_W_3[3,2]", "theta_W_3[4,2]", "theta_W_3[5,2]", "theta_W_3[6,2]", "theta_W_3[7,2]"))
+```
+

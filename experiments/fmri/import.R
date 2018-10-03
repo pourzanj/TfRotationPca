@@ -218,22 +218,52 @@ W1 <- tibble(sampleId = 1:1000,
              rest_88 = sRest88$theta_principal[,1], att_88 = sAtt88$theta_principal[,1],
              rest_89 = sRest89$theta_principal[,1], att_89 = sAtt89$theta_principal[,1])
 
+W1 <- tibble(sampleId = 1:1000, 
+             Resting_54 = sRest54$theta_lower[,78], Active_54 = sAtt54$theta_lower[,78],
+             Resting_55 = sRest55$theta_lower[,78], Active_55 = sAtt55$theta_lower[,78],
+             Resting_56 = sRest56$theta_lower[,78], Active_56 = sAtt56$theta_lower[,78],
+             Resting_57 = sRest57$theta_lower[,78], Active_57 = sAtt57$theta_lower[,78],
+             Resting_58 = sRest58$theta_lower[,78], Active_58 = sAtt58$theta_lower[,78],
+             Resting_59 = sRest59$theta_lower[,78], Active_59 = sAtt59$theta_lower[,78],
+             Resting_60 = sRest60$theta_lower[,78], Active_60 = sAtt60$theta_lower[,78],
+             Resting_63 = sRest63$theta_lower[,78], Active_63 = sAtt63$theta_lower[,78],
+             Resting_91 = sRest91$theta_lower[,78], Active_91 = sAtt91$theta_lower[,78],
+             Resting_94 = sRest94$theta_lower[,78], Active_94 = sAtt94$theta_lower[,78],
+             Resting_61 = sRest61$theta_lower[,78], Active_61 = sAtt61$theta_lower[,78],
+             Resting_78 = sRest78$theta_lower[,78], Active_78 = sAtt78$theta_lower[,78],
+             Resting_64 = sRest64$theta_lower[,78], Active_64 = sAtt64$theta_lower[,78],
+             Resting_32 = sRest32$theta_lower[,78], Active_32 = sAtt32$theta_lower[,78],
+             Resting_42 = sRest42$theta_lower[,78], Active_42 = sAtt42$theta_lower[,78],
+             Resting_51 = sRest51$theta_lower[,78], Active_51 = sAtt51$theta_lower[,78],
+             Resting_2 = sRest2$theta_lower[,78], Active_2 = sAtt2$theta_lower[,78],
+             Resting_3 = sRest3$theta_lower[,78], Active_3 = sAtt3$theta_lower[,78],
+             Resting_82 = sRest82$theta_lower[,78], Active_82 = sAtt82$theta_lower[,78],
+             Resting_83 = sRest83$theta_lower[,78], Active_83 = sAtt83$theta_lower[,78],
+             Resting_84 = sRest84$theta_lower[,78], Active_84 = sAtt84$theta_lower[,78],
+             Resting_85 = sRest85$theta_lower[,78], Active_85 = sAtt85$theta_lower[,78],
+             Resting_87 = sRest87$theta_lower[,78], Active_87 = sAtt87$theta_lower[,78],
+             Resting_88 = sRest88$theta_lower[,78], Active_88 = sAtt88$theta_lower[,78],
+             Resting_89 = sRest89$theta_lower[,78], Active_89 = sAtt89$theta_lower[,78])
+
 quick_quantile <- function(x, prob) quantile(x, probs = c(prob))[1]
 
 W1 %>%
   gather(sample, sampleValue, -sampleId) %>%
-  separate(sample, c("activity", "id"), sep = "_") %>%
-  mutate_at(vars(activity, id), as.factor) %>%
-  filter(id %in% c(54,82,83,84,88)) %>%
-  group_by(activity, id) %>%
+  separate(sample, c("activity", "ID"), sep = "_") %>%
+  mutate_at(vars(activity, ID), as.factor) %>%
+  filter(ID %in% c(54,82,83,84,88)) %>%
+  group_by(activity, ID) %>%
   summarize(Q2_5 = quick_quantile(sampleValue, 0.025),
             Q50 = quick_quantile(sampleValue, 0.5),
             Q97_5 = quick_quantile(sampleValue, 0.975)) %>%
   
-  ggplot(aes(activity, group = id, color = id)) +
+  ggplot(aes(activity, group = ID, color = ID)) +
   geom_point(aes(y = Q50),position=position_dodge(.2)) +
   geom_line(aes(y= Q50),position=position_dodge(.2)) +
-  geom_errorbar(aes(ymin = Q2_5, ymax = Q97_5), width = 0.3,position=position_dodge(.2))
+  geom_errorbar(aes(ymin = Q2_5, ymax = Q97_5), width = 0.3,position=position_dodge(.2)) +
+  xlab("State") +
+  ylab(expression(theta[1*","*7*8])) +
+  ylim(0.09, 0.23)
 
 
 ##########################################
@@ -278,12 +308,86 @@ system.time(vi <- vb(m, data = dat,
 s <- rstan::extract(vi)
 sAtt <- rstan::extract(viAtt)
 
+save(s, sAtt, file = "experiments/fmri/hierSamples.Rdata")
+
 sAtt$theta_principal54 %>% qplot
 sAtt$theta_principal82 %>% qplot
 sAtt$theta_principal83 %>% qplot
 sAtt$theta_principal84 %>% qplot
 sAtt$theta_principal88 %>% qplot
 sAtt$mu_hier %>% qplot
+sAtt$sigma_hier %>% qplot
+
+s$theta_principal54 %>% qplot
+s$theta_principal82 %>% qplot
+s$theta_principal83 %>% qplot
+s$theta_principal84 %>% qplot
+s$theta_principal88 %>% qplot
+s$mu_hier %>% qplot
+s$sigma_hier %>% qplot
+
+s$theta_lower54[,78] %>% qplot
+
+#plot posterior of mean angle param
+posteriorHier <- tibble(Active = s$mu_hier, Resting = s$mu_hier) %>%
+  gather(State, Value) %>%
+  group_by(State) %>%
+  summarize(Q2 = quick_quantile(Value, 0.025),
+            Q50 = quick_quantile(Value, 0.5),
+            Q97 = quick_quantile(Value, 0.975))
+posteriorHier %>%
+  ggplot(aes(State)) +
+  geom_point(aes(y=Q50)) +
+  geom_errorbar(aes(ymin = Q2, ymax = Q97), width = 0.3) +
+  ylab(expression(theta[h*i*e*r]))
+  
+
+posteriorHier <- tibble(att_mu = sAtt$mu_hier, att_sigma = sAtt$sigma_hier,
+                        rest_mu = s$mu_hier, rest_sigma = s$sigma_hier) %>%
+  mutate(att_lower = att_mu - 2*att_sigma, att_upper = att_mu + 2*att_sigma,
+         rest_lower = rest_mu - 2*rest_sigma, rest_upper = rest_mu + 2*rest_sigma) %>%
+  select(-att_sigma, -rest_sigma) %>%
+  gather(var, value) %>%
+  separate(var, c("activity", "par"), sep = "_") %>%
+  mutate_at(vars(activity, par), as.factor) %>%
+  group_by(activity, par) %>%
+  summarize(Q2 = quick_quantile(value, 0.025),
+            Q50 = quick_quantile(value, 0.5),
+            Q97 = quick_quantile(value, 0.975)) %>%
+  mutate(value = ifelse(par == "lower", Q2,
+                        ifelse(par == "mu", Q50, Q97))) %>%
+  select(-Q2, -Q50, -Q97)
+
+posteriorHier %>%
+  spread(par, value) %>%
+  ungroup %>%
+  ggplot(aes(activity)) +
+  geom_point(aes(y = mu)) +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.3)
+
+W1_hier <- tibble(sampleId = 1:1000, 
+             Resting_54 = s$theta_lower54[,78], Active_54 = sAtt$theta_lower54[,78],
+             Resting_82 = s$theta_lower82[,78], Active_82 = sAtt$theta_lower82[,78],
+             Resting_83 = s$theta_lower83[,78], Active_83 = sAtt$theta_lower83[,78],
+             Resting_84 = s$theta_lower84[,78], Active_84 = sAtt$theta_lower84[,78],
+             Resting_88 = s$theta_lower88[,78], Active_88 = sAtt$theta_lower88[,78])
+
+W1_hier %>%
+  gather(sample, sampleValue, -sampleId) %>%
+  separate(sample, c("activity", "ID"), sep = "_") %>%
+  mutate_at(vars(activity, ID), as.factor) %>%
+  group_by(activity, ID) %>%
+  summarize(Q2_5 = quick_quantile(sampleValue, 0.025),
+            Q50 = quick_quantile(sampleValue, 0.5),
+            Q97_5 = quick_quantile(sampleValue, 0.975)) %>%
+  
+  ggplot(aes(activity, group = ID, color = ID)) +
+  geom_point(aes(y = Q50),position=position_dodge(.2)) +
+  geom_line(aes(y= Q50),position=position_dodge(.2)) +
+  geom_errorbar(aes(ymin = Q2_5, ymax = Q97_5), width = 0.3,position=position_dodge(.2)) +
+  xlab("State") +
+  ylab(expression(theta[1*","*7*8])) +
+  ylim(0.09, 0.23)
 
 # N <- 15
 # W <- InverseGivensTransform(c(0,0), 3, 1)

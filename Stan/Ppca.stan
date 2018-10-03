@@ -218,9 +218,12 @@ data {
   
   int d;
   
+  real lowerAngle;
+  real upperAngle;
+  
   real sigmaSqHyperPrior;
-  real<lower=0> ardHyperHyperPrior;
-  real<lower=0> sparseHyperHyperPrior;
+  //real<lower=0> ardHyperHyperPrior;
+  //real<lower=0> sparseHyperHyperPrior;
   
   int N; //num of observations
   matrix[n,n] SigmaHat;
@@ -228,7 +231,7 @@ data {
 
 parameters {
   //Proteins
-  vector<lower = -pi()/2, upper = pi()/2>[min(p, n-1)] theta_principal;
+  vector<lower = lowerAngle, upper = upperAngle>[min(p, n-1)] theta_principal;
   vector<lower = -pi()/2, upper = pi()/2>[d-min(p, n-1)] theta_lower;
   positive_ordered[p] lambda_reversed;
   
@@ -241,9 +244,9 @@ parameters {
 transformed parameters{
   
   matrix[n, p] W;
-  vector<lower=0>[p] lambda;
+  vector<lower=0>[p] lambdaSq;
 
-  for (i in 1:p) lambda[i] = lambda_reversed[p - i + 1];
+  for (i in 1:p) lambdaSq[i] = pow(lambda_reversed[p - i + 1], 2);
 
   W = area_form_lp(theta_principal, theta_lower, n, p);
 
@@ -259,15 +262,15 @@ model {
   
   //control on lambda size
   //ardHyperPrior ~ normal(0.1, ardHyperHyperPrior);
-  lambda_reversed ~ cauchy(0, ardHyperHyperPrior);
+  //lambda_reversed ~ cauchy(0, ardHyperPrior);
   
   //sparse Pca priors on W
   //sparseHyperPrior ~ normal(0.1, 10);
-  for(i in 1:p) W[,i] ~ cauchy(0, sparseHyperHyperPrior);
+  //for(i in 1:p) W[,i] ~ cauchy(0, sparseHyperHyperPrior);
   
   //PPCA likelihood from Ch. 12 of Kevin Murphy
   Id_n = diag_matrix(rep_vector(1, n));
-  C = W*W' + sigmaSq*Id_n;
+  C = W*diag_matrix(lambdaSq)*W' + sigmaSq*Id_n;
   
   target += -(N/2)*log(determinant(C)) -(N/2)*trace(C\SigmaHat);
 }

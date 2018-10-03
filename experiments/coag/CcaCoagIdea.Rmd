@@ -10,7 +10,7 @@ output: html_notebook
 * Complete Blood Count (CBC) $x_{\mathrm{cbc}}$
     + wbc, hgb, hct, plts
 * Cascade Proteins $x_{\mathrm{cascade}}$
-    + factorii, factorv, factorvii, factorviii, factorix, factorx, ddimer, pc, atiii, fibrinogen_rlab
+    + factorii, factorv, factorvii, factorviii, factorix, factorx, pc, atiii, fibrinogen_rlab
 * TEG $x_{\mathrm{teg}}$
     + R, K, MA, Ly30
 * PT/PTT $x_{\mathrm{pt}}$
