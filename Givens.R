@@ -1,10 +1,10 @@
 LeftRotateCounterClockwise <- function(A, angle, i, j){
-
+  
   #rotating will keep all rows the same except for row i and j
   RA <- A
   RA[i,] <- cos(angle)*A[i,] - sin(angle)*A[j,]
   RA[j,] <- sin(angle)*A[i,] + cos(angle)*A[j,]
-
+  
   return(RA)
 }
 
