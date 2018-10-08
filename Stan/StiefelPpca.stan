@@ -232,8 +232,8 @@ model {
   // sigmaSq ~ normal(1, sigmaSqHyperPrior);
   
   //PPCA likelihood from Ch. 12 of Kevin Murphy
-  // Id_n = diag_matrix(rep_vector(1, n));
-  // C = W*diag_matrix(lambdaSq)*W' + sigmaSq*Id_n;
-  // 
-  // target += -(N/2)*log(determinant(C)) -(N/2)*trace(C\SigmaHat);
+  Id_n = diag_matrix(rep_vector(1, n));
+  C = W*diag_matrix(lambdaSq)*W' + sigmaSq*Id_n;
+
+  target += -(N/2)*log(determinant(C)) -(N/2)*trace(C\SigmaHat);
 }

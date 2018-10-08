@@ -7,7 +7,7 @@ output: html_notebook
 
 ```{r}
 n <- 3
-p <- 1
+p <- 2
 d <- n*p-p*(p+1)/2
 
 source("../../Givens.R")
@@ -16,7 +16,7 @@ W <- InverseGivensTransform(c(0,0,0), 3, 2)
 
 W <- InverseGivensTransform(rep(0.0, d), n, p)
 
-N <- 100
+N <- 15
 ThreeTwo <- GenerateHighDimData(n = 3, p = 2, W = W, LambdaVec = c(2, 1), sd = 1.0, N = N)
 EigenNetwork <- GenerateHighDimData(n = n, p = p, W = W, LambdaVec = c(120, 100, 80), sd = 1.0, N = N)
 
@@ -45,6 +45,10 @@ library(rstan)
 sigmaSqHyperPrior <- 10
 xMat <- as.matrix(x[,1:3])
 SigmaHat <- (1/N)*t(xMat) %*% xMat
+
+dat <- list(N = n, P = p, num_obs = N, SigmaHat = SigmaHat, sigmaSqHyperPrior = sigmaSqHyperPrior)
+
+fit <- stan(file = "../../Stan/ppca_optimized.stan", data = dat, chains = 1, iter = 1)
 
 xMat <- as.matrix(ThreeTwo$x)
 SigmaHat <- (1/N)*t(xMat) %*% xMat
