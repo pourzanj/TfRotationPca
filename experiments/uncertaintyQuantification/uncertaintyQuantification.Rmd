@@ -3,21 +3,27 @@ title: "Uncertainty Quantification of PCA"
 output: html_notebook
 ---
 
+```{r load}
+library(tidyverse)
+library(rstan)
+
+source("../../Givens.R")
+source("../../GenerateSynthetic.R")
+```
+
 # Generate Synthetic 3D Data that lies on a 2D plane
 
 ```{r}
+
 n <- 3
 p <- 2
 d <- n*p-p*(p+1)/2
 
-source("../../Givens.R")
-source("../../GenerateSynthetic.R")
-W <- InverseGivensTransform(c(0,0,0), 3, 2)
-
 W <- InverseGivensTransform(rep(0.0, d), n, p)
 
-N <- 15
-ThreeTwo <- GenerateHighDimData(n = 3, p = 2, W = W, LambdaVec = c(2, 1), sd = 1.0, N = N)
+N <- 1000
+TwoSeventy <- GenerateHighDimData(n = n, p = p, W = W, LambdaVec = c(100, 50, 10), sd = 1.0, N = N)
+ThreeTwo <- GenerateHighDimData(n = 3, p = 2, W = W, LambdaVec = c(5, 4), sd = 1.0, N = N)
 EigenNetwork <- GenerateHighDimData(n = n, p = p, W = W, LambdaVec = c(120, 100, 80), sd = 1.0, N = N)
 
 #x <- ThreeTwo$x %>% tbl_df
@@ -49,6 +55,12 @@ SigmaHat <- (1/N)*t(xMat) %*% xMat
 dat <- list(N = n, P = p, num_obs = N, SigmaHat = SigmaHat, sigmaSqHyperPrior = sigmaSqHyperPrior)
 
 fit <- stan(file = "../../Stan/ppca_optimized.stan", data = dat, chains = 1, iter = 1)
+
+xMat <- as.matrix(TwoSeventy$x)
+SigmaHat <- (1/N)*t(xMat) %*% xMat
+dat <- list(N = n, P = p, num_obs = N, SigmaHat = SigmaHat, sigmaSqHyperPrior = sigmaSqHyperPrior)
+fit <- stan(file = "../../Stan/ppca_optimized.stan", data = dat, chains = 1, iter = 1)
+
 
 xMat <- as.matrix(ThreeTwo$x)
 SigmaHat <- (1/N)*t(xMat) %*% xMat

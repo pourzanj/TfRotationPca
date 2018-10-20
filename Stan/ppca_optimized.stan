@@ -187,6 +187,6 @@ model {
 
   sigmaSq ~ normal(1, sigmaSqHyperPrior);
 
-  C = Y*diag_matrix(lambdaSq)*Y' + sigmaSq;
+  C = Y*diag_matrix(lambdaSq)*Y' + diag_matrix(rep_vector(sigmaSq, N));
   target += -(num_obs/2)*log(determinant(C)) - (num_obs/2)*trace(C\SigmaHat);
 }

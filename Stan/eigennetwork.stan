@@ -155,16 +155,19 @@ parameters {
   vector[D] x;
   vector[D] y;
   
-  vector<lower=0>[P] L;
+  positive_ordered[P] L_rev;
   real c;
 }
 transformed parameters{
   vector[D] theta_raw;
   vector[D] theta;
   vector[D] r;
+  vector[P] L;
   
   matrix[N,P] U;
-  matrix[N,N] Probs;
+  for(p in 1:P) {
+    L[p] = L_rev[P-p+1];
+  }
 
   // transform donut
   for(d in 1:D) {
@@ -174,9 +177,9 @@ transformed parameters{
   }
   
   U = givens_lp(N,P,theta);
-  Probs = Phi(quad_form(diag_matrix(L), U') + c);
 }
 model {
+  matrix[N,N] Probs = Phi(quad_form(diag_matrix(L), U') + c);
   r ~ normal(1.0, 0.1);
 
   L ~ normal(0, P);

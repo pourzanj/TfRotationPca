@@ -1,0 +1,150 @@
+---
+title: "PPCA Using the Givens Representation"
+output: html_notebook
+---
+
+```{r load}
+library(tidyverse)
+library(rstan)
+library(plotly)
+
+source("../../Givens.R")
+source("../../GenerateSynthetic.R")
+source("../../Plotting.R")
+```
+
+# 3D Data on a 1D Line
+
+## Create Synthetic Data
+
+```{r}
+# set dimensions
+n <- 3
+p <- 1
+d <- n*p-p*(p+1)/2
+
+# create a flat plane matrix
+W <- InverseGivensTransform(c(0.0, pi/2), n, p)
+
+N <- 100
+data_three_one <- GenerateHighDimData(n = n, p = p, W = W, LambdaVec = c(2), sd = 1.0, N = N)
+
+x <- data_three_one$x
+#save(x, file = "experiments/uncertaintyQuantification/unstableEstimate.Rdata")
+```
+
+## Get Posterior in Stan with Mirrored Givens Representation
+
+```{r, message=FALSE}
+x_matrix <- as.matrix(x)
+Sigma_hat <- (1/N)*t(x_matrix) %*% x_matrix
+
+dat <- list(n = n, p = p, N = N, SigmaHat = Sigma_hat)
+fit <- stan(file = "../../Stan/new_khatri/ppca_patch.stan", data = dat, chains = 1, iter = 1e4)
+```
+
+## Get Posterior in Stan without Mirrored Givens Representation
+
+## Get Posterior Using EMHMC
+
+## Compare Posteriors
+
+```{r}
+extract(fit, pars = "theta")$theta[,1] %>% qplot
+extract(fit, pars = "theta")$theta[,2] %>% qplot
+```
+
+
+# 3D Data on a 2D Plane
+
+## Create Simulated Data
+
+```{r}
+# set dimensions
+n <- 3
+p <- 2
+d <- n*p-p*(p+1)/2
+
+# create a flat plane matrix
+W <- InverseGivensTransform(rep(0.0, d), n, p)
+
+N <- 15
+data_three_two <- GenerateHighDimData(n = n, p = p, W = W, LambdaVec = c(2,1), sd = 1.0, N = N)
+
+#x <- ThreeTwo$x %>% tbl_df
+#save(x, file = "experiments/uncertaintyQuantification/unstableEstimate.Rdata")
+load(file = "simulated_data_three_two.Rdata")
+```
+
+## Plot Frequentist Point Estimate (Classical PCA)
+
+```{r}
+W_hat <- princomp(x)$loadings
+lambda_hat <- princomp(x)$sdev
+
+# use special function to translate surface to a format plotly can use
+points_hat <- GetSurfacePoints(x$V1, x$V2, W_hat[,1:2])
+points_true <- GetSurfacePoints(x$V1, x$V2, W)
+
+# plot points and surface
+plot_ly(x, x = ~V1, y = ~V2, z = ~V3) %>% add_markers() %>%
+  add_surface(x = ~points_hat$x, y = ~points_hat$y, z = ~points_hat$z, opacity = 0.98, colorscale = list("black", "orange"))
+
+# plot surfaces together
+plot_ly(showscale = FALSE) %>%
+  add_surface(x = ~points_hat$x, y = ~points_hat$y, z = ~points_hat$z, opacity = 0.98) %>%
+  add_surface(x = ~points_true$x, y = ~points_true$y, z = ~points_true$z)
+```
+
+Because of small amount of data and low signal to noise ratio, maxmimum likelihood estimate is bad. Lambda values are `r princomp(x)$sdev` and would lead us to believe data is two dimensional, but we would pick the wrong subspace with maximum likelihood.
+
+## Get Posterior in Stan with Givens Representation
+
+```{r, message=FALSE}
+x_matrix <- as.matrix(x)
+Sigma_hat <- (1/N)*t(x_matrix) %*% x_matrix
+
+dat <- list(n = n, p = 3, N = N, SigmaHat = Sigma_hat)
+fit <- stan(file = "../../Stan/new_khatri/ppca_patch.stan", data = dat, chains = 1, iter = 1e4)
+```
+
+## Explore Posterior
+
+```{r}
+s <- rstan::extract(fit)
+lambda_posterior <- tibble(Lambda1 = s$lambdaReversed[,3], Lambda2 = s$lambdaReversed[,2], Lambda3 = s$lambdaReversed[,1]) %>%
+  gather(Parameter, Sample)
+
+cbPalette <- c("grey45","black","darkorange")
+
+lambda_posterior %>%
+  ggplot() +
+  geom_histogram(aes(x = Sample, group = Parameter, fill = Parameter), alpha = 0.4, position = "identity", binwidth = 0.05) +
+  scale_fill_manual(values=cbPalette) +
+  xlim(0,3) +
+  geom_vline(xintercept = 1.52, color = "grey45", alpha = 1, size = 1.0) +
+  geom_vline(xintercept = 1.27, color = "black", alpha = 1, size = 1.0) +
+  geom_vline(xintercept = 0.77, color = "darkorange", alpha = 1, size = 1.0) +
+  xlab("Singular Values") +
+  ylab("Posterior Sample Counts") +
+  theme(text = element_text(size=14))# +
+  #facet_grid(Parameter ~.)
+```
+
+```{r}
+angle_samples <- tibble(GT = s$theta[1:9999,3], EMHMC = byrne_angles$X3*pi/2) %>%
+  gather(Method, theta)
+
+cbPalette <- c("black","darkorange")
+
+angle_samples %>%
+  ggplot(aes(x = theta, group = Method, fill = Method)) +
+  geom_histogram(alpha = 0.4, position = "identity", binwidth = 0.05) +
+  scale_fill_manual(values=cbPalette) +
+  xlab(expression(theta[2*3])) +
+  ylab("Posterior Sample Counts") +
+  theme(text = element_text(size=14))
+```
+
+# Scaling and Benchmarking
+

@@ -39,10 +39,10 @@ functions {
     // start from the back which is just I_np
     B[D+1] = G;
     for(p in 1:P_){
-      for(n in (p+1):N){
+      int p_rev = P_-p+1;
+      for(n in (p_rev+1):N){
         
-        int p_rev = P_-p+1;
-        int n_rev = N-n+p+1;
+        int n_rev = N-n+p_rev+1;
         
         // apply left rotation to G
         row_vector[P] G_i_temp = cos(theta[d])*G[p_rev,] - sin(theta[d])*G[n_rev,];
@@ -136,6 +136,7 @@ functions {
 
     //////////////////////////
     // 4. increment lp with log determinant of one form matrix and return final orthogonal N x P matrix
+    print(log_determinant(A));
     target += log_determinant(A);
 
     return(B[1]);

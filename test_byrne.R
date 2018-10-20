@@ -4,7 +4,7 @@ source("byrne.R")
 # Generate
 print("~~~Generating data and lp")
 
-m <- 270
+m <- 50
 p <- 3
 
 U <- diag(m)[,1:p]

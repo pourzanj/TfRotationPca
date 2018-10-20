@@ -47,5 +47,5 @@ GivensTransform <- function(W) {
     }
   }
   
-  return(angles/pi)
+  return(angles)
 }
