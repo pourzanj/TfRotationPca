@@ -77,6 +77,32 @@ functions {
     return(theta);
   }
   
+  vector set_theta(int n, int p, vector theta_lon, vector theta_lat) {
+
+    int idx = 1;
+    int idx_lat = 1;
+    int d = n*p - (p*(p+1))/2;
+    vector[d] theta;
+    
+    // If n==p then we shouldn't do the last column will have no degrees of freedom
+    // thus there is no angle corresponding to htat las column.
+    int pp = p;
+    if(p == n) pp = p-1;
+    for(i in 1:pp) {
+      
+      theta[idx] = theta_lon[i];
+      
+      if(i <= n-2) { 
+        theta[(idx+1):(idx+n-i-1)] = theta_lat[idx_lat:(idx_lat+n-i-1-1)];
+      }
+      
+      idx = idx + n-i;
+      idx_lat = idx_lat + n-i-1;
+    }
+    
+    return(theta);
+  }
+  
   // return Y = R_12 ... R_1n R_23 ... R_2n ... R_pp+1 ... Rpn I_np
   // where I_np is the first p columns of the n x n identity matrix
   matrix givens_lp(int n, int p, vector theta) {
@@ -90,7 +116,11 @@ functions {
     
     // fill in reverse order from right to left. This way we only have to
     // store p colums at a time instead of n
-    for(i in 1:p) {
+    // If n==p then we shouldn't do the last column will have no degrees of freedom
+    // thus there is no angle corresponding to htat las column.
+    int pp = p;
+    if(p == n) pp = p-1;
+    for(i in 1:pp) {
       
       int i_rev = p-i+1; // create a reverse index that starts from p and goes down to 1
       
@@ -108,7 +138,11 @@ functions {
         Y[j_rev,] = Y_j_temp;
         
         // update jacobian determinant with this angle
-        target += (j_rev-i_rev-1)*log(cos(theta_ij));
+        // only update target for latiduninal angles. otherwise we might
+        // get a cosine that is negative and can't take log
+        if(j_rev > (i_rev+1) ) {
+          target += (j_rev-i_rev-1)*log(cos(theta_ij));
+        }
         
         // go to the next angle to the left
         idx = idx - 1;
@@ -139,7 +173,7 @@ transformed parameters{
 
   theta_lon = atan2_vec(x_lon, y_lon);
   r = hypot_vec(x_lon, y_lon);
-  theta = mirror(n, p, theta_lon, theta_lat);
+  theta = set_theta(n, p, theta_lon, theta_lat);
   
   Y = givens_lp(n,p,theta);
 }

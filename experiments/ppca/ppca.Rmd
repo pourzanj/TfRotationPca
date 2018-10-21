@@ -45,13 +45,17 @@ fit <- stan(file = "../../Stan/new_khatri/ppca_patch.stan", data = dat, chains =
 
 ## Get Posterior in Stan without Mirrored Givens Representation
 
-## Get Posterior Using EMHMC
+```{r}
+fit_no_mirror <- stan(file = "../../Stan/new_khatri/ppca_patch_no_mirror.stan", data = dat, chains = 1, iter = 1e4)
+```
 
 ## Compare Posteriors
 
 ```{r}
 extract(fit, pars = "theta")$theta[,1] %>% qplot
 extract(fit, pars = "theta")$theta[,2] %>% qplot
+
+extract(fit_no_mirror, pars = "theta")$theta[,2] %>% qplot
 ```
 
 
@@ -145,6 +149,16 @@ angle_samples %>%
   ylab("Posterior Sample Counts") +
   theme(text = element_text(size=14))
 ```
+
+## Compare to Posterior Using EMHMC
+
+```{r}
+fit_ppca_likelihood <- stan("../../Stan/new_khatri/ppca_likelihood.stan", data = dat, chains = 1, iter = 1)
+
+unconstrain_pars(fit_ppca_likelihood, list(Y = W, lambdaReversed = c(2,1), sigmaSq = 1.0))
+emhmc_onesample_eigennetwork(U0 = W, L0 = c(2,1), c0 = , lp_ppca, grad_lp_ppca, h = , nsteps = 20)
+```
+
 
 # Scaling and Benchmarking
 

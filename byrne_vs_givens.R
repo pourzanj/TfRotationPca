@@ -2,13 +2,15 @@ system.time(samples <- emhmc_sample_eigennetwork(nsamples = 1000, U, L, c, lp, g
 qplot(1:1001, samples$U1_1)
 
 Y[Y == -1] <- 0
+Y <- Y_Pro
+Y[is.na(Y)] <- 0
 
-dat <- list(N=m, P=p, Y=Y)
+dat <- list(n=230, p=3, Y=Y)
 
 # set init
-N <- 270
-P <- 3
-D <- N*P - P*(P+1)/2
+n <- 270
+p <- 3
+d <- n*p - p*(p+1)/2
 
 x <- rep(0.0, D)
 y <- rep(0.0, D)
@@ -26,6 +28,6 @@ fit_optim <- optimizing(m, data = dat)
 fit_vb <- vb(m, data = dat)
 
 fit <- stan(file = "Stan/eigennetwork.stan", data = dat, chains = 1, iter = 1000, refresh = 1)
+fit <- stan(file = "../../Stan/new_khatri/eigennetwork.stan", data = dat, chains = 1, iter = 1000, refresh = 1)
 
-print(N <- 270
-P <- 3
+

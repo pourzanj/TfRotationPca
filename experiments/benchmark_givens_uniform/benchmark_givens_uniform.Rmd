@@ -1,0 +1,30 @@
+---
+title: "Benchmark Givens and EMHMC on the Uniform Stiefel Manifold"
+output: html_notebook
+---
+
+```{r load}
+library(tidyverse)
+library(rstan)
+
+source("../../byrne.R")
+```
+
+
+# Givens in Stan
+
+## p = 1
+
+```{r}
+fit_10_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e1, p = 1), chains = 1, iter = 1)
+fit_100_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 1), chains = 1, iter = 1)
+fit_1000_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e3, p = 1), chains = 1, iter = 1)
+fit_10000_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e4, p = 1), chains = 1, iter = 1)
+```
+
+# EMHMC
+
+```{r}
+emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e1)[,1], lp_givens_uniform, grad_lp_givens_uniform, h = 0.005, nsteps = 20)
+```
+

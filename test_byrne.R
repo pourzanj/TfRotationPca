@@ -4,12 +4,12 @@ source("byrne.R")
 # Generate
 print("~~~Generating data and lp")
 
-m <- 50
+m <- 270
 p <- 3
 
 U <- diag(m)[,1:p]
-L <- c(3, 2, 1)
-c <- 0.1
+L <- c(120, 100, 80)
+c <- 60.0
 
 Y <- generate_synthetic_data(U, L, c)
 print("Y: ")

@@ -22,7 +22,7 @@ generate_synthetic_data <- function(U, L, c) {
 # Y should be m x m w/ 0 on the diagonal. 1 when
 # event occured and 0 when event didn't occur. We're taking
 # lower diaganol only so it doesn't matter if it's not symmetric
-generate_lp <- function(Y) {
+generate_lp_eigennetwork <- function(Y) {
   
   lp <- function(U, L, c) {
       
@@ -36,7 +36,7 @@ generate_lp <- function(Y) {
   }
 }
 
-generate_grad_lp <- function(Y) {
+generate_grad_lp_eigennetwork <- function(Y) {
   
   grad_lp <- function(U, L, c) {
     
@@ -142,6 +142,58 @@ emhmc_onesample_eigennetwork <- function(U0, L0, c0, lp, grad_lp, h, nsteps) {
   }
 }
 
+lp_givens_uniform <- function(U) 1.0
+grad_lp_givens_uniform <- function(U) matrix(0.0, nrow = nrow(U), ncol = ncol(U))
+
+emhmc_onesample_givens_uniform <- function(U0, lp, grad_lp, h, nsteps) {
+  
+  m <- nrow(U0)
+  p <- ncol(U0)
+  
+  # draw momentum
+  v_U <- rnorm(m*p) %>% matrix(nrow = m)
+  
+  # orthogonalize velocity for U
+  v_U <- stiefel_orthogonalize(v_U, U0)
+  
+  # compute total energy
+  v <- c(v_U)
+  H0 <- lp(U0) - 0.5*sum(v^2)
+  
+  # copy parameters
+  U <- U0
+  
+  # simulate Hamiltonian Dynamics
+  for(t in 1:nsteps) {
+    
+    # update momentum and reorthoganolize
+    grad_lp_q <- unlist(grad_lp(U, L, c))
+    v_U <- v_U + (h[1]/2)*matrix(grad_lp_q[1:(m*p)], nrow=m)
+    v_U <- stiefel_orthogonalize(v_U, U)
+    
+    # update position for U
+    stiefel_flow <- compute_stiefel_flow(U, v_U, h[1])
+    U <- stiefel_flow$X
+    v_U <- stiefel_flow$V
+    
+    # update momentum and reorthoganolize
+    grad_lp_q <- unlist(grad_lp(U, L, c))
+    v_U <- v_U + (h[1]/2)*matrix(grad_lp_q[1:(m*p)], nrow=m)
+    v_U <- stiefel_orthogonalize(v_U, U)
+  }
+  
+  v <- c(v_U)
+  H1 <- lp(U) - 0.5*sum(v^2)
+  u <- runif(1)
+  
+  if(u < exp(H1 - H0)) {
+    return(list(U = U))
+  } else {
+    return(list(U = U))
+  }
+}
+
+
 emhmc_sample_eigennetwork <- function(nsamples, U0, L0, c0, lp, grad_lp, h, nsteps) {
   
   m <- nrow(U0)
@@ -174,3 +226,24 @@ emhmc_sample_eigennetwork <- function(nsamples, U0, L0, c0, lp, grad_lp, h, nste
                 "c"))
 }
 
+emhmc_sample_givens_uniform <- function(nsamples, U0, lp, grad_lp, h, nsteps) {
+  
+  m <- nrow(U0)
+  p <- ncol(U0)
+  
+  # copy parameters
+  U <- U0
+  
+  samples <- matrix(0.0, nrow = nsamples+1, ncol = m*p)
+  samples[1, 1:(m*p)] <- as.vector(U)
+  
+  for(s in 1:nsamples) {
+    sample <- emhmc_onesample_givens_uniform(U, lp, grad_lp, h, nsteps)
+    U <- sample$U
+    
+    samples[s+1, 1:(m*p)] <- as.vector(U)
+  }
+  
+  as_tibble(samples) %>%
+    set_names(paste0("U", rep(1:m, p), "_", rep(1:p, each=m)))
+}

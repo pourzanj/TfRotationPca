@@ -1,0 +1,95 @@
+---
+title: "Eigen Network"
+output: html_notebook
+---
+
+```{r setup}
+library(tidyverse)
+library(rstan)
+library(eigenmodel)
+library(coda)
+
+source("../../byrne.R")
+
+# load Butland's 230x230 protein-protein interaction
+# data from Hoff's eigen model package
+data(Y_Pro)
+```
+
+# Fit Using Givens in Stan
+
+```{r givens}
+# take NAs out and put in 0-1 Bernoulli format for Stan
+Y <- Y_Pro
+Y[is.na(Y)] <- 0
+dat <- list(n=230, p=3, Y=Y)
+
+# fit_givens <- stan(file = "../../Stan/new_khatri/eigennetwork.stan", data = dat, chains = 1, iter = 1000, refresh = 10)
+# saveRDS(fit_givens, "fit_givens.rds")
+fit_givens <- readRDS("fit_givnes.rds")
+
+givens_time_seconds <-  804
+```
+
+# Fit Using EMHMC
+
+```{r}
+# setup data, likelihood and grad likelihood
+# data should be either 1 or -1 in accordance with Byrne and Girolami
+Y <- Y_Pro
+Y[Y == 0] <- -1
+Y[is.na(Y)] <- 0
+
+lp <- generate_lp(Y)
+grad_lp <- generate_grad_lp(Y)
+
+# initalize U to first 3 standard basis vectors
+# initalize L and c to median values from Stan
+U <- diag(230)[,1:3]
+L <- c(-96.70, 123.15, -70.92)
+c <- -2.50
+
+# use HMC turning parameters from Byrne and Girolami
+# system.time(emhmc_samples <- emhmc_sample_eigennetwork(nsamples = 1000, U, L, c, lp, grad_lp, h = c(0.005, 0.1, 0.001), nsteps = 20))
+
+# save and load for speed and consistency
+# saveRDS(emhmc_samples, "emhmc_samples.rds")
+emhmc_samples <- readRDS("emhmc_samples.rds")
+emhmc_time_seconds <- 812
+```
+
+# Compare Posteriors
+
+```{r}
+s <- extract(fit_givens, pars = c("U", "L", "c"))
+
+givens_posterior <-
+  bind_cols(s$U[,1,] %>% as_tibble %>% set_names(c("U1_1", "U1_2", "U1_3")),
+            s$L %>%  as_tibble %>% set_names(c("L1", "L2", "L3")),
+            s$c %>% as_tibble %>% set_names(c("c"))) %>%
+  mutate(sample_id = row_number()) %>%
+  mutate(Method = "Givens")
+
+emhmc_posterior <- 
+  emhmc_samples %>%
+  select(U1_1, U1_2, U1_3, L1, L2, L3, c) %>%
+  filter(row_number() > 501) %>%
+  mutate(sample_id = row_number()) %>%
+  mutate(Method = "EMHMC")
+
+posteriors <- bind_rows(givens_posterior, emhmc_posterior)
+
+posteriors %>%
+  gather(Parameter, Value, -sample_id, -Method) %>%
+  ggplot(aes(sample_id, Value, color = Method)) +
+  geom_line() +
+  facet_grid(Parameter ~ .,scales = "free")
+```
+
+```{r}
+posteriors %>%
+  gather(Parameter, Value, -sample_id, -Method) %>%
+  group_by(Method, Parameter) %>%
+  summarize(n_eff = effectiveSize(Value))
+```
+
