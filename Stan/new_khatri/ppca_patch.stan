@@ -118,7 +118,11 @@ functions {
         Y[j_rev,] = Y_j_temp;
         
         // update jacobian determinant with this angle
-        target += (j_rev-i_rev-1)*log(cos(theta_ij));
+        // only update target for latiduninal angles. otherwise we might
+        // get a cosine that is negative and can't take log
+        if(j_rev > (i_rev+1) ) {
+          target += (j_rev-i_rev-1)*log(cos(theta_ij));
+        }
         
         // go to the next angle to the left
         idx = idx - 1;

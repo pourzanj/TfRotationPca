@@ -132,8 +132,11 @@ functions {
         // apply left rotation which affects rows of Y. we must keep updated 
         // rows in temp variable as oppose to updating Y in place 
         real theta_ij = theta[idx];
-        row_vector[p] Y_i_temp = cos(theta_ij)*Y[i_rev,] - sin(theta_ij)*Y[j_rev,];
-        row_vector[p] Y_j_temp = sin(theta_ij)*Y[i_rev,] + cos(theta_ij)*Y[j_rev,];
+        real cos_theta_ij = cos(theta_ij);
+        real sin_theta_ij = sin(theta_ij);
+        
+        row_vector[p] Y_i_temp = cos_theta_ij*Y[i_rev,] - sin_theta_ij*Y[j_rev,];
+        row_vector[p] Y_j_temp = sin_theta_ij*Y[i_rev,] + cos_theta_ij*Y[j_rev,];
         Y[i_rev,] = Y_i_temp;
         Y[j_rev,] = Y_j_temp;
         
@@ -141,7 +144,7 @@ functions {
         // only update target for latiduninal angles. otherwise we might
         // get a cosine that is negative and can't take log
         if(j_rev > (i_rev+1) ) {
-          target += (j_rev-i_rev-1)*log(cos(theta_ij));
+          target += (j_rev-i_rev-1)*log(cos_theta_ij);
         }
         
         // go to the next angle to the left
@@ -159,16 +162,20 @@ data {
 }
 transformed data {
   int d = n*p - p*(p+1)/2;
+  
+  // if p ==n the pth column does not have an angle in it
+  int pp = p;
+  if(p == n) pp = p-1;
 }
 parameters {
-  vector[p] x_lon;
-  vector[p] y_lon;
-  vector<lower=-pi()/2.0 + 1e-5,upper=pi()/2.0 - 1e-5>[d-p] theta_lat;
+  vector[pp] x_lon;
+  vector[pp] y_lon;
+  vector<lower=-pi()/2.0 + 1e-5,upper=pi()/2.0 - 1e-5>[d-pp] theta_lat;
 }
 transformed parameters{
-  vector[p] theta_lon;
+  vector[pp] theta_lon;
   vector[d] theta;
-  vector[p] r;
+  vector[pp] r;
   matrix[n,p] Y;
 
   theta_lon = atan2_vec(x_lon, y_lon);

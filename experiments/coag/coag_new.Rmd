@@ -6,7 +6,7 @@ output: html_notebook
 ```{r load}
 library(tidyverse)
 library(rstan)
-library(plotly)
+library(mnormt)
 
 source("../../Givens.R")
 source("../../GenerateSynthetic.R")
@@ -14,16 +14,6 @@ source("../../GenerateSynthetic.R")
 
 
 # Generate Synthetic Data
-
-```{r}
-D <- list(protein = 6, teg = 4) # dimensions of data
-D_z <- 2 + 1 + 1 # dimension of latent representation
-N_patients <- list(Assault = 16, GSW = 85, MVC = 52, SW = 21)
-
-draw_z <- function(N) matrix(rnorm(N*D_z),nrow=N,ncol=D_z)
-z <- map(N_patients, draw_z) # latent representations of each patient by group
-```
-
 
 $$
 \begin{pmatrix}
@@ -40,10 +30,85 @@ z_{\mathrm{common}}\\
 z_{\mathrm{teg}}\\
 z_{\mathrm{pt}}
 \end{pmatrix}
++
+\epsilon
 $$
 
-```{r}
+## Generate Latent Representation
 
+```{r}
+D <- list(protein = 6, teg = 4) # dimensions of data
+D_z <- 2 + 1 + 1 # dimension of latent representation
+J <- 4 # number of injury groups
+N_patients <- list(Assault = 16, GSW = 85, MVC = 52, SW = 21)
+
+draw_z <- function(N) matrix(rnorm(N*D_z),nrow=N,ncol=D_z)
+z <- map(N_patients, draw_z) # latent representations of each patient by group
+```
+
+## Generate Matrices
+
+```{r}
+# set dimensions of matrices
+# n is num of rows, p is num cols, d is num givens rotations
+n_prot <- D$protein
+p_W_prot <- 2
+p_B_prot <- 1
+d_W_prot <- n_prot*p_W_prot - p_W_prot*(p_W_prot + 1)/2
+d_B_prot <- n_prot*p_B_prot - p_B_prot*(p_B_prot + 1)/2
+
+n_teg <- D$teg
+p_W_teg <- 2
+p_B_teg <- 1
+d_W_teg <- n_teg*p_W_teg - p_W_teg*(p_W_teg + 1)/2
+d_B_teg <- n_teg*p_B_teg - p_B_teg*(p_B_teg + 1)/2
+```
+
+```{r}
+# generate an orthogonal matrix for each of the 4 groups
+# first start by specifying in the Givens coordinates then convert to orthogonal matrix
+theta_W_prot <- rmnorm(J, varcov = diag(rep(0.1, d_W_prot)))
+theta_B_prot <- rmnorm(J, varcov = diag(rep(0.05, d_B_prot)))
+theta_W_teg <- rmnorm(J, varcov = diag(rep(0.05, d_W_teg)))
+theta_B_teg <- rmnorm(J, varcov = diag(rep(0.02, d_B_teg)))
+
+W_prot <- map(1:J, function(i) theta_W_prot[i,]) %>% map(InverseGivensTransform, n = n_prot, p = p_W_prot)
+B_prot <- map(1:J, function(i) theta_B_prot) %>% map(InverseGivensTransform, n = n_prot, p = p_B_prot) %>% map(matrix, ncol = 1)
+W_teg <- map(1:J, function(i) theta_W_teg[i,]) %>% map(InverseGivensTransform, n = n_teg, p = p_W_teg)
+B_teg <- map(1:J, function(i) theta_B_teg[i,]) %>% map(InverseGivensTransform, n = n_teg, p = p_B_teg) %>% map(matrix, ncol = 1)
+  
+# generate diagonal term
+Lambda_prot <- map(1:J, function(i) rmnorm(J, mean = c(4,2), varcov = diag(rep(0.2, p_W_prot)))[i,]) %>% map(abs) %>% map(sort, decreasing = TRUE) %>% map(diag)
+Gamma_prot <- map(1:J, function(i) rmnorm(J, mean = c(1), varcov = matrix(0.2))[i]) %>% map(abs) %>% map(matrix)
+Lambda_teg <- map(1:J, function(i) rmnorm(J, mean = c(3,1), varcov = diag(rep(0.2, p_W_prot)))[i,]) %>% map(abs) %>% map(sort, decreasing = TRUE) %>% map(diag)
+Gamma_teg <- map(1:J, function(i) rmnorm(J, mean = c(1), varcov = matrix(0.2))[i]) %>% map(abs) %>% map(matrix)
+```
+
+```{r}
+# fill overall matrix
+fill_overall_matrix <- function(W_prot, B_prot, W_teg, B_teg, Lambda_prot, Gamma_prot, Lambda_teg, Gamma_teg) {
+  W <- matrix(0, nrow = D$protein + D$teg, ncol = D_z)
+  
+  # fill by column block
+  W[1:D$protein,1:2] <- W_prot %*% Lambda_prot
+  W[(D$protein+1):(D$protein+D$teg),1:2] <- W_teg %*% Lambda_teg
+  
+  W[1:D$protein,3] <- B_prot %*% Gamma_prot
+  
+  W[(D$protein+1):(D$protein+D$teg),4] <- B_teg %*% Gamma_teg
+  
+  # return
+  W
+}
+
+W <- pmap(list(W_prot, B_prot, W_teg, B_teg, Lambda_prot, Gamma_prot, Lambda_teg, Gamma_teg), fill_overall_matrix)
+```
+
+## Generate Data From Latent Representation and Matrices
+
+```{r}
+eps <- map(N_patients, function(N) matrix(rnorm(N*(D$protein+D$teg), sd=0.1), nrow = N))
+X <- pmap(list(W,z,eps),function(W,z,eps) t(W %*% t(z)) + eps)
 ```
 
 # Fit Nonhierarchical Model

@@ -6,6 +6,7 @@ output: html_notebook
 ```{r load}
 library(tidyverse)
 library(rstan)
+library(coda)
 
 source("../../byrne.R")
 ```
@@ -16,15 +17,70 @@ source("../../byrne.R")
 ## p = 1
 
 ```{r}
-fit_10_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e1, p = 1), chains = 1, iter = 1)
-fit_100_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 1), chains = 1, iter = 1)
-fit_1000_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e3, p = 1), chains = 1, iter = 1)
-fit_10000_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e4, p = 1), chains = 1, iter = 1)
+fit_10_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e1, p = 1), chains = 1, iter = 1000)
+givens_time_10_1 <- 1
+
+fit_100_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 1), chains = 1, iter = 1000)
+givens_time_100_1 <- 10
+
+fit_1000_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e3, p = 1), chains = 1, iter = 1000, refresh = 1)
+givens_time_1000_1 <- 310
+```
+
+## p = 10
+
+```{r}
+fit_10_10 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e1, p = 10), chains = 1, iter = 1000)
+givens_time_10_10 <- 8
+
+fit_100_10 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 10), chains = 1, iter = 1000)
+givens_time_100_10 <- 234
+
+fit_1000_10 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e3, p = 10), chains = 1, iter = 1000, refresh = 1)
+saveRDS(fit_1000_10, "fit_1000_10.rds")
+givens_time_1000_10 <- 6116
+```
+
+## p = 100
+
+```{r}
+fit_100_100 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 10), chains = 1, iter = 1000, refresh = 1)
+givens_time_100_100 <- 239
 ```
 
 # EMHMC
 
+## p = 1
+
 ```{r}
-emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e1)[,1], lp_givens_uniform, grad_lp_givens_uniform, h = 0.005, nsteps = 20)
+emhmc_time_10_1 <- system.time(emhmc_10_1 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = matrix(diag(1e1)[,1],nrow = 1e1), lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
+emhmc_10_1 %>% apply(2, effectiveSize)
+
+emhmc_time_100_1 <- system.time(emhmc_100_1 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = matrix(diag(1e2)[,1],nrow = 1e2), lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
+emhmc_100_1 %>% apply(2, effectiveSize)
+
+emhmc_time_1000_1 <- system.time(emhmc_1000_1 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = matrix(diag(1e3)[,1],nrow = 1e3), lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
+emhmc_1000_1 %>% apply(2, effectiveSize)
 ```
 
+## p = 10
+
+```{r}
+emhmc_time_10_10 <- system.time(emhmc_10_10 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e1)[,1:10], lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
+emhmc_10_10 %>% apply(2, effectiveSize)
+
+emhmc_time_100_10 <- system.time(emhmc_100_10 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e2)[,1:10], lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
+emhmc_100_10 %>% apply(2, effectiveSize)
+
+emhmc_time_1000_10 <- system.time(emhmc_1000_10 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e3)[,1:10], lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
+emhmc_1000_10 %>% apply(2, effectiveSize)
+```
+
+## p = 100
+
+```{r}
+emhmc_time_100_100 <- system.time(emhmc_100_100 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e2)[,1:100], lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
+emhmc_100_100 %>% apply(2, effectiveSize)
+```
+
+# Plot Speed Comparisons
