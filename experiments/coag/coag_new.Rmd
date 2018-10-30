@@ -1,0 +1,54 @@
+---
+title: "Hierarchical CCA on Coagulation Data"
+output: html_notebook
+---
+
+```{r load}
+library(tidyverse)
+library(rstan)
+library(plotly)
+
+source("../../Givens.R")
+source("../../GenerateSynthetic.R")
+```
+
+
+# Generate Synthetic Data
+
+```{r}
+D <- list(protein = 6, teg = 4) # dimensions of data
+D_z <- 2 + 1 + 1 # dimension of latent representation
+N_patients <- list(Assault = 16, GSW = 85, MVC = 52, SW = 21)
+
+draw_z <- function(N) matrix(rnorm(N*D_z),nrow=N,ncol=D_z)
+z <- map(N_patients, draw_z) # latent representations of each patient by group
+```
+
+
+$$
+\begin{pmatrix}
+x_{\mathrm{teg}}\\
+x_{\mathrm{pt}}
+\end{pmatrix}
+=
+\begin{pmatrix}
+W_{\mathrm{teg}} \Lambda_{\mathrm{teg}} & B_{\mathrm{teg}} \Gamma_{\mathrm{teg}} & 0\\
+W_{\mathrm{pt}} \Lambda_{\mathrm{pt}} & 0 & B_{\mathrm{pt}} \Gamma_{\mathrm{pt}}\\
+\end{pmatrix}
+\begin{pmatrix}
+z_{\mathrm{common}}\\
+z_{\mathrm{teg}}\\
+z_{\mathrm{pt}}
+\end{pmatrix}
+$$
+
+```{r}
+
+```
+
+# Fit Nonhierarchical Model
+
+# Fit Hierarchical Model
+
+
+
