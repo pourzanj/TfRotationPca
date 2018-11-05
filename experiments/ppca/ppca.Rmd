@@ -159,6 +159,3 @@ unconstrain_pars(fit_ppca_likelihood, list(Y = W, lambdaReversed = c(2,1), sigma
 emhmc_onesample_eigennetwork(U0 = W, L0 = c(2,1), c0 = , lp_ppca, grad_lp_ppca, h = , nsteps = 20)
 ```
 
-
-# Scaling and Benchmarking
-

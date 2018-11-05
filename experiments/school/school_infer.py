@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
-import pystan
-import pickle
+# import pystan
+# import pickle
 from school_utils import load_school_data
 
 interval_length = 10

@@ -14,38 +14,66 @@ source("../../byrne.R")
 
 # Givens in Stan
 
+```{r}
+max_500 <- function(x) {
+  x[x > 500] <- 500
+  x
+}
+```
+
+
 ## p = 1
 
 ```{r}
 fit_10_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e1, p = 1), chains = 1, iter = 1000)
 givens_time_10_1 <- 1
+avg_n_eff_10_1 <- extract(fit_10_1, pars = "Y")$Y %>% apply(c(2,3), effectiveSize) %>% max_500 %>% mean
+avg_n_eff_per_second_10_1 <- avg_n_eff_10_1/givens_time_10_1
+summary(fit_10_1, pars = "Y")$summary[,"Rhat"] %>% mean
 
 fit_100_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 1), chains = 1, iter = 1000)
 givens_time_100_1 <- 10
+avg_n_eff_100_1 <- extract(fit_100_1, pars = "Y")$Y %>% apply(c(2,3), effectiveSize) %>% max_500 %>% mean
+avg_n_eff_per_second_100_1 <- avg_n_eff_100_1/givens_time_100_1
+summary(fit_100_1, pars = "Y")$summary[,"Rhat"] %>% mean
 
-fit_1000_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e3, p = 1), chains = 1, iter = 1000, refresh = 1)
-givens_time_1000_1 <- 310
+fit_1000_1 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e3, p = 1), chains = 1, iter = 1000, refresh = 25, control = list(max_treedepth = 5))
+givens_time_1000_1 <- 92
+avg_n_eff_1000_1 <- extract(fit_1000_1, pars = "Y")$Y %>% apply(c(2,3), effectiveSize) %>% max_500 %>% mean
+avg_n_eff_per_second_1000_1 <- avg_n_eff_1000_1/givens_time_1000_1
+summary(fit_1000_1, pars = "Y")$summary[,"Rhat"] %>% mean
 ```
 
 ## p = 10
 
 ```{r}
-fit_10_10 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e1, p = 10), chains = 1, iter = 1000)
-givens_time_10_10 <- 8
+fit_10_10 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e1, p = 10), chains = 1, iter = 1000, control = list(max_treedepth = 5))
+givens_time_10_10 <- 5
+avg_n_eff_10_10 <- extract(fit_10_10, pars = "Y")$Y %>% apply(c(2,3), effectiveSize) %>% max_500 %>% mean
+avg_n_eff_per_second_10_10 <- avg_n_eff_10_10/givens_time_10_10
+summary(fit_10_10, pars = "Y")$summary[,"Rhat"] %>% mean(na.rm = TRUE)
 
-fit_100_10 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 10), chains = 1, iter = 1000)
-givens_time_100_10 <- 234
+fit_100_10 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 10), chains = 1, iter = 1000, control = list(max_treedepth = 5))
+givens_time_100_10 <- 117
+avg_n_eff_100_10 <- extract(fit_100_10, pars = "Y")$Y %>% apply(c(2,3), effectiveSize) %>% max_500 %>% mean
+avg_n_eff_per_second_100_10 <- avg_n_eff_100_10/givens_time_100_10
+summary(fit_100_10, pars = "Y")$summary[,"Rhat"] %>% mean(na.rm = TRUE)
 
-fit_1000_10 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e3, p = 10), chains = 1, iter = 1000, refresh = 1)
-saveRDS(fit_1000_10, "fit_1000_10.rds")
-givens_time_1000_10 <- 6116
+fit_1000_10 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e3, p = 10), chains = 1, iter = 1000, refresh = 10, control = list(max_treedepth = 5))
+givens_time_1000_10 <- 1381
+avg_n_eff_1000_10 <- extract(fit_1000_10, pars = "Y")$Y %>% apply(c(2,3), effectiveSize) %>% max_500 %>% mean
+avg_n_eff_per_second_1000_10 <- avg_n_eff_1000_10/givens_time_1000_10
+summary(fit_1000_10, pars = "Y")$summary[,"Rhat"] %>% mean(na.rm = TRUE)
 ```
 
 ## p = 100
 
 ```{r}
-fit_100_100 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 10), chains = 1, iter = 1000, refresh = 1)
-givens_time_100_100 <- 239
+fit_100_100 <- stan("../../Stan/new_khatri/givens_uniform_patch.stan", data = list(n = 1e2, p = 100), chains = 1, iter = 1000, refresh = 10, control = list(max_treedepth = 5))
+givens_time_100_100 <- 2626
+avg_n_eff_100_100 <- extract(fit_100_100, pars = "Y")$Y %>% apply(c(2,3), effectiveSize) %>% max_500 %>% mean
+avg_n_eff_per_second_100_100 <- avg_n_eff_100_100/givens_time_100_100
+summary(fit_100_100, pars = "Y")$summary[,"Rhat"] %>% mean(na.rm = TRUE)
 ```
 
 # EMHMC
@@ -54,33 +82,96 @@ givens_time_100_100 <- 239
 
 ```{r}
 emhmc_time_10_1 <- system.time(emhmc_10_1 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = matrix(diag(1e1)[,1],nrow = 1e1), lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
-emhmc_10_1 %>% apply(2, effectiveSize)
+emhmc_avg_n_eff_10_1 <- emhmc_10_1 %>% tail(500) %>% apply(2, effectiveSize) %>% max_500 %>% mean
+emhmc_avg_n_eff_per_second_10_1 <- emhmc_avg_n_eff_10_1/(emhmc_time_10_1[3])
+emhmc_10_1 %>% tail(500) %>% as.matrix %>% as.vector %>% array(., c(500, 1, 10)) %>% monitor %>% (`[`)(,"Rhat") %>% mean
 
 emhmc_time_100_1 <- system.time(emhmc_100_1 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = matrix(diag(1e2)[,1],nrow = 1e2), lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
-emhmc_100_1 %>% apply(2, effectiveSize)
+emhmc_avg_n_eff_100_1 <- emhmc_100_1 %>% tail(500) %>% apply(2, effectiveSize) %>% max_500 %>% mean
+emhmc_avg_n_eff_per_second_100_1 <- emhmc_avg_n_eff_100_1/(emhmc_time_100_1[3])
+emhmc_100_1 %>% tail(500) %>% as.matrix %>% as.vector %>% array(., c(500, 1, 10)) %>% monitor %>% (`[`)(,"Rhat") %>% mean
 
 emhmc_time_1000_1 <- system.time(emhmc_1000_1 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = matrix(diag(1e3)[,1],nrow = 1e3), lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
-emhmc_1000_1 %>% apply(2, effectiveSize)
+emhmc_avg_n_eff_1000_1 <- emhmc_1000_1 %>% tail(500) %>% apply(2, effectiveSize) %>% max_500 %>% mean
+emhmc_avg_n_eff_per_second_1000_1 <- emhmc_avg_n_eff_1000_1/(emhmc_time_1000_1[3])
+emhmc_100_1 %>% tail(500) %>% as.matrix %>% as.vector %>% array(., c(500, 1, 10)) %>% monitor %>% (`[`)(,"Rhat") %>% mean
 ```
 
 ## p = 10
 
 ```{r}
 emhmc_time_10_10 <- system.time(emhmc_10_10 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e1)[,1:10], lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
-emhmc_10_10 %>% apply(2, effectiveSize)
+emhmc_avg_n_eff_10_10 <- emhmc_10_10 %>% tail(500) %>% apply(2, effectiveSize) %>% max_500 %>% mean
+emhmc_avg_n_eff_per_second_10_10 <- emhmc_avg_n_eff_10_10/(emhmc_time_10_10[3])
+emhmc_10_10 %>% tail(500) %>% as.matrix %>% as.vector %>% array(., c(500, 1, 10)) %>% monitor %>% (`[`)(,"Rhat") %>% mean
 
 emhmc_time_100_10 <- system.time(emhmc_100_10 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e2)[,1:10], lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
-emhmc_100_10 %>% apply(2, effectiveSize)
+emhmc_avg_n_eff_100_10 <- emhmc_100_10 %>% tail(500) %>% apply(2, effectiveSize) %>% max_500 %>% mean
+emhmc_avg_n_eff_per_second_100_10 <- emhmc_avg_n_eff_100_10/(emhmc_time_100_10[3])
+emhmc_100_10 %>% tail(500) %>% as.matrix %>% as.vector %>% array(., c(500, 1, 10)) %>% monitor %>% (`[`)(,"Rhat") %>% mean
 
 emhmc_time_1000_10 <- system.time(emhmc_1000_10 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e3)[,1:10], lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
-emhmc_1000_10 %>% apply(2, effectiveSize)
+emhmc_avg_n_eff_1000_10 <- emhmc_1000_10 %>% tail(500) %>% apply(2, effectiveSize) %>% max_500 %>% mean
+emhmc_avg_n_eff_per_second_1000_10 <- emhmc_avg_n_eff_1000_10/(emhmc_time_1000_10[3])
+emhmc_1000_10 %>% tail(500) %>% as.matrix %>% as.vector %>% array(., c(500, 1, 10)) %>% monitor %>% (`[`)(,"Rhat") %>% mean
 ```
 
 ## p = 100
 
 ```{r}
 emhmc_time_100_100 <- system.time(emhmc_100_100 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e2)[,1:100], lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
-emhmc_100_100 %>% apply(2, effectiveSize)
+emhmc_avg_n_eff_100_100 <- emhmc_100_100 %>% tail(500) %>% apply(2, effectiveSize) %>% max_500 %>% mean
+emhmc_avg_n_eff_per_second_100_100 <- emhmc_avg_n_eff_100_100/(emhmc_time_100_100[3])
 ```
 
 # Plot Speed Comparisons
+
+```{r}
+givens_n_eff_per_second <-
+tribble(
+  ~p, ~n, ~n_eff_per_second,
+  1,   10,   avg_n_eff_per_second_10_1,
+  1,   100,  avg_n_eff_per_second_100_1,
+  1,   1000, avg_n_eff_per_second_1000_1,
+  10,  10,   avg_n_eff_per_second_10_10,
+  10,  100,  avg_n_eff_per_second_100_10,
+  10,  1000, avg_n_eff_per_second_1000_10,
+  100, 100,  avg_n_eff_per_second_100_100
+) %>%
+  mutate(Method = "Givens")
+
+#saveRDS(givens_n_eff_per_second, "givens_n_eff_per_second.RDS")
+
+emhmc_n_eff_per_second <-
+tribble(
+  ~p, ~n, ~n_eff_per_second,
+  1,   10,   emhmc_avg_n_eff_per_second_10_1,
+  1,   100,  emhmc_avg_n_eff_per_second_100_1,
+  1,   1000, emhmc_avg_n_eff_per_second_1000_1,
+  10,  10,   emhmc_avg_n_eff_per_second_10_10,
+  10,  100,  emhmc_avg_n_eff_per_second_100_10,
+  10,  1000, emhmc_avg_n_eff_per_second_1000_10,
+  100, 100,  emhmc_avg_n_eff_per_second_100_100
+) %>%
+  mutate(Method = "EMHMC")
+
+#saveRDS(emhmc_n_eff_per_second, "emhmc_n_eff_per_second.RDS")
+
+n_eff_per_second <- bind_rows(givens_n_eff_per_second, emhmc_n_eff_per_second) %>% mutate(p = factor(p))
+```
+
+
+```{r}
+n_eff_per_second %>%
+  ggplot(aes(n, n_eff_per_second, color = Method, shape = p)) +
+  geom_point() +
+  geom_line() +
+  scale_x_log10() +
+  scale_y_log10() +
+  ylab("Number of Effective Samples per Second") +
+  scale_color_manual(values=c("black","darkorange")) +
+  theme_bw() +
+  theme(text = element_text(size=20))
+  
+```
+

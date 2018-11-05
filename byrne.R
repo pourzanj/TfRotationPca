@@ -79,6 +79,12 @@ compute_stiefel_flow <- function(X, V, h) {
   X <- X_V[,1:p]
   V <- X_V[,(p+1):(2*p)]
   
+  # if p is 1 we need to convert back to matrix
+  if(p == 1) {
+    X <- matrix(X, ncol = 1)
+    V <- matrix(V, ncol = 1)
+  }
+  
   list(X=X, V=V)
 }
 
@@ -167,7 +173,7 @@ emhmc_onesample_givens_uniform <- function(U0, lp, grad_lp, h, nsteps) {
   for(t in 1:nsteps) {
     
     # update momentum and reorthoganolize
-    grad_lp_q <- unlist(grad_lp(U, L, c))
+    grad_lp_q <- unlist(grad_lp(U))
     v_U <- v_U + (h[1]/2)*matrix(grad_lp_q[1:(m*p)], nrow=m)
     v_U <- stiefel_orthogonalize(v_U, U)
     
@@ -177,7 +183,7 @@ emhmc_onesample_givens_uniform <- function(U0, lp, grad_lp, h, nsteps) {
     v_U <- stiefel_flow$V
     
     # update momentum and reorthoganolize
-    grad_lp_q <- unlist(grad_lp(U, L, c))
+    grad_lp_q <- unlist(grad_lp(U))
     v_U <- v_U + (h[1]/2)*matrix(grad_lp_q[1:(m*p)], nrow=m)
     v_U <- stiefel_orthogonalize(v_U, U)
   }

@@ -113,7 +113,54 @@ X <- pmap(list(W,z,eps),function(W,z,eps) t(W %*% t(z)) + eps)
 
 # Fit Nonhierarchical Model
 
+We must first combine all samples in to a single 10x10 covariance matrix. To fit the model where groups are considered as one super-group.
+
+```{r}
+# total number of obs over all groups
+N <- N_patients %>% reduce(`+`)
+
+SigmaHat <- map(X, function(X) t(X) %*% X) %>%
+  map2(N_patients, `/`)
+
+SigmaHat_overall <- 
+  SigmaHat %>%
+  map2(N_patients, `*`)
+  reduce(`+`) %>%
+  `/`(N)
+
+dat <-
+  list(n_prot = D$protein, p_W_prot = p_W_prot, p_B_prot = p_B_prot,
+       n_teg = D$teg, p_W_teg = p_W_teg, p_B_teg = p_B_teg,
+       p_common = 2,
+       N = N, SigmaHat = SigmaHat_overall)
+
+fit <- stan("../../Stan/new_khatri/cca.stan", data = dat, chains = 1, iter = 1)
+```
+
+Fit each group individually.
+
+```{r}
+dat <-
+  list(n_prot = D$protein, p_W_prot = p_W_prot, p_B_prot = p_B_prot,
+       n_teg = D$teg, p_W_teg = p_W_teg, p_B_teg = p_B_teg,
+       p_common = 2,
+       N = N_patients[[3]], SigmaHat = SigmaHat[[3]])
+
+fit_mvc <- stan("../../Stan/new_khatri/cca.stan", data = dat, chains = 1, iter = 1000, refresh = 10)
+theta_W_prot[3,]; print(fit_mvc, pars = "theta_W_prot")
+```
+
 # Fit Hierarchical Model
 
+```{r}
+dat <-
+  list(J = 4,
+       n_prot = D$protein, p_W_prot = p_W_prot, p_B_prot = p_B_prot,
+       n_teg = D$teg, p_W_teg = p_W_teg, p_B_teg = p_B_teg,
+       p_common = 2,
+       N = unlist(N_patients), SigmaHat = SigmaHat)
 
+fit_hier <- stan("../../Stan/new_khatri/cca_hier.stan", data = dat, chains = 1, iter = 1000, refresh = 10)
+print(fit_hier, pars = c("theta_mu_W_prot", "sigma_theta_W_prot"))
+```
 
