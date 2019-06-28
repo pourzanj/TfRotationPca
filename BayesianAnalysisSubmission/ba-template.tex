@@ -1,0 +1,98 @@
+\RequirePackage{etoolbox}
+\csdef{input@path}{%
+ {sty/}% cls, sty files
+ {img/}% eps files
+}%
+\csgdef{bibdir}{bib/}% bst, bib files
+
+\documentclass[ba]{imsart}
+%
+\pubyear{0000}
+\volume{00}
+\issue{0}
+\doi{0000}
+\firstpage{1}
+\lastpage{1}
+
+
+%
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{natbib}
+\usepackage[colorlinks,citecolor=blue,urlcolor=blue,filecolor=blue,backref=page]{hyperref}
+\usepackage{graphicx}
+
+\startlocaldefs
+% ** Local definitions **
+\endlocaldefs
+
+\begin{document}
+
+%% *** Frontmatter *** 
+
+\begin{frontmatter}
+\title{}
+
+%\title{\thanksref{T1}}
+%\thankstext{T1}{<thanks text>}
+\runtitle{}
+
+\begin{aug}
+%\author{\fnms{} \snm{}}
+%\author{\fnms{<firstname>} \snm{<surname>}\thanksref{}\ead[label=e1]{}}
+%\and
+%\author{\fnms{} \snm{}}
+
+
+\runauthor{}
+
+\address[addr1]{}
+
+
+%\thankstext{<id>}{<text>}
+
+\end{aug}
+
+\begin{abstract}
+\end{abstract}
+
+%% ** Keywords **
+\begin{keyword}%[class=MSC]
+%\kwd{}
+%\kwd[]{}
+\end{keyword}
+
+\end{frontmatter}
+
+%% ** Mainmatter **
+
+%\section{}\label{}
+
+% \begin{figure} 
+% \includegraphics{<eps-file>}% place <eps-file> in ./img  subfolder
+% \caption{}
+% \label{}
+% \end{figure}
+
+
+% \begin{table} 
+% *****************
+% \begin{tabular}{lll}
+% \end{tabular}
+% *****************
+% \caption{}
+% \label{}
+% \end{figure}
+
+
+%% ** The bibliograhy **
+\bibliographystyle{ba}
+\bibliography{<bib-data-file>}% place <bib-data-file> 
+
+% ** Acknowledgements **
+% \begin{acknowledgement}
+% \end{acknowledgement}
+
+
+\end{document}
+
