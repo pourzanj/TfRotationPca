@@ -122,6 +122,7 @@ emhmc_1000_10 %>% tail(500) %>% as.matrix %>% as.vector %>% array(., c(500, 1, 1
 emhmc_time_100_100 <- system.time(emhmc_100_100 <- emhmc_sample_givens_uniform(nsamples = 1e3, U0 = diag(1e2)[,1:100], lp_givens_uniform, grad_lp_givens_uniform, h = 0.1, nsteps = 20))
 emhmc_avg_n_eff_100_100 <- emhmc_100_100 %>% tail(500) %>% apply(2, effectiveSize) %>% max_500 %>% mean
 emhmc_avg_n_eff_per_second_100_100 <- emhmc_avg_n_eff_100_100/(emhmc_time_100_100[3])
+emhmc_100_100 %>% tail(500) %>% as.matrix %>% as.vector %>% array(., c(500, 1, 10)) %>% monitor %>% (`[`)(,"Rhat") %>% mean
 ```
 
 # Plot Speed Comparisons

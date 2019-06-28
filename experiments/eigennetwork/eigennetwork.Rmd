@@ -26,7 +26,7 @@ dat <- list(n=230, p=3, Y=Y)
 
 # fit_givens <- stan(file = "../../Stan/new_khatri/eigennetwork.stan", data = dat, chains = 1, iter = 1000, refresh = 10)
 # saveRDS(fit_givens, "fit_givens.rds")
-fit_givens <- readRDS("fit_givnes.rds")
+fit_givens <- readRDS("fit_givens.rds")
 
 givens_time_seconds <-  804
 ```
@@ -60,6 +60,8 @@ emhmc_time_seconds <- 812
 
 # Compare Posteriors
 
+## Trace Plots
+
 ```{r}
 s <- extract(fit_givens, pars = c("U", "L", "c"))
 
@@ -80,16 +82,30 @@ emhmc_posterior <-
 posteriors <- bind_rows(givens_posterior, emhmc_posterior)
 
 posteriors %>%
+  set_names(c("U[1,1]", "U[1,2]", "U[1,3]", "Λ1", "Λ2", "Λ3", "c", "sample_id", "Method")) %>%
   gather(Parameter, Value, -sample_id, -Method) %>%
+  mutate(Parameter = factor(Parameter, levels = c("c", "Λ1", "Λ2", "Λ3","U[1,1]", "U[1,2]", "U[1,3]"))) %>%
   ggplot(aes(sample_id, Value, color = Method)) +
   geom_line() +
-  facet_grid(Parameter ~ .,scales = "free")
+  facet_grid(Parameter ~ .,scales = "free") +
+  scale_color_manual(values=c("black","darkorange")) +
+  theme_bw() +
+  theme(text = element_text(size=20)) +
+  xlab("Sample Number")
 ```
 
 ```{r}
+max_500 <- function(x) {
+  x[x > 500] <- 500
+  x
+}
+get_n_eff <- function(x) effectiveSize(x) %>% max_500
+
 posteriors %>%
   gather(Parameter, Value, -sample_id, -Method) %>%
   group_by(Method, Parameter) %>%
-  summarize(n_eff = effectiveSize(Value))
+  summarize(n_eff = get_n_eff(Value))
+
+emhmc_posterior %>% select(-sample_id, -Method) %>% as.matrix %>% as.vector %>% array(., c(500, 1, 10)) %>% monitor %>% (`[`)(,"Rhat")
 ```
 
