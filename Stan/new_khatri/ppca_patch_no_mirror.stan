@@ -24,7 +24,7 @@ functions {
     return(r);
   }
   
-  vector mirror(int n, int p, vector theta_lon, vector theta_lat) {
+  vector set_theta(int n, int p, vector theta_lon, vector theta_lat) {
 
     int idx = 1;
     int idx_lat = 1;
@@ -37,40 +37,11 @@ functions {
     if(p == n) pp = p-1;
     for(i in 1:pp) {
       
-      // check the longitudinal angle to see if we should mirror
-      int mirror;  
-      real eps;
+      theta[idx] = theta_lon[i];
       
-      if(theta_lon[i] > 0.0) {
-        // upper plane
-        eps = theta_lon[i] - pi()/2;
-        if(eps <= 0.0) {
-          theta[idx] = theta_lon[i];
-          mirror = 0;
-        }
-        else {
-          theta[idx] = -pi()/2 + eps;
-          mirror = 1;
-        }
+      if(i <= n-2) { 
+        theta[(idx+1):(idx+n-i-1)] = theta_lat[idx_lat:(idx_lat+n-i-1-1)];
       }
-      
-      else {
-        // lower plane
-        eps = theta_lon[i] + pi()/2;
-        if(eps >= 0.0) {
-          theta[idx] = theta_lon[i];
-          mirror = 0;
-        }
-        else {
-          theta[idx] = pi()/2 + eps;
-          mirror = 1;
-        }
-      }
-     
-     if(i <= n-2) { 
-      // set lat angles according to whether they're mirrored or not
-      theta[(idx+1):(idx+n-i-1)] = -theta_lat[idx_lat:(idx_lat+n-i-1-1)];
-     }
       
       idx = idx + n-i;
       idx_lat = idx_lat + n-i-1;
@@ -162,7 +133,7 @@ transformed parameters{
 
   theta_lon = atan2_vec(x_lon, y_lon);
   r = hypot_vec(x_lon, y_lon);
-  theta = mirror(n, p, theta_lon, theta_lat);
+  theta = set_theta(n, p, theta_lon, theta_lat);
   
   // reverse lambda
   for(i in 1:p) lambdaSq[i] = lambdaReversed[p - i + 1]^2;
