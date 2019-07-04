@@ -69,8 +69,7 @@ functions {
     if(p == n) pp = p-1;
     for(i in 1:pp) {
       
-      int i_rev = p-i+1; // create a reverse index that starts from p and goes down to 1
-      
+      int i_rev = pp-i+1; // create a reverse index that starts from p and goes down to 1
       for(j in (i_rev+1):n) {
         
         // index goes from p+1 to n, so reverse it to go from n to p+1
@@ -106,6 +105,8 @@ data {
   
   int N;  
   matrix[n,n] SigmaHat;
+  
+  matrix[n, p] Y_ml;
 }
 transformed data {
   int d = n*p - (p*(p+1))/2;
@@ -146,4 +147,14 @@ model {
   
   C = Y*diag_matrix(lambdaSq)*Y' + diag_matrix(rep_vector(sigmaSq, n));
   target += -(N/2)*log(determinant(C)) - (N/2)*trace(C\SigmaHat);
+}
+generated quantities {
+  // compute principal angles between columns of ML estimate
+  vector[p] theta_princ;
+  for(j in 1:p) {
+    real qTv = abs(dot_product(Y[,j], Y_ml[,j]));
+    real q = sqrt(dot_self(Y[,j]));
+    real v = sqrt(dot_self(Y_ml[,j]));
+    theta_princ[j] = acos(qTv/(q*v));
+  }
 }
