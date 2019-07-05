@@ -1,0 +1,26 @@
+---
+title: "School Network"
+output: html_notebook
+---
+
+```{r load}
+library(tidyverse)
+library(rstan)
+
+# use python script to load data
+source_python("school_utils.py")
+school_raw <- load_school_data(10L)
+
+# python stores dimensions backwards compared to R
+school <- array(0L, c(12,12,177))
+for(t in 1:177) {
+  school[,,t] <- school_raw[t,,]
+}
+```
+
+# Fit Model Using Stan
+
+```{r}
+fit <- stan("../../Stan/new_khatri/school.stan", data = list(n = 12, p = 3, N = 177, K = 3, interactions = school), chains = 1, iter = 1000, refresh = 1, control = list(adapt_delta = 0.99))
+```
+
