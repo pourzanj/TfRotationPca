@@ -21,7 +21,9 @@ RightRotateCounterClockwise <- function(A, angle, i, j){
 InverseGivensTransform <- function(angles, n, p) {
   G <- diag(n)
   idx <- 1
-  for(i in 1:p) {
+  pp <- p
+  if(n == p) pp <- p-1
+  for(i in 1:pp) {
     for(j in (i+1):n) {
       G <- RightRotateCounterClockwise(G, angles[idx], i, j)
       idx <- idx + 1
