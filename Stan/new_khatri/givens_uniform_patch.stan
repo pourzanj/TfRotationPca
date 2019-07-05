@@ -159,6 +159,8 @@ functions {
 data {
   int n;
   int p;
+  
+  matrix[n, p] Y_ml;
 }
 transformed data {
   int d = n*p - p*(p+1)/2;
@@ -186,4 +188,14 @@ transformed parameters{
 }
 model {
   r ~ normal(1.0, 0.1);
+}
+generated quantities {
+  // compute principal angles between columns of ML estimate
+  vector[p] theta_princ;
+  for(j in 1:p) {
+    real qTv = abs(dot_product(Y[,j], Y_ml[,j]));
+    real q = sqrt(dot_self(Y[,j]));
+    real v = sqrt(dot_self(Y_ml[,j]));
+    theta_princ[j] = acos(qTv/(q*v));
+  }
 }
