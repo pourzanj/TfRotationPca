@@ -75,7 +75,7 @@ W <- InverseGivensTransform(rep(0.0, d), n, p)
 N <- 15
 data_three_two <- GenerateHighDimData(n = n, p = p, W = W, LambdaVec = c(2,1), sd = 1.0, N = N)
 
-#x <- ThreeTwo$x %>% tbl_df
+#x <- data_three_two$x %>% tbl_df
 #save(x, file = "experiments/uncertaintyQuantification/unstableEstimate.Rdata")
 load(file = "simulated_data_three_two.Rdata")
 ```
@@ -91,13 +91,13 @@ points_hat <- GetSurfacePoints(x$V1, x$V2, W_hat[,1:2])
 points_true <- GetSurfacePoints(x$V1, x$V2, W)
 
 # plot points and surface
-plot_ly(x, x = ~V1, y = ~V2, z = ~V3) %>% add_markers() %>%
-  add_surface(x = ~points_hat$x, y = ~points_hat$y, z = ~points_hat$z, opacity = 0.98, colorscale = list("black", "orange"))
+# plot_ly(x, x = ~V1, y = ~V2, z = ~V3) %>% add_markers() %>%
+#   add_surface(x = ~points_hat$x, y = ~points_hat$y, z = ~points_hat$z, opacity = 0.98, colorscale = list("black", "orange"))
 
 # plot surfaces together
-plot_ly(showscale = FALSE) %>%
-  add_surface(x = ~points_hat$x, y = ~points_hat$y, z = ~points_hat$z, opacity = 0.98) %>%
-  add_surface(x = ~points_true$x, y = ~points_true$y, z = ~points_true$z)
+# plot_ly(showscale = FALSE) %>%
+#   add_surface(x = ~points_hat$x, y = ~points_hat$y, z = ~points_hat$z, opacity = 0.98) %>%
+#   add_surface(x = ~points_true$x, y = ~points_true$y, z = ~points_true$z)
 ```
 
 Because of small amount of data and low signal to noise ratio, maxmimum likelihood estimate is bad. Lambda values are `r princomp(x)$sdev` and would lead us to believe data is two dimensional, but we would pick the wrong subspace with maximum likelihood.
@@ -109,7 +109,11 @@ x_matrix <- as.matrix(x)
 Sigma_hat <- (1/N)*t(x_matrix) %*% x_matrix
 
 dat <- list(n = n, p = 3, N = N, SigmaHat = Sigma_hat)
+
 fit <- stan(file = "../../Stan/new_khatri/ppca_patch.stan", data = dat, chains = 1, iter = 1e4)
+
+dat <- list(n = n, p = 3, N = N, SigmaHat = Sigma_hat, Y_ml = W_hat)
+fit <- stan(file = "../../Stan/new_khatri/ppca_patch_no_mirror.stan", data = dat, chains = 1, iter = 1e4)
 ```
 
 ## Explore Posterior
