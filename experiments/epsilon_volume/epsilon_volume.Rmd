@@ -1,0 +1,63 @@
+---
+title: "Epsilon Volume"
+output: html_notebook
+---
+
+```{r load_functions}
+library(tidyverse)
+library(Rfast)
+
+get_stats <- function(sample_mat) {
+  theta_13 <- 
+    sample_mat %>%
+    apply(1, function(x) GivensTransform(matrix(x, ncol = 1))[2])
+
+  princ_angle <- 
+  sample_mat %>%
+  apply(1, function(x) acos(sum(x*c(0,0,1))))
+  
+  tibble(theta_13_s = theta_13, princ_angle_s = princ_angle)
+}
+```
+
+
+```{r}
+n <- 3
+mu <- c(1, 0, 0)
+kappa <- 10.0
+EPS <- 1e-5
+
+vmf_settings <-
+  expand.grid(theta_12 = c(0.0),
+            theta_13 = c(pi/2),
+            kappa = c(1e0, 1e1, 1e2)) %>%
+  as_tibble
+
+vmf_raw_samples <-
+  vmf_settings %>%
+  pmap(function(theta_12, theta_13, kappa) {
+        m <- InverseGivensTransform(c(theta_12, theta_13), 3, 1)
+        rvmf(1e3, m, kappa)
+    })
+
+vmf_summary_stats <- vmf_raw_samples %>% map(get_stats)
+
+vmf_samples <-
+  map2(vmf_summary_stats, 1:length(vmf_summary_stats),
+     function(df, i) df %>% mutate(settings_id = i)) %>%
+  bind_rows() %>%
+  inner_join(vmf_settings %>% mutate(settings_id = row_number()))
+
+vmf_samples %>%
+  ggplot(aes(princ_angle_s)) +
+  geom_histogram() +
+  facet_grid(kappa ~ theta_13)
+```
+
+```{r sample_givens}
+fit <-
+  stan("../../Stan/new_khatri/fisher_von_mises_givens.stan",
+       data = list(n = n, mu = mu, kappa = kappa, EPS = EPS),
+       chains = 1, iter = 1e4)
+```
+
