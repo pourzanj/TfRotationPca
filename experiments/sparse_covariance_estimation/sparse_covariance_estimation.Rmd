@@ -1,0 +1,84 @@
+---
+title: "Sparse Covariance Estimation"
+output: html_notebook
+---
+
+```{r load_helper_functions}
+library(mvtnorm)
+library(reshape2)
+
+draw_sparse_covariance <- function(p) {
+  U <- matrix(0.0, nrow = p, ncol = p)
+  diag(U) <-
+    rchisq(p,(p+1) - 1:p) %>%
+    sqrt() %>%
+    sort(decreasing = TRUE)
+  
+  for(i in 1:(p-1)) {
+    for(j in (i+1):p) {
+      u_ij <- rnorm(1)
+      U[i,j] <- u_ij*(abs(u_ij) > 1)
+    }
+  }
+  
+  solve(t(U) %*% U)
+}
+
+draw_sparse_covariance_givens <- function(p) {
+  lambda_sq <-
+    rchisq(p,(p+1) - 1:p) %>%
+    sqrt() %>%
+    sort(decreasing = TRUE)
+  
+  d <- p^2 - p*(p+1)/2
+  
+  theta <- (pi*runif(d)-pi/2)*rbinom(d, 1, 0.3)
+  
+  U <- InverseGivensTransform(theta, p, p)
+  
+  U %*% diag(lambda_sq) %*% t(U)
+}
+```
+
+```{r generate_data}
+p <- 2
+Sigma <- draw_sparse_covariance(p)
+N <- 5
+
+X <- rmvnorm(N, sigma = Sigma)
+```
+
+```{r fit}
+dat <- list(p = p, N = N, X = X)
+fit <- stan("../../Stan/new_khatri/multi_normal_covariance.stan",
+            data = dat, chains = 1, iter = 2e3, refresh = 200)
+```
+
+```{r}
+Sigma_melted <-
+  Sigma %>%
+  melt() %>%
+  set_names("row", "col", "true_value")
+
+s_Sigma <- extract(fit)$Sigma
+Sigma_quantiles <-
+  s_Sigma %>%
+  melt() %>%
+  as_tibble %>%
+  set_names("sample_id", "row", "col", "value") %>%
+  group_by(row, col) %>%
+  summarize(Q10 = quantile(value, 0.1),
+            Q50 = quantile(value, 0.5),
+            Q90 = quantile(value, 0.9)) %>%
+  ungroup() %>%
+  inner_join(Sigma_melted) %>%
+  filter(col >= row) %>%
+  mutate(in_interval = Q10 <= true_value & true_value < Q90)
+
+Sigma_quantiles %>%
+  mutate(idx = row_number()) %>%
+  ggplot() +
+  geom_errorbar(aes(idx, ymin = Q10, ymax = Q90)) +
+  geom_point(aes(idx, true_value), color = "red")
+```
+
