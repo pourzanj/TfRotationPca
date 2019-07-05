@@ -122,7 +122,7 @@ parameters {
   vector[pp] y_lon;
   vector<lower=-pi()/2.0 + 1e-5,upper=pi()/2.0 - 1e-5>[d-pp] theta_lat;
   
-  positive_ordered[p] lambdaReversed;
+  positive_ordered[p] lambda_sq_rev;
   real<lower = 0> sigmaSq;
 }
 transformed parameters{
@@ -130,14 +130,14 @@ transformed parameters{
   vector[d] theta;
   vector[pp] r;
   matrix[n,p] Y;
-  vector<lower=0>[p] lambdaSq;
+  vector<lower=0>[p] lambda_sq;
 
   theta_lon = atan2_vec(x_lon, y_lon);
   r = hypot_vec(x_lon, y_lon);
   theta = set_theta(n, p, theta_lon, theta_lat);
   
   // reverse lambda
-  for(i in 1:p) lambdaSq[i] = lambdaReversed[p - i + 1]^2;
+  for(i in 1:p) lambda_sq[i] = lambda_sq_rev[p - i + 1];
   
   Y = givens_lp(n,p,theta);
 }
@@ -145,16 +145,26 @@ model {
   matrix[n,n] C;
   r ~ normal(1.0, 0.1);
   
-  C = Y*diag_matrix(lambdaSq)*Y' + diag_matrix(rep_vector(sigmaSq, n));
+  C = Y*diag_matrix(lambda_sq)*Y' + diag_matrix(rep_vector(sigmaSq, n));
   target += -(N/2)*log(determinant(C)) - (N/2)*trace(C\SigmaHat);
 }
 generated quantities {
   // compute principal angles between columns of ML estimate
   vector[p] theta_princ;
+  real Y_sparsity = 0.0;
   for(j in 1:p) {
     real qTv = abs(dot_product(Y[,j], Y_ml[,j]));
     real q = sqrt(dot_self(Y[,j]));
     real v = sqrt(dot_self(Y_ml[,j]));
     theta_princ[j] = acos(qTv/(q*v));
   }
+  
+  for(j in 1:p) {
+    for(i in 1:n) {
+      if(Y[i,j] > 0.01) {
+        Y_sparsity += 1.0;
+      }
+    }
+  }
+  Y_sparsity = Y_sparsity/(n*p);
 }
