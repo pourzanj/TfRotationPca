@@ -1,0 +1,59 @@
+---
+title: "PPCA 50 x 3"
+output: html_notebook
+---
+
+```{r load_functions}
+draw_uniform_stiefel <- function(n, p) {
+  Y_raw <- matrix(rnorm(n*p), nrow = n, ncol = p)
+  Y <- qr(Y_raw) %>% qr.Q()
+  
+  Y
+}
+
+# get PPCA max-lik estimate from sample covariance matrix
+get_W_ml <- function(S, n, p) {
+  eig <- eigen(S)
+  
+  sigma_sq_ml <- 1/(n-p) * sum(eig$values[(p+1):n])
+  
+  U_q <- eig$vector[, 1:p]
+  Lambda_q <- diag(eig$values[1:p])
+  W_ml <- U_q %*% sqrt(Lambda_q - sigma_sq_ml*diag(p))
+  
+  W_ml
+}
+```
+
+```{r draw_parameters_and_data}
+n <- 50
+p <- 3
+N <- 100
+
+lambda_sq <- c(5.0, 3.0, 1.5)
+sigma_sq <- 1.0
+W <- draw_uniform_stiefel(n, p)
+
+data <-
+  GenerateHighDimData(n = n, p = p, W = W,
+                      LambdaVec = sqrt(lambda_sq),
+                      sd = sigma_sq,
+                      N = N)
+```
+
+```{r, message=FALSE}
+x <- data$x
+x_matrix <- as.matrix(x)
+Sigma_hat <- (1/N)*t(x_matrix) %*% x_matrix
+Y_ml <- get_W_ml(Sigma_hat, n, p)
+
+dat <- list(n = n, p = p, N = N, SigmaHat = Sigma_hat, Y_ml = Y_ml)
+fit <- stan(file = "../../Stan/new_khatri/ppca_patch_no_mirror.stan",
+            data = dat, chains = 1, iter = 1e4, refresh = 100)
+```
+```{r}
+print(fit, pars = c("lambda_sq", "sigmaSq"))
+s <- extract(fit)
+s$theta_princ[,2] %>% qplot
+```
+
