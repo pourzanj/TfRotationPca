@@ -360,7 +360,7 @@ When using the Givens representation for general Bayesian inference in practice,
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Introducing Auxiliary Parameters}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\noindent As is routinely done in practice, a logistic transform can be used to map the interval $[-\pi,\pi]$ to the unconstrained interval $(-\infty, \infty)$. Unfortunately, this leaves regions of parameter space that should otherwise be connected, disconnected by the aforementioned set of measure zero. In practice, this can lead to biased sampling where regions of parameter space with equal mass are not visited for equal amounts of time if the posterior is not sufficiently concentrated (Figure \ref{fig:donut}, upper).
+\noindent As is routinely done in practice, a logistic transform can be used to map the interval $[-\pi,\pi]$ to the unconstrained interval $(-\infty, \infty)$. Unfortunately, this leaves regions of parameter space that should otherwise be connected, disconnected by the aforementioned set of measure zero. For a distribution over the Stiefel manifold that is not sufficiently concentrated away from this measure-zero-set, this can lead to posterior samples from only one of the regions on either side of the sliver (Figure \ref{fig:donut}, upper).
 
 \begin{figure}[h]
 \centering
