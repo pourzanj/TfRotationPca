@@ -127,7 +127,7 @@ model {
   matrix[n,n] C;
   r ~ normal(1.0, 0.1);
   
-  target += exp(kappa * dot_product(mu, y));
+  target += kappa * dot_product(mu, y);
 }
 generated quantities {
   real theta_princ = acos(dot_product(mu, y));
