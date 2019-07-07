@@ -122,7 +122,7 @@ functions {
     if(p == n) pp = p-1;
     for(i in 1:pp) {
       
-      int i_rev = p-i+1; // create a reverse index that starts from p and goes down to 1
+      int i_rev = pp-i+1; // create a reverse index that starts from p and goes down to 1
       
       for(j in (i_rev+1):n) {
         
@@ -160,7 +160,8 @@ data {
   int n;
   int p;
   
-  matrix[n, p] Y_ml;
+  //matrix[n, p] Y_ml;
+  real<lower=0> EPS;
 }
 transformed data {
   int d = n*p - p*(p+1)/2;
@@ -172,7 +173,7 @@ transformed data {
 parameters {
   vector[pp] x_lon;
   vector[pp] y_lon;
-  vector<lower=-pi()/2.0 + 1e-5,upper=pi()/2.0 - 1e-5>[d-pp] theta_lat;
+  vector<lower=-pi()/2.0 + EPS,upper=pi()/2.0 - EPS>[d-pp] theta_lat;
 }
 transformed parameters{
   vector[pp] theta_lon;
@@ -189,13 +190,13 @@ transformed parameters{
 model {
   r ~ normal(1.0, 0.1);
 }
-generated quantities {
-  // compute principal angles between columns of ML estimate
-  vector[p] theta_princ;
-  for(j in 1:p) {
-    real qTv = abs(dot_product(Y[,j], Y_ml[,j]));
-    real q = sqrt(dot_self(Y[,j]));
-    real v = sqrt(dot_self(Y_ml[,j]));
-    theta_princ[j] = acos(qTv/(q*v));
-  }
-}
+// generated quantities {
+//   // compute principal angles between columns of ML estimate
+//   vector[p] theta_princ;
+//   for(j in 1:p) {
+//     real qTv = abs(dot_product(Y[,j], Y_ml[,j]));
+//     real q = sqrt(dot_self(Y[,j]));
+//     real v = sqrt(dot_self(Y_ml[,j]));
+//     theta_princ[j] = acos(qTv/(q*v));
+//   }
+// }

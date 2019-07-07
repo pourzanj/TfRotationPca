@@ -39,6 +39,7 @@ GivensTransform <- function(W) {
   A <- W
   angles <- rep(0, n*p-p*(p+1)/2)
   idx <- 1
+  if(n == p) p <- p-1
   for(i in 1:p) {
     for(j in (i+1):n) {
       #angle should be a "negative" rotation counter clockwise
