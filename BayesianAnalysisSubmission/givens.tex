@@ -147,7 +147,7 @@ Given any $n \times p$ matrix, $A$, the Givens reduction algorithm is a numerica
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=0.5\textwidth]{figures/stiefel_geom_new.png}
+\includegraphics[width=0.4\textwidth]{figures/stiefel_geom_new.png}
 \vspace{.05in}
 \caption{(Inset) Givens rotations can be used to rotate a vector so as to eliminate its component in a certain direction. (Main Figure) A $p$-frame on the Stiefel manifold can be visualized as a set of rigidly connected orthogonal basis vectors, $u_1$ and $u_2$, shown here in black. One can move about the Stiefel manifold and describe any $p$-frame by simultaneously applying rotations matrices of a prescribed angle to these basis vectors. Applying the rotation matrix $R_{12}(\theta_{12})$ corresponds to rotating the two basis vectors toegher in the (1,2)-plane, which by our convention is the $(x,y)$-plane. Similarly, simultaneously apply $R_{13}(\theta_{13})$ corresponds to a rotation of the 2-frame in the $(1,3)$ or $(x,z)$-plane, while $R_{23}(\theta_{23})$ corresponds to rotating $u_2$ about $u_1$.}
 \label{fig:StiefelGeom}
@@ -261,7 +261,7 @@ As is usual in any transformation of random variables, careful care must be take
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=0.6\textwidth]{figures/AreaForm_atz.pdf}
+\includegraphics[width=0.5\textwidth]{figures/AreaForm_atz.pdf}
 \vspace{.05in}
 \caption{Uniform sampling in the Givens representation coordinates does not necessarily lead to uniform sampling over the Stiefel manifold without the proper measure adjustment term. Under the mapping, regions near the pole are shrunk to regions on the sphere with little area, as opposed to regions near to the equator which the transform maps to much larger areas on the sphere. Intuitively, the change-of-measure term quantifies this proportion of shrinkage in area.}
 \label{fig:AreaForm}
@@ -351,7 +351,7 @@ When using the Givens representation for general Bayesian inference in practice,
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=0.7\textwidth]{figures/sliver_globe.png}
+\includegraphics[width=0.5\textwidth]{figures/sliver_globe.png}
 \vspace{.05in}
 \caption{The angular coordinates chart has an infinitesimal sliver of measure zero that lies between $\theta_{12} = -\pi$ and $\theta_{12} = \pi$ that separates the two parts of the sphere in the Givens representation. Trajectories, $Y(t)$, over the Stiefel manifold that cross this sliver have no equivalent representation, $\Theta(t)$ in the coordinates of the Givens representation. This can become particularly problematic when there is significant probability mass on both sides of the sliver. The grid over the sphere reveals how the Givens representation maps areas that are the same size in the $\Theta$ coordinates to smaller and smaller regions on the sphere the closer they are to the poles. Thus the measure adjustment term (Equation \ref{eq:final_change_of_measure}), which measures how the transform changes the area of these infinitesimal regions goes to zero near the poles.}
 \label{fig:pathologies}
@@ -365,7 +365,7 @@ When using the Givens representation for general Bayesian inference in practice,
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=0.7\textwidth]{figures/donut.png}
+\includegraphics[width=0.6\textwidth]{figures/donut.png}
 \vspace{.05in}
 \caption{(Upper) 1000 samples from a Von Mises distribution with parameters $\mu = -\pi$ and $\kappa = 5$ sampled over the space $\theta \in [-\pi, \pi]$ using Stan. Most of the mass of the distribution is concentrated at the ends of the interval with little mass towards the middle. Because these two ends of the interval are disconnected in this representation, the sampler gets ``stuck" in the left-most mode. (Lower) 1000 samples from the equivalent distribution sampled over the $(x,y)$-space. By introducing an auxiliary coordinate, one can effectively replicate the topology of a circle, effectively ``wrapping" the two ends of the interval, leading to unbiased sampling.}
 \label{fig:donut}
@@ -391,22 +391,21 @@ p_{x, y}(x,y) &=& p_{\theta, r}(\mathrm{arctan} \left(y/x), \sqrt{x^2 + y^2} \ri
 \noindent and its partial derivatives
 
 \begin{equation}
-\label{eq:final_change_of_measure}
 \frac{\partial}{\partial \theta_{ij}}\log |J_{Y(\Theta)}(\Theta)| = -(j-i-1) \tan \theta_{ij}
 \end{equation}
 
-\noindent which grow unbounded as $\theta_{ij}$ approaches $-\pi/2$ or $\pi/2$. When sampling near these points, this can cause numerical issues for HMC such as divergences or potentially even numerical overflow which could compromise the reversibility the Markov Chain and the resulting samples. 
+\noindent which grow unbounded as $\theta_{ij}$ approaches $-\pi/2$ or $\pi/2$. When sampling near these points, this can cause numerical issues for HMC when its step size is not sufficiently large such as divergences or potentially even numerical overflow which could compromise the reversibility the Markov Chain and the resulting samples. 
 
-\noindent To avoid these issue, we set the interval of the longitudinal angles to the slightly smaller interval $[-\pi/2 + \epsilon, \pi/2 - \epsilon]$ rather than the full interval $[-\pi/2, \pi/2]$ were $\epsilon$ is a small value (on the order of $10^{-5}$ in our experiments) that effectively blocks off a small portion of parameter space surrounding the singularities of the change of measure term. In the spherical case, this is equivalent to two small patches at each pole that is blocked off.
+\noindent To avoid these issue, we recommending setting the interval of the longitudinal angles to the slightly smaller interval $[-\pi/2 + \epsilon, \pi/2 - \epsilon]$ where $\epsilon$ is a small value (on the order of $10^{-5}$ in our experiments), rather than the full interval $[-\pi/2, \pi/2]$. This change effectively blocks off a small portion of parameter space surrounding the singularities of the change of measure term. In the spherical case, this is equivalent to two small patches at each pole that is blocked off. While this restricts part of parameter space, we show theoretically and empirically, that for a modestly small $\epsilon$, the bias incurred becomes negligible. 
 
-\noindent For general $n$ and $p$, the volume of this blocked off region is $\mathcal{O}(p \epsilon^2)$. In fact, the uniform density over $V_{pn}$ in the Givens representation is simply a constant times Equation \ref{eq:final_change_of_measure}. However, since this density factors in to a product of independent terms, the probability that at least one longitudinal angle falls within the $\epsilon$ region is the sum of the individual probabilities of these angles falling within the region. Each of these individual probabilities is proportional to $\cos^{j-i-1} \theta_{ij}$, which for small $\epsilon$ can be bounded by $\epsilon^{j-i-1}$ over the interval $[\pi/2 - \epsilon, \pi/2]$. Thus the probability of falling with this the $\epsilon$ region is bounded by a constant times the following quantity:
+\noindent For general $n$ and $p$, the volume of this blocked off region is $\mathcal{O}(p \epsilon^2)$. In fact, the uniform density over $V_{pn}$ in the Givens representation is simply a constant times Equation \ref{eq:final_change_of_measure}. However, since this density factors in to a product of independent terms, the probability that at least one longitudinal angle falls within the $\epsilon$ region is the sum of the individual probabilities of these angles falling within the region. Each of these individual probabilities is proportional to $\cos^{j-i-1} \theta_{ij}$, which for small $\epsilon$ can be bounded by $\epsilon^{j-i-1}$ over the interval $[\pi/2 - \epsilon, \pi/2]$. Thus the probability of falling within the $\epsilon$ region is bounded by a constant times the following quantity:
 
 \begin{equation}
 \label{eq:bound_on_epsilon_vol}
 \sum_{i=1}^p \sum_{j=i+2}^n \int_{\pi/2-\epsilon}^{\pi/2} \epsilon^{j-i-1} d\theta_{ij} = \sum_{i=1}^p \sum_{j=i+2}^n \epsilon^{j-i} = \sum_{i=1}^p \mathcal{O}(\epsilon^2) = \mathcal{O}(p \epsilon^2).
 \end{equation}
 
-\noindent Because this quantity falls off with the square of $\epsilon$, even for modestly small $\epsilon$, the probability of a uniformly sampled point falling within the $\epsilon region$ is small. Empirical results further illustrate this. For various values of $n, p,$ and $\epsilon$ we drew 100,000 samples uniformly form the Stiefel manifold by sampling the elements of an $n \times p$ matrix from a standard normal distribution, then taking the QR factorization of this matrix. This results in a matrix $Q$ that is uniformly distributed over the Stiefel manifold. We then took these samples, converted them in to their Givens representation, and calculated the number of these samples that that had any longitudinal angle within the region $[-\pi/2, -\pi/2+\epsilon]$ or the region $[\pi/2-\epsilon, \pi]$. The results closely follow Equation \ref{eq:bound_on_epsilon_vol}. In particular, the proportion of samples that fell within this region does not change much for fixed $p$ and increasing $n$, the proportion increases linearly with $p$, and it decreases quadratically with $\epsilon$ (Table \ref{tab:uniform_epsilon_region}).  
+\noindent Because this quantity falls off with the square of $\epsilon$, even for modestly small $\epsilon$, the probability of a uniformly sampled point falling within the $\epsilon$ region is small. Empirical results further illustrate this. For various values of $n, p,$ and $\epsilon$ we drew 100,000 samples uniformly form the Stiefel manifold by sampling the elements of an $n \times p$ matrix from a standard normal distribution, then taking the QR factorization of this matrix, a common technique for uniformly sampling the Stiefel manifold \citep{muirhead2009aspects}. We then took these samples, converted them in to their Givens representation, and calculated the number of samples that had any longitudinal angle within the region $[-\pi/2, -\pi/2+\epsilon]$ or the region $[\pi/2-\epsilon, \pi]$. The results closely follow Equation \ref{eq:bound_on_epsilon_vol}. In particular, the proportion of samples that fell within this region does not change much for fixed $p$ and increasing $n$, the proportion increases linearly with $p$, and it decreases quadratically with $\epsilon$ (Table \ref{tab:uniform_epsilon_region}).  
 
 \begin{table*}
 \begin{tabular}{|cc||ccccc|}
@@ -427,11 +426,56 @@ $p$ & $n$  & $\epsilon = 0.1$ & $\epsilon = 0.05$ & $\epsilon = 0.025$ & $\epsil
 10 & 50 & 5,266 & 1,368 & 334 & 90 & 0 \\
 \hline
 \end{tabular}
-\caption{The number of samples out of 100,000 that fall within the $\epsilon$ region for various values of $n, p,$ and $\epsilon$. As the theory suggests, the number of samples falling within this region increases negligibly for fixed $p$ and increasing $n$, it increases linearly with $p$, and it decreases quadratically as $\epsilon$ decreases. In particular, whenever $\epsilon$ is halved, the number of sample falling within the region decrease by about a fourth. We also note that for $\epsilon = 1e-5$, the value we used for most of our experiments, the number of samples falling within the $\epsilon$ region is zero for all settings.}
+\caption{The number of uniform samples out of 100,000 that fell within the $\epsilon$ region for various values of $n, p,$ and $\epsilon$. Samples are taken uniformly from the Stiefel manifold using the QR factorization method. As the theoretical bound suggests, the number of samples falling in this region increases negligibly for fixed $p$ and increasing $n$, it increases linearly with $p$, and it decreases quadratically as $\epsilon$ decreases. In particular, whenever $\epsilon$ is halved, the number of sample falling within the region decrease by about a fourth. We also note that for $\epsilon = 1e-5$, the value we used for most of our experiments, the number of samples falling within the $\epsilon$ region is zero for all settings.}
 \label{tab:uniform_epsilon_region}
 \end{table*}
 
+\noindent For non-uniform distributions with a probability density $p(\Theta)$ that is finite in the $\epsilon$ region, the probability of any of the longitudinal angles falling within the $\epsilon$ region can again be bounded by a constant times $\mathcal{O}(p \epsilon^2)$. We took 100,000 samples from the von Mises Fisher distribution over $V_{1,3}$ with parameters $\mu = (0,0,1)$ and $\kappa = 1, 10, 100$, and 1000 using the simulation method of \citet{wood1994simulation} as implemented in the R package Rfast. For fixed $\kappa$ the probability of a sample falling in the $\epsilon$ region drops off with the square of $\epsilon$ as the bound would suggest. This holds true even when probability mass is highly concentrated near these regions (Table \ref{tab:vmf_epsilon_region}).  
 
+\begin{table*}
+\begin{tabular}{|c||ccccc|}
+\hline
+$\kappa$  & $\epsilon = 0.1$ & $\epsilon = 0.05$ & $\epsilon = 0.025$ & $\epsilon = 0.0125$ & $\epsilon = 1e-5$\\
+\hline
+\hline
+1 & 630 & 163 & 38 & 9 & 0\\
+10 & 4,839 & 1,220 & 317 & 81 & 0\\
+100 & 39,287 & 11,658 & 3,086 & 764 & 0 \\
+1,000  & 99,295 & 71,066 & 26,643 & 7,473 & 0 \\
+\hline
+\end{tabular}
+\caption{The number of samples from a von Mises Fisher distribution with $\mu = (0,0,1)$ and $\kappa = 1, 10, 100$ and 1000 that fell within the $\epsilon$ region for various values of $n, p,$ and $\epsilon$. For each value of $\kappa$ 100,000 total samples were taken. As the theoretical bound suggests, the number of samples that fill within the $\epsilon$ region fall with the square of $\epsilon$ so that even for a modestly small value of $\epsilon = 1e-5$, none of the 100,000 samples fall within this region even in the highly concentrated case ($\kappa = 1,000$).}
+\label{tab:vmf_epsilon_region}
+\end{table*}
+
+\noindent Because the probability of samples falling within the $\epsilon$ falls with the square of $\epsilon$, even for modestly small $\epsilon$, the distribution of derived quantities of $Y(\Theta)$ remains largely unaffected when sampling using the Givens representation with small enough $\epsilon$. We sampled the von Mises Fisher distribution with the same values of $\kappa$ using the Givens representation in Stan with an $\epsilon = 0.1, 0.05, 0.025, 0.0125,$ and $1e-5$. We then examined histograms and expectations of the principal angle $\arccos (\mu^T Y)$ which represents the angle between the sample and the direction at the pole lying directly in the middle of the $\epsilon$ region. For large $\epsilon$ and large $\kappa$ the bias induced by the $\epsilon$ region is evident when compared to samples using the method of \citet{wood1994simulation} since the sample can not get close enough to $\mu$. However, for any fixed $\kappa$ as $\epsilon$ is decreased, the bias decreases rapidly as the bound would suggest (Figure \ref{fig:epsilon_histogram}). Table \ref{tab:vmf_epsilon_region_expectations} illustrates this effect numerically using the expectation of the principal angle and the expectation of its square.
+
+\begin{figure}[h]
+\centering
+\vspace{.1in}
+\includegraphics[width=0.65\textwidth]{figures/epsilon_histogram.png}
+\vspace{.05in}
+\caption{Histograms of the principal angle, $\arccos (\mu^T Y)$, sampled under the von Mises Fisher distribution with $\mu = (0,0,1)$ and $\kappa = 1, 10, 100$ and 1000 using the Givens representation in Stan with various sizes of the $\epsilon$ area and using the method of \citet{wood1994simulation}. For small $\epsilon$ and large $\kappa$, the bias in the samples taken using the latter method is evident in the histograms. In particular, despite the large amount of mass near zero, the samples are never higher than a bound higher than zero that is dictated by $\epsilon$. As $\epsilon$ decreases, the bound rapidly becomes negligible because of the quadratic relationship between $\epsilon$ and the volume of the $\epsilon$ area. Thus for $\epsilon = 1e-5$, the histograms of the Givens representation method and the \citet{wood1994simulation} method become indistinguishable.}
+\label{fig:epsilon_histogram}
+\end{figure}
+
+\begin{table*}
+\begin{tabular}{|c||ccccc|c|}
+\hline
+ &   Givens &  &  &  & & Wood\\
+\hline
+$\kappa$ & $\epsilon = 0.1$ & $\epsilon = 0.05$ & $\epsilon = 0.025$ & $\epsilon = 0.0125$ & $\epsilon = 1e-5$ & \\
+\hline
+\hline
+1 & 1.2027 & 1.2042 & 1.2008 & 1.1995 & 1.1986 & 1.2012\\
+10 & 0.4181 & 0.4065 & 0.4031 & 0.4012 & 0.4019 & 0.4015\\
+100 & 0.1657 & 0.1377 & 0.1290 & 0.1258 & 0.1261 & 0.1255 \\
+1,000 & 0.1092 & 0.0657 & 0.0483 & 0.0422 & 0.0396 & 0.0398\\
+\hline
+\end{tabular}
+\caption{The empirical expectation of the principal angle, $\arccos (\mu^T Y)$, sampled under the von Mises Fisher distribution with $\mu = (0,0,1)$ and $\kappa = 1, 10, 100$ and 1000 using the Givens representation in Stan with various sizes of the $\epsilon$ area and using the method of \citet{wood1994simulation}. As $\epsilon$ decreases, the empirical expectation computed using the Givens representation become much closer to those taken via the method of \citet{wood1994simulation}. For small $\kappa$ the expectations do not differ much even for large $\epsilon$ because much less mass concentrates near the $\epsilon$ regions.}
+\label{tab:vmf_epsilon_region_expectations}
+\end{table*}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Coordinate Charts and Identifiability}\label{charts_identifiability}
