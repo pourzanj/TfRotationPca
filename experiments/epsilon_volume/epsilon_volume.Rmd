@@ -5,6 +5,7 @@ output: html_notebook
 
 ```{r load_functions}
 library(tidyverse)
+library(rstan)
 library(Rfast)
 source("../../SampleStiefelUniformQr.R")
 source("../../givens.R")
@@ -121,7 +122,7 @@ in_patch %>%
 
 ```{r}
 n <- 3
-mu <- c(1, 0, 0)
+mu <- c(0, 0, 1)
 kappa <- 10.0
 EPS <- 1e-5
 
@@ -168,8 +169,11 @@ vmf_stan_settings <-
   as_tibble
 
 run_stan_fit_get_samples <- function(EPS, kappa) {
+  print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+  print(kappa)
+  print(EPS)
   fit <- stan("../../Stan/new_khatri/fisher_von_mises_givens.stan",
-       data = list(n = n, mu = mu, kappa = kappa, EPS = EPS),
+       data = list(n = n, mu = c(0, 0, 1), kappa = kappa, EPS = EPS),
        chains = 1, iter = 2e5)
   
   tibble(princ_angle_s = extract(fit)$theta_princ) %>%
@@ -181,22 +185,98 @@ vmf_stan_samples <-
   pmap(run_stan_fit_get_samples) %>%
   bind_rows() %>%
   mutate(sample = "Stan")
+
+saveRDS(vmf_stan_samples, file = "../../vmf_stan_samples.rds")
 ```
 
 ```{r}
+library(latex2exp)
+
 all_samples <- 
   vmf_samples %>%
   select(sample, kappa, princ_angle_s) %>%
-  bind_rows(vmf_stan_samples)
+  mutate(EPS = "Ford") %>%
+  bind_rows(vmf_stan_samples %>% mutate(EPS = as.character(EPS))) %>%
+  mutate(EPS = factor(EPS, levels = c("0.1", "0.05", "0.025", "0.0125", "1e-05", "Ford")))
 
 all_samples %>%
-  group_by(EPS) %>%
-  summarize(m = mean(princ_angle_s),
-            s = sd(princ_angle_s))
+  group_by(EPS, kappa) %>%
+  summarize(m = round(mean(princ_angle_s), 4),
+            s = round(mean(princ_angle_s^2), 4)) %>%
+  arrange(kappa, EPS)
 
 all_samples %>%
   ggplot(aes(princ_angle_s)) +
   geom_histogram(binwidth = 0.01) +
-  facet_grid(EPS ~ kappa, scales = "free")
+  facet_grid(EPS ~ kappa, scales = "free") +
+  theme_bw() +
+  xlab("Principal Angle")
+```
+
+```{r}
+fit_12 <- stan("../../Stan/new_khatri/fisher_von_mises_givens.stan",
+            data = list(n = 3, mu = c(0, 0, 1), kappa = 1e14, EPS = 0.0),
+            chains = 1, iter = 1e5 + 1000, warmup = 1000)
+
+s <- extract(fit_12)
+fit_12_samples <- tibble(princ_angle_s = s$theta_princ, sample = "1e12")
+
+fit_15 <- stan("../../Stan/new_khatri/fisher_von_mises_givens.stan",
+            data = list(n = 3, mu = c(0, 0, 1), kappa = 1e15, EPS = 0.0),
+            chains = 1, iter = 1e5 + 10000, warmup = 10000)
+
+s <- extract(fit_15)
+fit_15_samples <- tibble(princ_angle_s = s$theta_princ, sample = "1e15")
+
+n <- 3
+mu <- c(0, 0, 1)
+kappa <- 1e15
+EPS <- 1e-5
+
+vmf_settings <-
+  expand.grid(theta_12 = c(0.0),
+            theta_13 = c(pi/2),
+            kappa = c(1e15)) %>%
+  as_tibble
+
+vmf_raw_samples <-
+  vmf_settings %>%
+  pmap(function(theta_12, theta_13, kappa) {
+        m <- InverseGivensTransform(c(theta_12, theta_13), 3, 1)
+        rvmf(1e5, m, kappa)
+    })
+
+vmf_summary_stats <- vmf_raw_samples %>% map(get_stats)
+
+vmf_samples <-
+  map2(vmf_summary_stats, 1:length(vmf_summary_stats),
+     function(df, i) df %>% mutate(settings_id = i)) %>%
+  bind_rows() %>%
+  inner_join(vmf_settings %>% mutate(settings_id = row_number())) %>%
+  mutate(sample = "VMF") %>%
+  select(princ_angle_s, sample)
+
+all_samples_high_kappa <-
+  bind_rows(fit_12_samples) %>%
+  bind_rows(fit_15_samples)
+
+all_samples_high_kappa %>% ggplot(aes(princ_angle_s)) + geom_histogram() + facet_grid(sample ~ .)
+```
+
+```{r}
+fit <-
+  stan("../../Stan/new_khatri/givens_uniform_patch.stan",
+            data = list(n = 3, p = 1, EPS = 0.0),
+            chains = 1, iter = 1e5 + 1000, warmup = 1000)
+
+s <- extract(fit)
+
+g <- unconstrain_pars(fit, list(x_lon = array(1.0), y_lon = array(0.0), theta_lat = array(pi/2 - 1e-8)))
+grad_log_prob(fit, g)
+
+fit <-
+  stan("../../Stan/new_khatri/grad_tester.stan",
+            data = list(n = 3, p = 1, EPS = 0.0),
+            chains = 1, iter = 1e3, init = list(list(theta = 0.0)))
 ```
 

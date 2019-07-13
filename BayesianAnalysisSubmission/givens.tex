@@ -305,7 +305,7 @@ G_{p:n}^T J_{Y_p(\Theta)}(\Theta)
 
 \begin{equation}
 \label{eq:final_change_of_measure}
-|J_{Y(\Theta)}(\Theta)| = \prod_{i=1}^p \prod_{j=i+1}^n \cos^{j-i-1} \theta_{ij}.
+J_{Y(\Theta)}(\Theta) = \prod_{i=1}^p \prod_{j=i+1}^n \cos^{j-i-1} \theta_{ij}.
 \end{equation}
 
 %%%%% EXAMPLE FOR 3x1 CASE
@@ -639,18 +639,38 @@ Factor Analysis (FA) and Probabilistic PCA (PPCA) \citep{tipping1999probabilisti
 \label{fig:MleSubspaceEstimate}
 \end{figure}
 
-\noindent To ensure identifiability $W$ is constrained to be an orthogonal $n \times p$ matrix while $\Lambda$ is a diagonal matrix with positive, ordered elements. Because $\mb{x}_i$ is a linear transformation of a multivariate Gaussian, its distribution is also multivariate Gaussian with mean zero and covariance $\textbf{C} := W \lambda^2 W^T + \sigma^2$ \citep{murphy2012machine}. Letting $\hat{\Sigma} := (1/N) \sum_{i=1}^N \mb{x}_i \mb{x}_i^T$ denote the empirical covariance matrix this gives us the simplified PPCA likelihood
+\noindent To ensure identifiability $W$ is constrained to be an orthogonal $n \times p$ matrix while $\Lambda$ is a diagonal matrix with positive, ordered elements. Because $\mb{x}_i$ is a linear transformation of a multivariate Gaussian, $\mb{z}_i$ can be integrated out of the model \ref{eq:PpcaGenerativeProcess} to yield the simplified model
 
 \begin{eqnarray}
-p(\mb{x}_1, \cdots, \mb{x}_N | W, \sigma^2) &=& -\frac{N}{2} \ln |\textbf{C}| - \frac{1}{2} \sum_{i=1}^N \mb{x}_i^T \textbf{C}^{-1} \mb{x}_i\\
+\label{eq:PpcaSimplifiedModel}
+\mb{x}_i | W, \Lambda, \sigma^2 &\sim& \mathcal{N}_n(0, \textbf{C}).
+\end{eqnarray}
+
+\noindent where $\textbf{C} := W \Lambda^2 W^T + \sigma^2$ I \citep{murphy2012machine}. Letting $\hat{\Sigma} := (1/N) \sum_{i=1}^N \mb{x}_i \mb{x}_i^T$ denote the empirical covariance matrix this gives us the simplified PPCA likelihood
+
+\begin{eqnarray}
+p(\mb{x}_1, \cdots, \mb{x}_N | W, \Lambda, \sigma^2) &=& -\frac{N}{2} \ln |\textbf{C}| - \frac{1}{2} \sum_{i=1}^N \mb{x}_i^T \textbf{C}^{-1} \mb{x}_i\\
 &=& -\frac{N}{2} \ln |\textbf{C}| - \frac{N}{2} \mathrm{tr} (\textbf{C}^{-1} \hat{\Sigma}).
 \label{eq:ppca_likelihood}
 \end{eqnarray}
 
-
 \noindent Traditional PCA corresponds to the closed-form maximum likelihood estimator for $W$ in the limit as $\sigma^2 \to 0$,  providing no measure of uncertainty for this point-estimate. Furthermore, for more elaborate models, the analytical form of the maximum-likelihood estimator is rarely known.
 
-\noindent We used the Givens representation to infer this model using simulated data. Specifically, we generated a three-dimensional dataset that lies on a two-dimensional plane with $N =15$ observations according to the above generative process. The data is plotted in Figure \ref{fig:MleSubspaceEstimate}). We chose $\mathrm{diag}(\Lambda) =\mathrm{diag}(2, 1)$, $\sigma^2 = 1$, and $W$ to be $I_{3,2}$, which in the Givens representation corresponds to $\theta_{12} = \theta_{13} = \theta_{23} = 0$ i.e. the horizontal plane. We point out how this horizontal plane differs from the slanted plane obtained from the classical PCA maximum likelihood estimate (Figure \ref{fig:MleSubspaceEstimate}). In this case, the advantage of the full posterior estimate that the Bayesian framework affords is clear. Posterior samples of $\theta_{13}$, which if we recall from Figure \ref{fig:StiefelGeom} is the Givens representation angle that controls the upwards tilt of the plane, reveal a wide posterior which cautions us against the spurious maximum likelihood estimate of $\hat{\theta}_{13} = -0.15$ (Figure \ref{fig:ppca_posterior}, right). Note also that by naturally constraining the set of angles considered as in Section \ref{charts_identifiability}, the superfluous modes that EMHMC visits are avoided. Likewise, posterior distributions of $\Lambda$ are more informative that point estimates for quantifying the inherent dimensionality of the data (Figure \ref{fig:ppca_posterior}, left).
+\noindent We used the Givens representation in Stan to infer the parameters in model \ref{eq:PpcaSimplifiedModel} from two simulated datasets with respective dimensions $n = 3, p = 3$ and $n = 50, p = 3$. For  $\Lambda$ and $\sigma^2$ we chose uniform priors over the positive real line and for $W$ we chose a uniform prior over the Stiefel manifold yielding the unnormalized posterior density
+
+\begin{eqnarray}
+p(W, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W, \Lambda, \sigma^2)
+\end{eqnarray}
+
+\noindent or in the Givens representation
+
+\begin{eqnarray}
+p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W(\Theta), \Lambda, \sigma^2)\, |J_{Y(\Theta)}(\Theta)|
+\end{eqnarray}
+
+\noindent where the latter term comes from Equation \ref{eq:final_change_of_measure}.
+
+\noindent For the $n = 3$ case we sampled $N = 15$ points from the generative process \ref{eq:PpcaSimplifiedModel} with $\mathrm{diag}(\Lambda) =\mathrm{diag}(2, 1)$, $\sigma^2 = 1$, and $W= I_{3,2}$, which in the Givens representation corresponds to $\theta_{12} = \theta_{13} = \theta_{23} = 0$ i.e. the horizontal plane. This plane is plotted along with the data and the plane corresponding to the classical PCA maximum likelihood estimate in Figure \ref{fig:MleSubspaceEstimate}. Specifically, we generated a three-dimensional dataset that lies on a two-dimensional plane with $N =15$ observations according to the above generative process. The data is plotted in Figure \ref{fig:MleSubspaceEstimate}).  In this case, the advantage of the full posterior estimate that the Bayesian framework affords is clear. Posterior samples of $\theta_{13}$, which if we recall from Figure \ref{fig:StiefelGeom} is the Givens representation angle that controls the upwards tilt of the plane, reveal a wide posterior which cautions us against the spurious maximum likelihood estimate of $\hat{\theta}_{13} = -0.15$ (Figure \ref{fig:ppca_posterior}, right). Note also that by naturally constraining the set of angles considered as in Section \ref{charts_identifiability}, the superfluous modes that EMHMC visits are avoided. Likewise, posterior distributions of $\Lambda$ are more informative that point estimates for quantifying the inherent dimensionality of the data (Figure \ref{fig:ppca_posterior}, left).
 
 \begin{figure}[h]
 \centering
@@ -660,6 +680,8 @@ p(\mb{x}_1, \cdots, \mb{x}_N | W, \sigma^2) &=& -\frac{N}{2} \ln |\textbf{C}| - 
 \caption{PPCA inference for three-dimensional synthetic data. (Left) Posterior draws of the $\Lambda$ parameter are more informative in dimensionality selection than point-estimates. The posterior distributions for $\Lambda_1$ and $\Lambda_2$ (dark grey, and grey) contain almost no mass near zero, suggesting that the data probably contains significant variation in those directions. Meanwhile, the posterior $\Lambda_3$ (orange) has it posterior mode at zero, suggesting there is a high probability that this parameter is close to zero, which the point estimate by itself neglects to convey. (Right) By limiting the angles of rotation in the Givens Transform, we can further avoid unidentifiability in our problem and eliminate multi-modal posteriors that show up in other methods such as EMHMC.}
 \label{fig:ppca_posterior}
 \end{figure}
+
+\noindent For the $n = 50$ simulation we used the settings used by \citet{jauch2018random} in their experiments section: $\Lambda = \mathrm{diag}(5, 3, 1.5)$, $\sigma^2 = 1$, and $W$ drawn uniformly from $V_{3, 50}$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{The Network Eigenmodel}
