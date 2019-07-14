@@ -131,7 +131,7 @@ fit <- stan(file = "../../Stan/ppca_horseshoe.stan",
 s <- extract(fit)
 
 print(fit_non_sparse, pars = c("lambda_sq", "sigmaSq"))
-print(fit_mirror, pars = c("lambda_sq", "sigmaSq"))
+print(fit, pars = c("lambda_sq", "sigmaSq"))
 
 s$Y_sparsity %>% qplot
 ```
@@ -213,7 +213,7 @@ bind_rows(q_Y_tibble_rows_and_cols_sparse,
   facet_grid(. ~ col_id) +
   scale_color_manual(values=c("black","darkorange")) +
   theme_bw() +
-  theme(text = element_text(size=20)) +
+  theme(text = element_text(size=15)) +
   xlab("W") +
   ylab("Row")
 ```

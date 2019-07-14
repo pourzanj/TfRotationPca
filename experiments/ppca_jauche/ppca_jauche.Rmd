@@ -131,6 +131,7 @@ s_tibble <-
 #   geom_point() +
 #   facet_grid(. ~ var_type, scales = "free_x")
 
+# 1100 x 800
 q_Y_tibble_rows_and_cols %>%
   mutate(row_id = factor(row_id, levels = as.character(50:1))) %>%
   ggplot(aes(true_value, row_id)) +
@@ -138,7 +139,7 @@ q_Y_tibble_rows_and_cols %>%
   geom_point() +
   facet_grid(. ~ col_id) +
   theme_bw() +
-  theme(text = element_text(size=20)) +
+  theme(text = element_text(size=15)) +
   xlab("W") +
   ylab("Row")
 ```
@@ -149,6 +150,7 @@ q_princ_angles <-
   as_tibble() %>%
   set_names(c("sample_id", "var_id", "value"))
 
+# 
 q_princ_angles %>%
   ggplot(aes(value)) +
   geom_histogram() +
