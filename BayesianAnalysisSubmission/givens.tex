@@ -382,21 +382,21 @@ p_{x, y}(x,y) &=& p_{\theta, r}(\mathrm{arctan} \left(y/x), \sqrt{x^2 + y^2} \ri
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Truncating Parameter Space Near Singularities}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\noindent  Certain inference algorithms such as HMC utilize the log of the density and its partial derivatives. For the Givens representation this requires working with the log of the change-of-measure term 
+\noindent  To sample from a distribution, certain inference algorithms such as HMC utilize the log of the corresponding density and its partial derivatives. For the Givens representation this requires working with the log of the change-of-measure term 
 
 \begin{equation}
-\log |J_{Y(\Theta)}(\Theta)| = \sum_{i=1}^p \sum_{j=i+1}^n (j-i-1) \log \cos \theta_{ij}.
+\log |J_{Y(\Theta)}(\Theta)| = \sum_{i=1}^p \sum_{j=i+1}^n (j-i-1) \log |\cos \theta_{ij}|.
 \end{equation}
 
 \noindent and its partial derivatives
 
 \begin{equation}
-\frac{\partial}{\partial \theta_{ij}}\log |J_{Y(\Theta)}(\Theta)| = -(j-i-1) \tan \theta_{ij}
+\frac{\partial}{\partial \theta_{ij}}\log |J_{Y(\Theta)}(\Theta)| = -(j-i-1) |\tan \theta_{ij}|.
 \end{equation}
 
-\noindent which grow unbounded as $\theta_{ij}$ approaches $-\pi/2$ or $\pi/2$. When sampling near these points, this can cause numerical issues for HMC when its step size is not sufficiently large such as divergences or potentially even numerical overflow which could compromise the reversibility the Markov Chain and the resulting samples. 
+\noindent For both expressions, the terms involving the latitudinal coordinates drops out leaving expression that are only in terms of the longitudinal coordinates which take on values between $\pi/2$ and $\pi/2$. However, the partial derivatives grow unbounded as $\theta_{ij}$ approaches either of these endpoints. When sampling near these points this unbounded gradient can cause numerical issues for HMC such as divergences. Alternatively, the difficulty of sampling near these regions can force automatic warmup routines for HMC to select an unreasonably small and inefficient step size to in an effort to maintain high average accept rates. Luckily, on the logit scale, gradients of the resulting transformed density are finite even at $|\theta_{ij}| = \pi/2$. In particular, .
 
-\noindent To avoid these issue, we recommending setting the interval of the longitudinal angles to the slightly smaller interval $[-\pi/2 + \epsilon, \pi/2 - \epsilon]$ where $\epsilon$ is a small value (on the order of $10^{-5}$ in our experiments), rather than the full interval $[-\pi/2, \pi/2]$. This change effectively blocks off a small portion of parameter space surrounding the singularities of the change of measure term. In the spherical case, this is equivalent to two small patches at each pole that is blocked off. While this restricts part of parameter space, we show theoretically and empirically, that for a modestly small $\epsilon$, the bias incurred becomes negligible. 
+\noindent In practice, we did not encounter divergences, inefficient sampling, or other numerical issues while sampling once the longitudinal coordinates were sampled on the logit scale. However, as a safety precaution, we reccomend setting the interval of the longitudinal angles to the slightly smaller interval $[-\pi/2 + \epsilon, \pi/2 - \epsilon]$ where $\epsilon$ is a small value (on the order of $10^{-5}$ in our experiments), rather than the full interval $[-\pi/2, \pi/2]$. This change effectively blocks off a small portion of parameter space surrounding the singularities of the change of measure term. In the spherical case, this is equivalent to two small patches at each pole that is blocked off. While this restricts part of parameter space, we show theoretically and empirically, that for a modestly small $\epsilon$, the bias incurred becomes negligible. 
 
 \noindent For general $n$ and $p$, the volume of this blocked off region is $\mathcal{O}(p \epsilon^2)$. In fact, the uniform density over $V_{pn}$ in the Givens representation is simply a constant times Equation \ref{eq:final_change_of_measure}. However, since this density factors in to a product of independent terms, the probability that at least one longitudinal angle falls within the $\epsilon$ region is the sum of the individual probabilities of these angles falling within the region. Each of these individual probabilities is proportional to $\cos^{j-i-1} \theta_{ij}$, which for small $\epsilon$ can be bounded by $\epsilon^{j-i-1}$ over the interval $[\pi/2 - \epsilon, \pi/2]$. Thus the probability of falling within the $\epsilon$ region is bounded by a constant times the following quantity:
 
