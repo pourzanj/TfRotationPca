@@ -646,7 +646,7 @@ Factor Analysis (FA) and Probabilistic PCA (PPCA) \citep{tipping1999probabilisti
 \mb{x}_i | W, \Lambda, \sigma^2 &\sim& \mathcal{N}_n(0, \textbf{C}).
 \end{eqnarray}
 
-\noindent where $\textbf{C} := W \Lambda^2 W^T + \sigma^2$ I \citep{murphy2012machine}. Letting $\hat{\Sigma} := (1/N) \sum_{i=1}^N \mb{x}_i \mb{x}_i^T$ denote the empirical covariance matrix this gives us the simplified PPCA likelihood
+\noindent where $\textbf{C} := W \Lambda^2 W^T + \sigma^2$ I \citep{murphy2012machine}. Letting $\hat{\Sigma} := (1/N) \sum_{i=1}^N \mb{x}_i \mb{x}_i^T$ denote the empirical covariance, matrix this gives us the simplified PPCA likelihood
 
 \begin{eqnarray}
 p(\mb{x}_1, \cdots, \mb{x}_N | W, \Lambda, \sigma^2) &=& -\frac{N}{2} \ln |\textbf{C}| - \frac{1}{2} \sum_{i=1}^N \mb{x}_i^T \textbf{C}^{-1} \mb{x}_i\\
@@ -656,7 +656,7 @@ p(\mb{x}_1, \cdots, \mb{x}_N | W, \Lambda, \sigma^2) &=& -\frac{N}{2} \ln |\text
 
 \noindent Traditional PCA corresponds to the closed-form maximum likelihood estimator for $W$ in the limit as $\sigma^2 \to 0$,  providing no measure of uncertainty for this point-estimate. Furthermore, for more elaborate models, the analytical form of the maximum-likelihood estimator is rarely known.
 
-\noindent We used the Givens representation in Stan to infer the parameters in model \ref{eq:PpcaSimplifiedModel} from two simulated datasets with respective dimensions $n = 3, p = 3$ and $n = 50, p = 3$. For  $\Lambda$ and $\sigma^2$ we chose uniform priors over the positive real line and for $W$ we chose a uniform prior over the Stiefel manifold yielding the unnormalized posterior density
+\noindent We used the Givens representation in Stan to infer the parameters in model \ref{eq:PpcaSimplifiedModel} from a simulated dataset with $n = 50$ and $p = 3$. For  $\Lambda$ and $\sigma^2$ we chose uniform priors over the positive real line and for $W$ we chose a uniform prior over the Stiefel manifold yielding the unnormalized posterior density
 
 \begin{eqnarray}
 p(W, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W, \Lambda, \sigma^2)
@@ -665,23 +665,19 @@ p(W, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots,
 \noindent or in the Givens representation
 
 \begin{eqnarray}
+\label{eq:ppca_density_givens}
 p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W(\Theta), \Lambda, \sigma^2)\, |J_{Y(\Theta)}(\Theta)|
 \end{eqnarray}
 
 \noindent where the latter term comes from Equation \ref{eq:final_change_of_measure}.
 
-\noindent For the $n = 3$ case we sampled $N = 15$ points from the generative process \ref{eq:PpcaSimplifiedModel} with $\mathrm{diag}(\Lambda) =\mathrm{diag}(2, 1)$, $\sigma^2 = 1$, and $W= I_{3,2}$, which in the Givens representation corresponds to $\theta_{12} = \theta_{13} = \theta_{23} = 0$ i.e. the horizontal plane. This plane is plotted along with the data and the plane corresponding to the classical PCA maximum likelihood estimate in Figure \ref{fig:MleSubspaceEstimate}.  In this case, the advantage of the full posterior estimate that the Bayesian framework affords is clear. Posterior samples of $\theta_{13}$, which if we recall from Figure \ref{fig:StiefelGeom} is the Givens representation angle that controls the upwards tilt of the plane, reveal a wide posterior which cautions us against the spurious maximum likelihood estimate of $\hat{\theta}_{13} = -0.15$ (Figure \ref{fig:ppca_posterior}, right). Note also that by naturally constraining the set of angles considered as in Section \ref{charts_identifiability}, the superfluous modes that EMHMC visits are avoided. Likewise, posterior distributions of $\Lambda$ are more informative that point estimates for quantifying the inherent dimensionality of the data (Figure \ref{fig:ppca_posterior}, left).
+\noindent For the true value of the parameters we used the settings used by \citet{jauch2018random} in their experiments section: $\Lambda^2 = \mathrm{diag}(5, 3, 1.5)$, $\sigma^2 = 1$, and $W$ drawn uniformly from $V_{3, 50}$. For inference 10,000 samples were taken using Stan's NUTS algorithm with default settings. Table \ref{tab:ppca50} shows the posterior quantiles along with $\hat{R}$ and $n_{\mathrm{eff}}$ values for $\Lambda^2$ and $\sigma^2$. Like \citet{jauch2018random}, we plot histograms of the principal angle,
 
-\begin{figure}[h]
-\centering
-\vspace{.1in}
-\includegraphics[width=0.7\textwidth]{figures/ppca_posterior_new.png}
-\vspace{.05in}
-\caption{PPCA inference for three-dimensional synthetic data. (Left) Posterior draws of the $\Lambda$ parameter are more informative in dimensionality selection than point-estimates. The posterior distributions for $\Lambda_1$ and $\Lambda_2$ (dark grey, and grey) contain almost no mass near zero, suggesting that the data probably contains significant variation in those directions. Meanwhile, the posterior $\Lambda_3$ (orange) has it posterior mode at zero, suggesting there is a high probability that this parameter is close to zero, which the point estimate by itself neglects to convey. (Right) By limiting the angles of rotation in the Givens Transform, we can further avoid unidentifiability in our problem and eliminate multi-modal posteriors that show up in other methods such as EMHMC.}
-\label{fig:ppca_posterior}
-\end{figure}
+\begin{equation}
+\phi_j = \mathrm{arccos}(E_j^T W_j),\, j=1,2,3
+\end{equation}
 
-\noindent For the $n = 50$ simulation we used the settings used by \citet{jauch2018random} in their experiments section: $\Lambda^2 = \mathrm{diag}(5, 3, 1.5)$, $\sigma^2 = 1$, and $W$ drawn uniformly from $V_{3, 50}$.
+\noindent between the columns, $W_j$, of posterior draws of $W$ and the columns of the first three eigenvectors of $\hat{\Sigma}$, $E_j$ (Figure \ref{fig:ppca50_principal_angle}).
 
 \begin{table*}
 \begin{tabular}{|c||ccccccc|}
@@ -695,7 +691,7 @@ $\Lambda_2^2$  & 1.21 & 1.76 & 2.07 & 2.44 & 3.20 & 1.0 & 1,340 \\
 $\sigma^2$ & 0.99 & 1.01 & 1.03 & 1.04 & 1.07 & 1.0 & 5,374\\
 \hline
 \end{tabular}
-\caption{$\hat{R}$ and $n_{\mathrm{eff}}$ values averaged over all elements of the matrix parameter $Y$. }
+\caption{Posterior quantiles, $\hat{R}$, and $n_{\mathrm{eff}}$ values for $\Lambda^2$ and $\sigma^2$ computed over 10,000 posterior draws.}
 \label{tab:ppca50}
 \end{table*}
 
@@ -704,16 +700,18 @@ $\sigma^2$ & 0.99 & 1.01 & 1.03 & 1.04 & 1.07 & 1.0 & 5,374\\
 \vspace{.1in}
 \includegraphics[width=0.7\textwidth]{figures/jauche_sim_principal_angle.png}
 \vspace{.05in}
-\caption{P.}
+\caption{Histograms of the principal angles between posterior samples of $W$ and the first three eigenvectors of $\hat{\Sigma}$.}
 \label{fig:ppca50_principal_angle}
 \end{figure}
+
+\noindent Lastly, Figure \ref{fig:ppca50_coverage} shows the true values of $W$ used in the simulation along with the 80\% credible intervals, computed from posterior samples, of the marginal posterior distributions of the elements of $W$. 
 
 \begin{figure}[h]
 \centering
 \vspace{.1in}
 \includegraphics[width=0.9\textwidth]{figures/ppca50_coverage.png}
 \vspace{.05in}
-\caption{P.}
+\caption{True values of $W$ used in the simulation along with 80\% credible intervals computed using draws of the posterior.}
 \label{fig:ppca50_coverage}
 \end{figure}
 
@@ -721,6 +719,25 @@ $\sigma^2$ & 0.99 & 1.01 & 1.03 & 1.04 & 1.07 & 1.0 & 5,374\\
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Sparse PPCA}
 %%%%%%%%%%%%%%%%%%%%%%%%%
+To illustrate the utility of placing priors over the angle parameters, $\Theta$, of the Givens representation, we fit a PPCA model with sparse priors over $\Theta$ to simulated data generated from \ref{eq:PpcaGenerativeProcess}, with the same parameter settings as in the previous example, but with $W$ replaced with a sparse $50 \times 3$ matrix. Specifically, we drew $W$ uniformly from $V_{3,50}$, converted the result to the Givens representation, randomly set each angle to zero with probability 0.8, then converted the result back to the canonical representation. The result was an orthogonal $V_{3,50}$ matrix, $W$, with 85\% of its elements equal to zero.
+
+\noindent For our model, we used the standard PPCA likelihood \ref{eq:ppca_likelihood} with uniform priors over $\Lambda^2$ and $\sigma^2$, but rather than placing a prior over $\Theta$ was uniform over the Stiefel manifold, we set $\Theta$ to follow the regularized horseshoe prior of \cite{piironen2017sparsity}, a commonly used sparsity-inducing prior. Formally, we set
+
+\begin{eqnarray}
+\theta_{ij} &\sim& \mathcal{N}(0, \tau^2 \tilde{\lambda}_{ij}^2),\; \tilde{\lambda}_{ij}^2 = \frac{c^2 \lambda_{ij}^2}{c^2 + \tau^2 \lambda_{ij}^2}\\
+\lambda_{ij} &\sim& \mathrm{Half Cauchy}(0,1)\nonumber \\
+\tau &\sim& \mathrm{Half Cauchy}(0,\tau_0)\nonumber \\
+c^2 &\sim& \mathrm{Inverse Gamma}(\nu/2, \nu s^2/2)\nonumber
+\end{eqnarray}
+
+\noindent with hyper-parameters set to $\tau_0 = 0.01$, $\nu = 10$, and $s = \pi/4$ following the guidelines of \cite{piironen2017sparsity}. We took 10,000 posterior draws in Stan using the resulting unnormalized posterior density
+
+\begin{eqnarray}
+\label{eq:ppca_sparse_density_givens}
+p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W(\Theta), \Lambda, \sigma^2)\, p(\Theta, \lambda, \tau, c^2).
+\end{eqnarray}
+
+\noindent Table \ref{tab:ppca50_sparse} shows a posterior summary for the sparse model versus the non-sparse corresponding to the density \ref{eq:ppca_density_givens}. While the marginal posterior distributions of $\Lambda^2$ and $\sigma^2$ are similar for both models, the sparse model expectedly results in a much sparser posterior distribution over $\Theta$ and thus $W$ (Figure \ref{fig:ppca50_coverage_sparse}). In particular for elements of $W$ that are truly zero, the marginal posterior distributions of the sparse model tend to concentrate much closer to zero, while for truly non-zero elements, the sparse model is able to concentrate posterior mass away from zero.
 
 \begin{table*}
 \begin{tabular}{|cc||ccccccc|}
@@ -748,7 +765,7 @@ Sparse &  $\sigma^2$ & 0.97 & 1.00 & 1.01 & 1.03 & 1.05 & 1.0 & 7,191\\
 \vspace{.1in}
 \includegraphics[width=0.99\textwidth]{figures/ppca50_coverage_sparse.png}
 \vspace{.05in}
-\caption{P.}
+\caption{True values of $W$ used in the simulation along with 80\% posterior credible intervals computed using 10,000 draws of the posterior from the sparse and non-sparse models respectively. The posterior distribution of the sparse model places much more posterior mass closer to zero for values that are truly zero, while concentrating mass away from zero for truly non-zero values.}
 \label{fig:ppca50_coverage_sparse}
 \end{figure}
 

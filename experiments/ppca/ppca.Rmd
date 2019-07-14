@@ -31,6 +31,7 @@ data_three_one <- GenerateHighDimData(n = n, p = p, W = W, LambdaVec = c(2), sd 
 
 x <- data_three_one$x
 #save(x, file = "experiments/uncertaintyQuantification/unstableEstimate.Rdata")
+load(file = "experiments/uncertaintyQuantification/unstableEstimate.Rdata")
 ```
 
 ## Get Posterior in Stan with Mirrored Givens Representation
@@ -161,5 +162,37 @@ fit_ppca_likelihood <- stan("../../Stan/new_khatri/ppca_likelihood.stan", data =
 
 unconstrain_pars(fit_ppca_likelihood, list(Y = W, lambdaReversed = c(2,1), sigmaSq = 1.0))
 emhmc_onesample_eigennetwork(U0 = W, L0 = c(2,1), c0 = , lp_ppca, grad_lp_ppca, h = , nsteps = 20)
+```
+
+# NEW PLOTS AS OF 7/14/2019 SECOND RESUBMISSION TO JBA
+
+## Traceplot of Byrne
+
+```{r}
+byrne_angles <-
+  read_csv("experiments/uncertaintyQuantification/byrne_angles.csv",
+           col_names = FALSE) %>%
+  set_names(c("theta_12", "theta_13", "theta_23"))
+
+byrne_W_samples <-
+  byrne_angles %>%
+  #head() %>%
+  pmap(function(theta_12, theta_13, theta_23)
+    InverseGivensTransform(c(theta_12, theta_13, theta_23), n = 3, p = 2))
+
+W_hat <- princomp(x)$loadings
+
+byrne_princ_angle_samples <-
+  byrne_W_samples %>%
+  map(function(W) acos(abs(sum(W[,1]*W_hat[,1])))) %>%
+  unlist()
+
+
+```
+
+## Stan
+
+```{r}
+
 ```
 
