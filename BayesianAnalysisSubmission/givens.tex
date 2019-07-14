@@ -670,7 +670,7 @@ p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \c
 
 \noindent where the latter term comes from Equation \ref{eq:final_change_of_measure}.
 
-\noindent For the $n = 3$ case we sampled $N = 15$ points from the generative process \ref{eq:PpcaSimplifiedModel} with $\mathrm{diag}(\Lambda) =\mathrm{diag}(2, 1)$, $\sigma^2 = 1$, and $W= I_{3,2}$, which in the Givens representation corresponds to $\theta_{12} = \theta_{13} = \theta_{23} = 0$ i.e. the horizontal plane. This plane is plotted along with the data and the plane corresponding to the classical PCA maximum likelihood estimate in Figure \ref{fig:MleSubspaceEstimate}. Specifically, we generated a three-dimensional dataset that lies on a two-dimensional plane with $N =15$ observations according to the above generative process. The data is plotted in Figure \ref{fig:MleSubspaceEstimate}).  In this case, the advantage of the full posterior estimate that the Bayesian framework affords is clear. Posterior samples of $\theta_{13}$, which if we recall from Figure \ref{fig:StiefelGeom} is the Givens representation angle that controls the upwards tilt of the plane, reveal a wide posterior which cautions us against the spurious maximum likelihood estimate of $\hat{\theta}_{13} = -0.15$ (Figure \ref{fig:ppca_posterior}, right). Note also that by naturally constraining the set of angles considered as in Section \ref{charts_identifiability}, the superfluous modes that EMHMC visits are avoided. Likewise, posterior distributions of $\Lambda$ are more informative that point estimates for quantifying the inherent dimensionality of the data (Figure \ref{fig:ppca_posterior}, left).
+\noindent For the $n = 3$ case we sampled $N = 15$ points from the generative process \ref{eq:PpcaSimplifiedModel} with $\mathrm{diag}(\Lambda) =\mathrm{diag}(2, 1)$, $\sigma^2 = 1$, and $W= I_{3,2}$, which in the Givens representation corresponds to $\theta_{12} = \theta_{13} = \theta_{23} = 0$ i.e. the horizontal plane. This plane is plotted along with the data and the plane corresponding to the classical PCA maximum likelihood estimate in Figure \ref{fig:MleSubspaceEstimate}.  In this case, the advantage of the full posterior estimate that the Bayesian framework affords is clear. Posterior samples of $\theta_{13}$, which if we recall from Figure \ref{fig:StiefelGeom} is the Givens representation angle that controls the upwards tilt of the plane, reveal a wide posterior which cautions us against the spurious maximum likelihood estimate of $\hat{\theta}_{13} = -0.15$ (Figure \ref{fig:ppca_posterior}, right). Note also that by naturally constraining the set of angles considered as in Section \ref{charts_identifiability}, the superfluous modes that EMHMC visits are avoided. Likewise, posterior distributions of $\Lambda$ are more informative that point estimates for quantifying the inherent dimensionality of the data (Figure \ref{fig:ppca_posterior}, left).
 
 \begin{figure}[h]
 \centering
@@ -681,7 +681,12 @@ p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \c
 \label{fig:ppca_posterior}
 \end{figure}
 
-\noindent For the $n = 50$ simulation we used the settings used by \citet{jauch2018random} in their experiments section: $\Lambda = \mathrm{diag}(5, 3, 1.5)$, $\sigma^2 = 1$, and $W$ drawn uniformly from $V_{3, 50}$.
+\noindent For the $n = 50$ simulation we used the settings used by \citet{jauch2018random} in their experiments section: $\Lambda^2 = \mathrm{diag}(5, 3, 1.5)$, $\sigma^2 = 1$, and $W$ drawn uniformly from $V_{3, 50}$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Sparse PPCA}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{The Network Eigenmodel}

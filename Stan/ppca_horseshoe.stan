@@ -185,12 +185,21 @@ model {
 generated quantities {
   // compute principal angles between columns of ML estimate
   vector[p] theta_princ;
+  //vector[d] theta_mirrored = mirror(n, p, theta_lon, theta_lat);
+  // matrix[n,p] Y_mirrored = givens(n,p,theta_mirrored);
+  matrix[n,p] Y_mirrored;
   real Y_sparsity = 0.0;
   for(j in 1:p) {
-    real qTv = abs(dot_product(Y[,j], Y_ml[,j]));
+    real qTv = dot_product(Y[,j], Y_ml[,j]);
     real q = sqrt(dot_self(Y[,j]));
     real v = sqrt(dot_self(Y_ml[,j]));
-    theta_princ[j] = acos(qTv/(q*v));
+    theta_princ[j] = acos(abs(qTv)/(q*v));
+    
+    if(qTv < 0.0) {
+      Y_mirrored[,j] = -Y[,j];
+    } else {
+      Y_mirrored[,j] = Y[,j];
+    }
   }
   
   for(j in 1:p) {
@@ -202,3 +211,4 @@ generated quantities {
   }
   Y_sparsity = Y_sparsity/(n*p);
 }
+

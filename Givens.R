@@ -52,3 +52,26 @@ GivensTransform <- function(W) {
   
   return(angles)
 }
+
+# not finished/working
+mirror <- function(W) {
+  n <- nrow(W)
+  p <- ncol(W)
+  theta <- GivensTransform(W)
+  theta_new <- theta
+  
+  idx_lat <- 1
+  for(i in 1:p) {
+    theta_lat <- theta[idx_lat]
+    if(abs(theta_lat) > pi/2) {
+      if(theta_lat > 0.0) {
+        theta_new[idx_lat] <- -pi/2 + (theta[idx_lat] - 1)
+        theta_new[idx_lat:(idx_lat + (n-i-1))] <-
+          theta[idx_lat:(idx_lat + (n-i-1))]
+      } else{
+        
+      }
+    }
+    idx_lat <- idx_lat + (n-i)
+  }
+}

@@ -48,47 +48,60 @@ data <-
                       LambdaVec = sqrt(lambda_sq),
                       sd = sigma_sq,
                       N = N)
+
+data$W <- W_sparse
+
+saveRDS(data, "ppca_sparse_data.RDS")
+# data <- readRDS("ppca_sparse_data.RDS")
 ```
 
 ```{r, message=FALSE}
 x <- data$x
 x_matrix <- as.matrix(x)
 Sigma_hat <- (1/N)*t(x_matrix) %*% x_matrix
-Y_ml <- get_W_ml(Sigma_hat, n, p)
+Y_ml <- eigen(Sigma_hat)$vector[,1:p]
+
+for(i in 1:p) {
+  qTv <- sum(Y_ml[,i]*W_sparse[,i])
+  if(qTv < 0.0) {
+    Y_ml[,i] <- -Y_ml[,i]
+  }
+}
 
 dat <- list(n = n, p = p, N = N, SigmaHat = Sigma_hat, Y_ml = Y_ml)
-fit_non_sparse <- stan(file = "../../Stan/new_khatri/ppca_patch_no_mirror.stan",
-            data = dat, chains = 1, iter = 1e4, refresh = 100)
+fit_non_sparse <- stan(file = "../../Stan/new_khatri/ppca_patch_with_mirror_new.stan",
+            data = dat, chains = 1, iter = 1e4, refresh = 1000)
 ```
 
 ```{r}
-s <- extract(fit)
-
-W_sparse_melted <-
-  W_sparse %>%
-  melt() %>%
-  set_names("row", "col", "true_value")
-
-s_W <- extract(fit)$Y
-W_quantiles <-
-  s_W %>%
-  melt() %>%
-  as_tibble %>%
-  set_names("sample_id", "row", "col", "value") %>%
-  group_by(row, col) %>%
-  summarize(Q10 = quantile(value, 0.1),
-            Q50 = quantile(value, 0.5),
-            Q90 = quantile(value, 0.9)) %>%
-  ungroup() %>%
-  inner_join(W_sparse_melted) %>%
-  filter(col <= 3, row <= 10) %>%
-  mutate(in_interval = Q10 <= true_value & true_value < Q90)
-
-W_quantiles %>%
-  mutate(idx = row_number()) %>%
-  ggplot() +
-  geom_errorbar(aes(idx, ymin = Q10, ymax = Q90)) +
-  geom_point(aes(idx, true_value), color = "red")
+# NOT USING ANYMORE
+# s <- extract(fit)
+# 
+# W_sparse_melted <-
+#   W_sparse %>%
+#   melt() %>%
+#   set_names("row", "col", "true_value")
+# 
+# s_W <- extract(fit)$Y
+# W_quantiles <-
+#   s_W %>%
+#   melt() %>%
+#   as_tibble %>%
+#   set_names("sample_id", "row", "col", "value") %>%
+#   group_by(row, col) %>%
+#   summarize(Q10 = quantile(value, 0.1),
+#             Q50 = quantile(value, 0.5),
+#             Q90 = quantile(value, 0.9)) %>%
+#   ungroup() %>%
+#   inner_join(W_sparse_melted) %>%
+#   filter(col <= 3, row <= 10) %>%
+#   mutate(in_interval = Q10 <= true_value & true_value < Q90)
+# 
+# W_quantiles %>%
+#   mutate(idx = row_number()) %>%
+#   ggplot() +
+#   geom_errorbar(aes(idx, ymin = Q10, ymax = Q90)) +
+#   geom_point(aes(idx, true_value), color = "red")
 ```
 
 ```{r}
@@ -116,7 +129,93 @@ fit <- stan(file = "../../Stan/ppca_horseshoe.stan",
             data = dat_horseshoe, chains = 1, iter = 1e4, refresh = 100)
 
 s <- extract(fit)
+
+print(fit_non_sparse, pars = c("lambda_sq", "sigmaSq"))
+print(fit_mirror, pars = c("lambda_sq", "sigmaSq"))
+
 s$Y_sparsity %>% qplot
+```
+
+```{r}
+s_nonsparse <- extract(fit_non_sparse)
+s <- extract(fit)
+
+q_Y_tibble <-
+  cbind(s$Y_mirrored[,,1], s$Y_mirrored[,,2],s$Y_mirrored[,,3]) %>%
+  melt() %>%
+  as_tibble() %>%
+  set_names(c("sample_id", "var_id", "value")) %>%
+  group_by(var_id) %>%
+  summarize(Q10 = quantile(value, 0.1),
+            Q90 = quantile(value, 0.9)) %>%
+  mutate(true_value = as.vector(W_sparse)) %>%
+  arrange(true_value) %>%
+  mutate(var_id = row_number()) %>%
+  mutate(covered = Q10 <= true_value & true_value <= Q90) %>%
+  mutate(model = "Sparse")
+
+q_Y_tibble_sparse <-
+  cbind(s_nonsparse$Y_mirrored[,,1], s_nonsparse$Y_mirrored[,,2], s_nonsparse$Y_mirrored[,,3]) %>%
+  melt() %>%
+  as_tibble() %>%
+  set_names(c("sample_id", "var_id", "value")) %>%
+  group_by(var_id) %>%
+  summarize(Q10 = quantile(value, 0.1),
+            Q90 = quantile(value, 0.9)) %>%
+  mutate(true_value = as.vector(W_sparse)) %>%
+  arrange(true_value) %>%
+  mutate(var_id = row_number()) %>%
+  mutate(covered = Q10 <= true_value & true_value <= Q90) %>%
+  mutate(model = "Non-Sparse")
+
+bind_rows(q_Y_tibble, q_Y_tibble_sparse) %>%
+  ggplot(aes(var_id, true_value, color = model)) +
+  geom_errorbar(aes(ymin = Q10, ymax = Q90), position = "dodge") +
+  geom_point()
+
+```
+
+```{r}
+s_nonsparse <- extract(fit_non_sparse)
+s <- extract(fit)
+
+q_Y_tibble_rows_and_cols_sparse <-
+  s$Y_mirrored %>%
+  melt() %>%
+  as_tibble %>%
+  set_names(c("sample_id", "row_id", "col_id", "value")) %>%
+  group_by(row_id, col_id) %>%
+  summarize(Q10 = quantile(value, 0.1),
+            Q90 = quantile(value, 0.9)) %>%
+  ungroup() %>%
+  inner_join(set_names(melt(W_sparse), c("row_id", "col_id", "true_value"))) %>%
+  mutate(model = "Sparse")
+
+q_Y_tibble_rows_and_cols_non_sparse <-
+  s_nonsparse$Y_mirrored %>%
+  melt() %>%
+  as_tibble %>%
+  set_names(c("sample_id", "row_id", "col_id", "value")) %>%
+  group_by(row_id, col_id) %>%
+  summarize(Q10 = quantile(value, 0.1),
+            Q90 = quantile(value, 0.9)) %>%
+  ungroup() %>%
+  inner_join(set_names(melt(W_sparse), c("row_id", "col_id", "true_value"))) %>%
+  mutate(model = "Non-Sparse")
+
+bind_rows(q_Y_tibble_rows_and_cols_sparse,
+          q_Y_tibble_rows_and_cols_non_sparse) %>%
+  mutate(row_id = factor(row_id, levels = as.character(50:1))) %>%
+  ggplot(aes(true_value, row_id, color = model)) +
+  geom_errorbarh(aes(xmin = Q10, xmax = Q90),
+                 position=ggstance::position_dodgev(height=0.5)) +
+  geom_point() +
+  facet_grid(. ~ col_id) +
+  scale_color_manual(values=c("black","darkorange")) +
+  theme_bw() +
+  theme(text = element_text(size=20)) +
+  xlab("W") +
+  ylab("Row")
 ```
 
 

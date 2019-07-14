@@ -4,6 +4,10 @@ output: html_notebook
 ---
 
 ```{r load_functions}
+library(tidyverse)
+library(rstan)
+library(reshape2)
+
 draw_uniform_stiefel <- function(n, p) {
   Y_raw <- matrix(rnorm(n*p), nrow = n, ncol = p)
   Y <- qr(Y_raw) %>% qr.Q()
@@ -33,27 +37,125 @@ N <- 100
 lambda_sq <- c(5.0, 3.0, 1.5)
 sigma_sq <- 1.0
 W <- draw_uniform_stiefel(n, p)
+theta <- GivensTransform(W)
 
 data <-
   GenerateHighDimData(n = n, p = p, W = W,
                       LambdaVec = sqrt(lambda_sq),
                       sd = sigma_sq,
                       N = N)
+
+data$W <- W
+
+# saveRDS(data, "ppca_jauche_data.RDS")
+# data <- readRDS("ppca_jauche_data.RDS")
 ```
 
 ```{r, message=FALSE}
+W <- data$W
 x <- data$x
 x_matrix <- as.matrix(x)
 Sigma_hat <- (1/N)*t(x_matrix) %*% x_matrix
-Y_ml <- get_W_ml(Sigma_hat, n, p)
+Y_ml <- eigen(Sigma_hat)$vector[,1:p]
+
+for(i in 1:p) {
+  qTv <- sum(Y_ml[,i]*W[,i])
+  if(qTv < 0.0) {
+    Y_ml[,i] <- -Y_ml[,i]
+  }
+}
 
 dat <- list(n = n, p = p, N = N, SigmaHat = Sigma_hat, Y_ml = Y_ml)
-fit <- stan(file = "../../Stan/new_khatri/ppca_patch_no_mirror.stan",
-            data = dat, chains = 1, iter = 1e4, refresh = 100)
+# fit <- stan(file = "../../Stan/new_khatri/ppca_patch_no_mirror.stan",
+#             data = dat, chains = 1, iter = 1e4, refresh = 1000)
+
+fit_mirror <- stan(file = "../../Stan/new_khatri/ppca_patch_with_mirror_new.stan",
+            data = dat, chains = 1, iter = 1e4, refresh = 1000)
+
+# saveRDS(fit_mirror, "ppca_jauche_stanfit.RDS")
+fit_mirror <- readRDS("ppca_jauche_stanfit.RDS")
+```
+
+```{r}
+print(fit_mirror, pars = c("lambda_sq", "sigmaSq"))
+s <- extract(fit_mirror)
+
+q_Y_tibble <-
+  cbind(s$Y_mirrored[,,1], s$Y_mirrored[,,2],s$Y_mirrored[,,3]) %>%
+  melt() %>%
+  as_tibble() %>%
+  set_names(c("sample_id", "var_id", "value")) %>%
+  group_by(var_id) %>%
+  summarize(Q10 = quantile(value, 0.1),
+            Q90 = quantile(value, 0.9)) %>%
+  mutate(true_value = as.vector(W)) %>%
+  mutate(covered = Q10 <= true_value & true_value <= Q90)
+
+q_Y_tibble_rows_and_cols <-
+  s$Y_mirrored %>%
+  melt() %>%
+  as_tibble %>%
+  set_names(c("sample_id", "row_id", "col_id", "value")) %>%
+  group_by(row_id, col_id) %>%
+  summarize(Q10 = quantile(value, 0.1),
+            Q90 = quantile(value, 0.9)) %>%
+  ungroup() %>%
+  inner_join(set_names(melt(W), c("row_id", "col_id", "true_value")))
+
+q_Y_tibble %>%
+  arrange(true_value) %>%
+  mutate(var_id = row_number()) %>%
+  ggplot(aes(var_id, true_value)) +
+  geom_errorbar(aes(ymin = Q10, ymax = Q90)) +
+  geom_point()
+
+s_tibble <-
+  cbind(s$sigmaSq, s$lambda_sq) %>%
+  melt() %>%
+  as_tibble() %>%
+  set_names(c("sample_id", "var_id", "value"))
+
+# q <- 
+#   s_tibble %>%
+#   group_by(var_id) %>%
+#   summarize(Q10 = quantile(value, 0.1),
+#             Q90 = quantile(value, 0.9)) %>%
+#   # mutate(var_name = c("σ^2", "Λ1", "Λ2", "Λ3")) %>%
+#   mutate(var_name = c("σ^2", "Λ1", "Λ2", "Λ3")) %>%
+#   mutate(true_value = c(1.0, 5.0, 3.0, 1.5)) %>%
+#   mutate(var_type = c("sigma", "lambda", "lambda", "lambda"))
+# 
+# q %>%
+#   ggplot(aes(var_name, true_value)) +
+#   geom_errorbar(aes(ymin = Q10, ymax = Q90)) +
+#   geom_point() +
+#   facet_grid(. ~ var_type, scales = "free_x")
+
+q_Y_tibble_rows_and_cols %>%
+  mutate(row_id = factor(row_id, levels = as.character(50:1))) %>%
+  ggplot(aes(true_value, row_id)) +
+  geom_errorbarh(aes(xmin = Q10, xmax = Q90)) +
+  geom_point() +
+  facet_grid(. ~ col_id) +
+  theme_bw() +
+  theme(text = element_text(size=20)) +
+  xlab("W") +
+  ylab("Row")
 ```
 ```{r}
-print(fit, pars = c("lambda_sq", "sigmaSq"))
-s <- extract(fit)
-s$theta_princ[,2] %>% qplot
+q_princ_angles <-
+  s$theta_princ %>%
+  melt() %>%
+  as_tibble() %>%
+  set_names(c("sample_id", "var_id", "value"))
+
+q_princ_angles %>%
+  ggplot(aes(value)) +
+  geom_histogram() +
+  facet_grid(. ~ var_id) +
+  theme_bw() +
+  theme(text = element_text(size=20)) +
+  xlab("Principle Angle")
 ```
+
 
