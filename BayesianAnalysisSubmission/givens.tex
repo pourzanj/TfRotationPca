@@ -53,11 +53,11 @@
 
 \runauthor{F. Author et al.}
 
-\address[addr1]{Compute Science Department, University of California, Santa Barbara
+\address[addr1]{Computer Science Department, University of California, Santa Barbara
     \printead{e1} % print email address of "e1"
 }
 
-\address[addr2]{Math Department, University of California, Santa Barbara
+\address[addr2]{Mathematics Department, University of California, Santa Barbara
 }
 
 \end{aug}
@@ -101,7 +101,7 @@ Statistical models parameterized in terms of orthogonal matrices are ubiquitous,
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \cite{hoff2009simulation} introduces a Gibbs sampling approach to update unknown orthogonal matrix parameters from a collection of known conditional distributions. Unfortunately, this requires that the conditional distribution of the orthogonal matrix parameter given other model parameters belongs to a known parametric distribution that is easy to sample. In practice, this limits the approach to a specific class of models.
 
-\noindent More general HMC methods have been devised, but their use of specialized update rules makes them difficult to implement and tune in practice. In particular, these methods infer orthogonal matrix parameters by using different HMC update rules for constrained and unconstrained parameters. This separation of constrained and unconstrained parameters requires additional book-keeping to know which update rules to use on which parameter. Unfortunately, many probabilistic programming languages do not keep track of this as they treat parameters agnostically by transforming to an unconstrained space. The specialization of these methods to HMC also makes them difficult to generalize to other inference algorithms based on VI or optimization which an unconstrained parameterization approach would have no trouble with.
+\noindent More general HMC methods have been devised, but their use of specialized update rules makes them difficult to implement and tune in practice. In particular, these methods infer orthogonal matrix parameters by using different HMC update rules for constrained and unconstrained parameters. This separation of constrained and unconstrained parameters requires additional book-keeping to know which update rules to use on which parameter. Unfortunately, many probabilistic programming languages do not keep track of this as they treat parameters agnostically by transforming to an unconstrained space. The specialization of these methods to HMC also makes them difficult to generalize to other inference algorithms based on variational inference (VI) or optimization which an unconstrained parameterization approach would have no trouble with.
 
 \noindent Specifically, \cite{brubaker2012family} proposed a modified HMC, which uses a different update rule for constrained parameters based on the symplectic SHAKE integrator \citep{leimkuhler2004simulating}. For unconstrained parameters, the method uses a standard Leapfrog update rule. For constrained parameters, the method first takes a Leapfrog step which usually moves the parameter to a value that does not obey constraints. The method then uses Newton's method to ``project" the parameter value back down to the manifold where the desired constraints are satisfied.
 
@@ -119,7 +119,7 @@ We describe the Givens reduction algorithm of numerical analysis in Section \ref
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Givens Rotations and Reductions} \label{givens_reduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-Given any $n \times p$ matrix, $A$, the Givens reduction algorithm is a numerical algorithm for finding the $QR$-factorization of $A$, i.e. an $n\times p$ orthogonal matrix $Q$ and an upper-triangular $p \times p$ matrix $R$ such that $A = QR$. The algorithm works by successively applying a series of Givens rotations so as to ``zero-out" elements of $A$ below the diagonal. These Givens rotations are simply $n \times n$ matrices, $R_{ij}(\theta_{ij})$, that take the form of an identity matrix except for the $(i,i)$ and $(j,j)$ positions which are replaced by $\cos \theta_{ij}$ and the $(i,j)$ and $(j,i)$ positions which are replaced by $-\sin \theta_{ij}$ and $\sin \theta_{ij}$ respectively.
+Given any $n \times p$ matrix, $A$, the Givens reduction algorithm is a numerical algorithm for finding the $QR$-factorization of $A$, i.e. an $n\times p$ orthogonal matrix $Q$ and an upper-triangular $p \times p$ matrix $R$ such that $A = QR$. The algorithm works by successively applying a series of Givens rotations so as to ``zero-out" the elements $\{A_{ij} : i > j \}$ of $A$. These Givens rotations are simply $n \times n$ matrices, $R_{ij}(\theta_{ij})$, that take the form of an identity matrix except for the $(i,i)$ and $(j,j)$ positions which are replaced by $\cos \theta_{ij}$ and the $(i,j)$ and $(j,i)$ positions which are replaced by $-\sin \theta_{ij}$ and $\sin \theta_{ij}$ respectively.
 
 \noindent When applied to a vector, $R_{ij}(\theta_{ij})$ has the effect of rotating the vector counter-clockwise in the $(i,j)$-plane, while leaving other elements fixed. Intuitively, its inverse, $R_{ij}^{-1}(\theta_{ij})$, has the same effect, but clockwise. Thus one can ``zero-out" the $j$th element, $u_j$, of a vector $u$, by first using the $\arctan$ function to find the angle $\theta_{ij}$ formed in the $(i,j)$-plane by $u_i$ and $u_j$, and then multiplying by the matrix $R_{ij}^{-1}(\theta_{ij})$ (Figure \ref{fig:StiefelGeom}, inset).
 
@@ -148,7 +148,7 @@ Given any $n \times p$ matrix, $A$, the Givens reduction algorithm is a numerica
 \vspace{.1in}
 \includegraphics[width=0.4\textwidth]{figures/stiefel_geom_new.png}
 \vspace{.05in}
-\caption{(Inset) Givens rotations can be used to rotate a vector so as to eliminate its component in a certain direction. (Main Figure) A $p$-frame on the Stiefel manifold can be visualized as a set of rigidly connected orthogonal basis vectors, $u_1$ and $u_2$, shown here in black. One can move about the Stiefel manifold and describe any $p$-frame by simultaneously applying rotations matrices of a prescribed angle to these basis vectors. Applying the rotation matrix $R_{12}(\theta_{12})$ corresponds to rotating the two basis vectors toegher in the (1,2)-plane, which by our convention is the $(x,y)$-plane. Similarly, simultaneously apply $R_{13}(\theta_{13})$ corresponds to a rotation of the 2-frame in the $(1,3)$ or $(x,z)$-plane, while $R_{23}(\theta_{23})$ corresponds to rotating $u_2$ about $u_1$.}
+\caption{(Inset) Givens rotations can be used to rotate a vector so as to eliminate its component in a certain direction. (Main Figure) A $p$-frame on the Stiefel manifold can be visualized as a set of rigidly connected orthogonal basis vectors, $u_1$ and $u_2$, shown here in black. One can move about the Stiefel manifold and describe any $p$-frame by simultaneously applying rotations matrices of a prescribed angle to these basis vectors. Applying the rotation matrix $R_{12}(\theta_{12})$ corresponds to rotating the two basis vectors together in the (1,2)-plane, which by our convention is the $(x,y)$-plane. Similarly, simultaneously applying $R_{13}(\theta_{13})$ corresponds to a rotation of the 2-frame in the $(1,3)$ or $(x,z)$-plane, while $R_{23}(\theta_{23})$ corresponds to rotating $u_2$ about $u_1$.}
 \label{fig:StiefelGeom}
 \end{figure}
 
@@ -203,7 +203,7 @@ return $Q_*[,1:p], R_*[1:p,1:p]$
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{The Geometry of Orthogonal Matrices}\label{givens_stiefel_geometry}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-The Stiefel manifold, $V_{p,n}$,  consists of $p$-frames: ordered sets of $p$ $n$-dimensional unit-length vectors, where $p \le n$. $p$-frames naturally correspond to $n \times p$ orthogonal matrices which can be used to define the Stiefel manifold succinctly as
+The elements of the Stiefel manifold, $V_{p,n}$,  are known as $p$-frames: an orthogonal set of $p$ $n$-dimensional unit-length vectors, where $p \le n$. $p$-frames naturally correspond to $n \times p$ orthogonal matrices which can be used to define the Stiefel manifold succinctly as
 
 \begin{equation}
 V_{p,n} := \{Y \in \mathbb{R}^{n \times p}: Y^TY = I \}.
@@ -245,7 +245,7 @@ Y = R_{12}(\theta_{12}) \cdots R_{1n}(\theta_{1n})  \cdots R_{23}(\theta_{23}) \
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The Givens Representation for Bayesian Inference of Orthogonal Matrix Parameters} \label{implementation}
+\section{Using the Givens Representation for Bayesian Inference Over the Stiefel Manifold} \label{implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -255,7 +255,7 @@ Practical use of the Givens representation in a general Bayesian inference frame
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Transformation of Measure Under the Givens Representation}\label{measureGivens}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-As is usual in any transformation of random variables, care must be taken to include a Jacobian determinant term in the transformed density to account for a change of measure under the transformation. For a posterior density over orthogonal matrices that takes the form $p_Y(Y)$, the proper density over the transformed random variable, $\Theta(Y)$, takes the form $p_\Theta(\theta) = p_{Y}(Y(\Theta)) |J_{Y(\Theta)}(\Theta)|$ \citep{keener2011theoretical}. Intuitively, this extra Jacobian determinant term accounts for how probability measures are distorted by the transformation (Figure \ref{fig:AreaForm}). Unfortunately, the Givens representation, $Y(\Theta)$, is map from a space of dimension $d := np - p(p+1)/2$ to a space of dimension $np$. Hence the determinant is non-square and thus undefined.
+As is usual in any transformation of random variables, care must be taken to include a Jacobian determinant term in the transformed density to account for a change of measure under the transformation. For a posterior density over orthogonal matrices that takes the form $p_Y(Y)$, the proper density over the transformed random variable, $\Theta(Y)$, takes the form $p_\Theta(\theta) = p_{Y}(Y(\Theta)) |J_{Y(\Theta)}(\Theta)|$ \citep{keener2011theoretical}. Intuitively, this extra Jacobian determinant term accounts for how probability measures are distorted by the transformation (Figure \ref{fig:AreaForm}). Unfortunately, the Givens representation, $Y(\Theta)$, is map from a space of dimension $d := np - p(p+1)/2$ to a space of dimension $np$. Thus its Jacobian is non-square so that the determinant of the Jacobian is undefined.
 
 \begin{figure}[h]
 \centering
