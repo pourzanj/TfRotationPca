@@ -542,8 +542,8 @@ Our Givens representation approach provides a routine and flexible way to sample
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Computational Scaling of the Givens Representation}\label{scaling}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-The primary computational cost in using the Givens representation, is the series of $d$ $n \times n$ matrix multiplications applied to $I_{n,p}$ in 
-Equation \ref{eq:givens_representation}. Fortunately, unlike dense matrix multiplication, applying a Givens rotation to an $n \times p$ matrix only involves two vector additions of size $p$ (Algorithm \ref{alg:givens}). Thus since $d$ scales on the order of $np$, computation of the Givens representation in aggregate scales as $\mathcal{O}(np^2)$.
+The primary computational cost in computing the Givens representation, is the series of $d$ $n \times n$ matrix multiplications applied to $I_{n,p}$ in 
+Equation \ref{eq:givens_representation}. Fortunately, unlike dense matrix multiplication, applying a Givens rotation to an $n \times p$ matrix only involves two vector additions of size $p$ (Algorithm \ref{alg:givens}). Thus since $d$ scales on the order of $np$, computation of the Givens representation in aggregate scales as $\mathcal{O}(np^2)$. In comparison, EMHMC involves an orthogonalization of an $n \times p$ matrix which scales as $\mathcal{O}(np^2)$ and a matrix exponential computation that scales as $\mathcal{O}(p^3)$.
 
 \begin{algorithm}[h]
 \SetAlgoLined
@@ -574,7 +574,9 @@ return $Y$
  \label{alg:givens}
 \end{algorithm}
 
-\noindent In comparison, EMHMC involves an orthogonalization of an $n \times p$ matrix which scales as $\mathcal{O}(np^2)$ and a matrix exponential computation that scales as $\mathcal{O}(p^3)$. In practice, we find that EMHMC scales better when $p$ is much smaller than $n$, whereas the Givens representation scales better when $p$ is large and closer to $n$. We present benchmarks in Section \ref{scaling}.
+\noindent We also note that algorithms such as HMC require not only computing the Givens representation, but also the gradient of the log probability density function with respect to the Givens angles. This is usually done internally using backward automatic differentiation in software such as Stan which obfuscates the comparison. Meanwhile, EMHMC also requires computing gradients of the log density, but if these are analytically known, then this step will usually be faster in EMHMC. However when backwards automatic differentiation must be used in EMHMC because the gradients are not analytically known, computing gradients may actually be faster when the density is specified in terms of the Givens representation.  This is because backward automatic differentiation of a scalar function such as log probability typically scales with the number of inputs to the function. In this case the inputs correspond to the unknown parameters of the model. The Givens representation has $d$ inputs (one for each angle not including auxiliary parameters) which is fewer than the $np$ inputs that come with using the canonical matrix representation.
+
+\noindent In practice, sampling efficiency will depend on several factors including the size of the orthogonal matrix being sampled, making it difficult to generally recommend method over the other in terms of efficiency. For uniform sampling of the Stiefel manifold, we find that EMHMC scales better when $p$ is much smaller than $n$, whereas the Givens representation scales better when $p$ is large and closer to $n$. We present benchmarks comparing the two methods on orthogonal matrices of various sizes in Section \ref{examples}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -583,9 +585,7 @@ return $Y$
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
-
-We demonstrate the use of the Givens representation and compare it with EMHMC for three common statistical examples from the literature. All Givens representation experiments were conducted in Stan using Stan's automatic warm-up and tuning options. For all Stan experiments we ensured that there were no divergences during post-warmup sampling and that all $\hat{R}$ were $1.01$ or below. All timing experiments were conducted on a 2016 Macbook Pro.
-
+We demonstrate the use of the Givens representation for uniformly sampling the Stiefel manifold as well as several statistical examples. All Givens representation experiments were conducted in Stan using Stan's automatic warm-up and tuning options. For all Stan experiments we ensured that there were no divergences during post-warmup sampling and that all $\hat{R}$ were $1.01$ or below. Presence of divergences suggests that the sampler may not be visiting areas of the posterior distribution that contain positive mass \citep{betancourt2015hamiltonian}, while $\hat{R}$ tests for covergence of the Markov chain to the stationary distribution \citep{gelman1992inference}. All timing experiments were conducted on a 2016 Macbook Pro.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Uniform Sampling on the Stiefel Manifold} \label{scaling_examples}
