@@ -531,9 +531,13 @@ $\kappa$ & $\epsilon = 0.1$ & $\epsilon = 0.05$ & $\epsilon = 0.025$ & $\epsilon
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{New Distributions Using the Givens Representation}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-Rather than placing priors over standard orthogonal matrix coordinates, $Y$, one can place priors over the coordinates of the Givens representation $\Theta$. In practice this leads to new classes of possible distributions. \noindent \cite{cron2016models} utilize sparsity promoting priors over the coordinates of the Givens representation to produce a distribution over the Stiefel manifold that favors sparse matrices. They apply this distribution to the estimation of normal mixture classification probabilities. \cite{leon2006statistical} make use of a different parameterization of orthogonal matrices to define a distribution over orthogonal matrices.
+So far, we have focused on transforming densities defined in terms of the canonical orthogonal matrix coordinates, $Y$ in to densities specified in terms of the angles, $\Theta$, of the Givens representation. However, the angles of the Givens representation can also be used to define new distributions over the Stiefel manifold that may be useful in modeling. In fact, using the intuition described in Section \ref{givens_stiefel_geometry}, the sign and magnitude of the angle $\theta_{ij}$ of the Givens representation, roughly corresponds to the sign and magnitude of the $i-j$ element of $Y$.
 
-%\noindent  Distributions in terms Givens representation coordinates also have the added benefit of avoiding calculation of expensive orthogonal matrix densities such as the von Mises-Fisher matrix distribution. In particular, the density for the von Mises-Fisher matrix distribution takes the form $a(F) \exp(\mathrm{tr}\, Y^T F)$, where $a(F)$ is a normalizing constant involving an infinite sum \citep{khatri1977mises}.  For fixed priors over the Stiefel manifold, where $F$ is held constant, the normalizing term can be dropped from the unnormalized posterior for the purposes of inference (see e.g. \cite{hoff2009simulation}). However, if $F$ is an unknown being estimated, as is the case in say a multi-level model, then the normalizing term must be included in calculations involving the posterior, thus precluding use of the von Mises-Fisher matrix distribution in multi-level models. In contrast, multi-level modeling of orthogonal matrices can be straightforward in the Givens representation coordinates as we illustrate in Section \ref{coag}.
+\noindent \cite{cron2016models} utilize sparsity promoting priors over the coordinates of the Givens representation to produce a prior distribution over covariance matrices that favors sparse matrices. Specifically, they describe a model for multivariate Gaussian observations with an unknown covariance matrix. They parameterize the covariance matrix in terms of its eigen-decomposition $Y \Lambda Y^T$ then parameterize the orthogonal matrix $Y$ using the Givens representation. They then place spike-and-slab mixture priors over the angles of the Givens representation, placing significant prior mass on orthogonal matrices whose Givens angles are mostly zero and thus sparse in the canonical coordinates. They describe a custom reversible jump-based method for sampling the resulting posterior distribution.
+
+Our Givens representation approach provides a routine and flexible way to sample the posterior distribution associated with this model and other more general models using common probabilistic modeling frameworks. In Section \ref{examples}, we illustrate this with a sparse PPCA example motivated by \cite{cron2016models} that has horseshoe priors on the angles of the Givens representation.
+
+%\cite{leon2006statistical} make use of a different parameterization of orthogonal matrices to define a distribution over orthogonal matrices.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Computational Scaling of the Givens Representation}\label{scaling}
@@ -575,7 +579,7 @@ return $Y$
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Results and Examples} \label{examples}
+\section{Experiments} \label{examples}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
