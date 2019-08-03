@@ -123,9 +123,9 @@ We describe the Givens reduction algorithm of numerical analysis in Section \ref
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Givens Rotations and Reductions} \label{givens_reduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-Given any $n \times p$ matrix, $A$, the Givens reduction algorithm is a numerical algorithm for finding the $QR$-factorization of $A$, i.e. an $n\times p$ orthogonal matrix $Q$ and an upper-triangular $p \times p$ matrix $R$ such that $A = QR$. The algorithm works by successively applying a series of Givens rotations so as to ``zero-out" the elements $\{A_{ij} : i > j \}$ of $A$. These Givens rotations are simply $n \times n$ matrices, $R_{ij}(\theta_{ij})$, that take the form of an identity matrix except for the $(i,i)$ and $(j,j)$ positions which are replaced by $\cos \theta_{ij}$ and the $(i,j)$ and $(j,i)$ positions which are replaced by $-\sin \theta_{ij}$ and $\sin \theta_{ij}$ respectively.
+Given any $n \times p$ matrix, $A$, the Givens reduction algorithm is a numerical algorithm for finding the $QR$-factorization of $A$, i.e. an $n\times p$ orthogonal matrix $Q$ and an upper-triangular $p \times p$ matrix $R$ such that $A = QR$. As we explain, the algorithm works by successively applying a series of Givens rotations so as to ``zero-out" the elements $\{A_{ij} : i > j \}$ of $A$. These Givens rotations are simply $n \times n$ matrices, $R_{ij}(\theta_{ij})$, that take the form of an identity matrix except for the $(i,i)$ and $(j,j)$ positions which are replaced by $\cos \theta_{ij}$ and the $(i,j)$ and $(j,i)$ positions which are replaced by $-\sin \theta_{ij}$ and $\sin \theta_{ij}$ respectively.
 
-\noindent When applied to a vector, $R_{ij}(\theta_{ij})$ has the effect of rotating the vector counter-clockwise in the $(i,j)$-plane, while leaving other elements fixed. Intuitively, its inverse, $R_{ij}^{-1}(\theta_{ij})$, has the same effect, but clockwise. Thus one can ``zero-out" the $j$th element, $u_j$, of a vector $u$, by first using the $\arctan$ function to find the angle $\theta_{ij}$ formed in the $(i,j)$-plane by $u_i$ and $u_j$, and then multiplying by the matrix $R_{ij}^{-1}(\theta_{ij})$ (Figure \ref{fig:StiefelGeom}, inset).
+\noindent When applied to a vector, $R_{ij}(\theta_{ij})$ has the effect of rotating the vector counter-clockwise in the $(i,j)$-plane, while leaving other elements fixed. Intuitively, its inverse, $R_{ij}^{-1}(\theta_{ij})$, has the same effect, but clockwise. Thus one can ``zero-out" the $j$th element, $u_j$, of a vector $u$, by first using the $\arctan$ function to find the angle, $\theta_{ij}$ formed in the $(i,j)$-plane by $u_i$ and $u_j$, and then multiplying by the matrix $R_{ij}^{-1}(\theta_{ij})$ (Figure \ref{fig:StiefelGeom}, inset).
 
 %\[
 %\begin{blockarray}{cccccccccccc}
@@ -249,17 +249,16 @@ Y = R_{12}(\theta_{12}) \cdots R_{1n}(\theta_{1n})  \cdots R_{23}(\theta_{23}) \
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Using the Givens Representation to Sample Densities Over the Stiefel Manifold} \label{implementation}
+\section{Using the Givens Representation to Sample Distributions Over the Stiefel Manifold} \label{implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
-
-Practical use of the Givens representation in a general Bayesian inference framework involves solving several practical challenges. In addition to the standard change of measure term required in any transformation of a random variable, care must be taken to address certain pathological cases of the Givens representation that occur due to the different topologies of the Stiefel manifold and Euclidean space. We further describe these challenges and explain how we overcome them in practice. We also briefly remark on how the Givens representation can be leveraged in practice to solve issues with identifiability and define new and useful distributions over the Stiefel manifold. We conclude the section by describing how the computation of the Givens representation scales in theory, particularly in comparison to EMHMC.
+Using the Givens representation in practice to sample distributions over the Stiefel manifold requires solving several practical challenges. In addition to the standard change-of-measure term required in any transformation of a random variable, care must be taken to address certain pathologies that occur due to the differing topologies of the Stiefel manifold and Euclidean space. We further describe these challenges and explain how we overcome them in practice by augmenting distributions over the Stiefel manifold using auxiliary parameters. We also briefly remark on how the Givens representation can be leveraged in practice to define new and useful distributions over the Stiefel manifold. We conclude the section by describing how the computation of the Givens representation scales in theory, particularly in comparison to EMHMC.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Transformation of Measure Under the Givens Representation}\label{measureGivens}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-As is usual in any transformation of random variables, care must be taken to include a Jacobian determinant term in the transformed density to account for a change of measure under the transformation. For a posterior density over orthogonal matrices that takes the form $p_Y(Y)$, the proper density over the transformed random variable, $\Theta(Y)$, takes the form $p_\Theta(\theta) = p_{Y}(Y(\Theta)) |J_{Y(\Theta)}(\Theta)|$ \citep{keener2011theoretical}. Intuitively, this extra Jacobian determinant term accounts for how probability measures are distorted by the transformation (Figure \ref{fig:AreaForm}). Unfortunately, the Givens representation, $Y(\Theta)$, is map from a space of dimension $d := np - p(p+1)/2$ to a space of dimension $np$. Thus its Jacobian is non-square so that the determinant of the Jacobian is undefined.
+As is usual in any transformation of random variables, care must be taken to include an extra term in the transformed density to account for a change-of-measure under the transformation. Formally, for a posterior density over orthogonal matrices that takes the form $p_Y(Y)$, the proper density over the transformed random variable, $\Theta(Y)$, takes the form $p_\Theta(\theta) = p_{Y}(Y(\Theta)) |J_{Y(\Theta)}(\Theta)|$ \citep{keener2011theoretical}. Intuitively, this extra term accounts for how probability measures are distorted by the transformation (Figure \ref{fig:AreaForm}). Usually th term is calculated by simply taking the determinant of the Jacobian of the transformation. Unfortunately, the Givens representation, $Y(\Theta)$, is map from a space of dimension $d := np - p(p+1)/2$ to a space of dimension $np$. Thus its Jacobian is non-square and the determinant of the Jacobian is undefined.
 
 \begin{figure}[h]
 \centering
@@ -271,8 +270,7 @@ As is usual in any transformation of random variables, care must be taken to inc
 \end{figure}
 
 
-\noindent To compute the change of measure term analogous to the Jacobian determinant, one must appeal to the algebra of differential forms. Denote the product of $n \times n$ rotation matrices in the Givens representation by $G$, i.e. 
-
+\noindent One way to compute the change-of-measure term analogous to the Jacobian determinant, is to appeal to the algebra of differential forms. Denote the product of $n \times n$ rotation matrices in the Givens representation by $G$, i.e. 
 
 \begin{equation}
 G := R_{12}(\theta_{12}) \cdots R_{1n}(\theta_{1n})  \cdots R_{23}(\theta_{23}) \cdots R_{pn}(\theta_{pn}) \cdots R_{p,p+1}(\theta_{p,p+1}) \cdots R_{pn}(\theta_{pn}),
@@ -304,7 +302,7 @@ G_{p:n}^T J_{Y_p(\Theta)}(\Theta)
 \end{pmatrix}
 \end{equation}
 
-\noindent where $G_{k:l}$ denote columns $k$ through $l$ of $G$. As we show in the appendix, this term can be analytically simplified to the following simple product whose absolute value serves as our measure adjustment term:
+\noindent where $G_{k:l}$ denote columns $k$ through $l$ of $G$. As we show in the appendix, this term can be analytically simplified to the following simple-to-compute product whose absolute value serves as our measure adjustment term:
 
 \begin{equation}
 \label{eq:final_change_of_measure}
@@ -611,7 +609,7 @@ $p$ & $n$  & $\hat{R}$ & $n_{\mathrm{eff}}$ & $\hat{R}$ & $n_{\mathrm{eff}}$\\
 \label{tab:rhat_neff}
 \end{table*}
 
-\noindent As mentioned in section \ref{measureGivens}, to uniformly samples the Stiefel manifold in the Givens representations, the change of measure term, Equation \ref{eq:final_change_of_measure}, must be computed as part of the likelihood. Meanwhile, uniform sampling over the Stiefel manifold is achieved in EMHMC simply using a constant likelihood because the method uses the original matrix coordinates. However, as mentioned in section \ref{scaling}, this comes at the cost of an expensive HMC update to ensure the updated parameter still satisfies the constraints.. In practice, we find that EMHMC scales better as $n$ is increased, although the approach using the Givens representation in Stan remains competitive (Figure \ref{fig:scaling}).
+\noindent As mentioned in section \ref{measureGivens}, to uniformly samples the Stiefel manifold in the Givens representations, the change-of-measure term, Equation \ref{eq:final_change_of_measure}, must be computed as part of the likelihood. Meanwhile, uniform sampling over the Stiefel manifold is achieved in EMHMC simply using a constant likelihood because the method uses the original matrix coordinates. However, as mentioned in section \ref{scaling}, this comes at the cost of an expensive HMC update to ensure the updated parameter still satisfies the constraints.. In practice, we find that EMHMC scales better as $n$ is increased, although the approach using the Givens representation in Stan remains competitive (Figure \ref{fig:scaling}).
 
 \begin{figure}[h]
 \centering
@@ -830,13 +828,13 @@ We have introduced a systematic approach to incorporating the Givens representat
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
-\section{Deriving the Change of Measure Term}
+\section{Deriving the Change-of-Measure Term}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 We derive the simplified form (Expression \ref{eq:final_change_of_measure}) of the differential form (Expression \ref{eq:WedgeForm}). We point out that \cite{khatri1977mises} provide a similar expression for a slightly different representation, but do not offer a derivation.
 
-\noindent We start with the determinant of the matrix form of the change of measure term from Expression \ref{eq:measure_matrix_form} (reproduced below):
+\noindent We start with the determinant of the matrix form of the change-of-measure term from Expression \ref{eq:measure_matrix_form} (reproduced below):
 
 \begin{equation}
 \begin{pmatrix}
