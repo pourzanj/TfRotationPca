@@ -590,7 +590,7 @@ We demonstrate the use of the Givens representation for uniformly sampling the S
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Uniform Sampling on the Stiefel Manifold} \label{scaling_examples}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-We sample uniformly from the Stiefel manifold of various sizes to assess the practical scalability of the Givens representation. We compare its sampling efficiency and $\hat{R}$ values to EMHMC on 500 post-warmup samples from each method (Table \ref{tab:rhat_neff}).  
+We sample uniformly from the Stiefel manifold of various sizes to assess the practical scalability of the Givens representation. We compare its sampling efficiency and $\hat{R}$ values to EMHMC on 500 post-warmup samples from each method (Table \ref{tab:rhat_neff}).  We chose the step size tuning parameter of EMHMC by manually trying several possible values then selecting the specific value that produced the highest number of effective samples per second over 500 samples.
 
 \begin{table*}
 \begin{tabular}{|cc||cc|cc|}
@@ -615,7 +615,7 @@ $p$ & $n$  & $\hat{R}$ & $n_{\mathrm{eff}}$ & $\hat{R}$ & $n_{\mathrm{eff}}$\\
 \label{tab:rhat_neff}
 \end{table*}
 
-\noindent As mentioned in section \ref{measureGivens}, to uniformly samples the Stiefel manifold in the Givens representations, the change-of-measure term, Equation \ref{eq:final_change_of_measure}, must be computed as part of the likelihood. Meanwhile, uniform sampling over the Stiefel manifold is achieved in EMHMC simply using a constant likelihood because the method uses the original matrix coordinates. However, as mentioned in section \ref{scaling}, this comes at the cost of an expensive HMC update to ensure the updated parameter still satisfies the constraints.. In practice, we find that EMHMC scales better as $n$ is increased, although the approach using the Givens representation in Stan remains competitive (Figure \ref{fig:scaling}).
+\noindent As mentioned in section \ref{measureGivens}, to uniformly samples the Stiefel manifold in the Givens representations, the change-of-measure term, Equation \ref{eq:final_change_of_measure}, must be computed as part of the density. Meanwhile, uniform sampling over the Stiefel manifold is achieved in EMHMC simply using a constant density because the method uses the canonical matrix coordinates. However, as mentioned in section \ref{scaling}, this comes at the cost of an expensive HMC update to ensure the updated parameter still satisfies the constraints. In practice, we find that EMHMC scales better as $n$ is increased, although the approach using the Givens representation in Stan remains competitive (Figure \ref{fig:scaling}).
 
 \begin{figure}[h]
 \centering
@@ -627,9 +627,9 @@ $p$ & $n$  & $\hat{R}$ & $n_{\mathrm{eff}}$ & $\hat{R}$ & $n_{\mathrm{eff}}$\\
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Probabilistic PCA (PPCA)}
+\subsection{PPCA}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-Factor Analysis (FA) and Probabilistic PCA (PPCA) \citep{tipping1999probabilistic} posit a probabilistic generative model where high-dimensional data is determined by a linear function of some low-dimensional latent state \cite[Chapt.~12]{murphy2012machine}. Geometrically, for a three-dimensional set of points forming a flat pancake-like cloud, PCA can be thought of as finding the best $2$-frame that aligns with this cloud (Figure \ref{fig:MleSubspaceEstimate}). Formally, PPCA posits the following generative process for how a sequence of high-dimensional data vectors $\mathbf{x}_i \in \mathbb{R}^n$, $i = 1, \cdots, N$ arise from some low dimensional latent representations $\mathbf{z}_i \in \mathbb{R}^p$ ($p < n$):
+Factor Analysis (FA) and PPCA \citep{tipping1999probabilistic} posit a probabilistic generative model where high-dimensional data is determined by a linear function of some low-dimensional latent state \cite[Chapt.~12]{murphy2012machine}. Geometrically, for a three-dimensional set of points forming a flat pancake-like cloud, PCA can be thought of as finding the best $2$-frame that aligns with this cloud (Figure \ref{fig:MleSubspaceEstimate}). Formally, PPCA posits the following generative process for how a sequence of high-dimensional data vectors $\mathbf{x}_i \in \mathbb{R}^n$, $i = 1, \cdots, N$ arise from some low dimensional latent representations $\mathbf{z}_i \in \mathbb{R}^p$ ($p < n$):
 
 \begin{eqnarray}
 \label{eq:PpcaGenerativeProcess}
@@ -642,7 +642,7 @@ Factor Analysis (FA) and Probabilistic PCA (PPCA) \citep{tipping1999probabilisti
 \vspace{.1in}
 \includegraphics[width=0.5\textwidth]{figures/uncertainty_atz.pdf}
 \vspace{.05in}
-\caption{PCA finds a single orthogonal matrix in the Stiefel Manifold that is closest, in terms of average squared distance, to the set of points.  This point estimate can often mislead us from the true subspace, which in this case is the horizontal $(x,y)$-plane which was used to generate the noisy data. The data shown here is within the three-dimensional space parameterized by $x$, $y$, and $z$.  Alternatively, in PPCA a posterior distribution is used to estimate the approximating subspace and also to quantify the uncertainty of the result.}
+\caption{PCA finds a single orthogonal matrix in the Stiefel Manifold that is closest, in terms of average squared distance, to the set of points. This orthogonal matrix roughly corresponds to a point estimate of the matrix in a PPCA model. When there are few data points relative to the size of the matrix this point estimate can often have high variance.}
 \label{fig:MleSubspaceEstimate}
 \end{figure}
 
@@ -779,7 +779,7 @@ Sparse &  $\sigma^2$ & 0.97 & 1.00 & 1.01 & 1.03 & 1.05 & 1.0 & 7,191\\
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{The Network Eigenmodel}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-To illustrate the Givens representation on a more elaborate model with orthogonal matrix parameters, we used it to infer the network eigenmodel of \cite{hoff2009simulation} on real data and compared it to EMHMC. The same model was inferred using EMHMC by \cite{byrne2013geodesic}. The data, which was originally described in \cite{butland2005interaction} and freely available in the R package \textit{eigenmodel}, consists of a symmetric $230 \times 230$ graph matrix, $Y$, which encodes whether the proteins in a protein network of size $n=230$ interact with one another.
+To illustrate the Givens representation on a more elaborate model with orthogonal matrix parameters, we used it to infer the network eigenmodel of \cite{hoff2009simulation} on real data and compared it to EMHMC. The same model was inferred using EMHMC by \cite{byrne2013geodesic}. The data, which was originally described in \cite{butland2005interaction} and freely available in the R package \textit{eigenmodel}, consists of a symmetric $230 \times 230$ graph matrix, $Y$, which encodes whether the proteins in a protein network of size $n=230$ interact with one another. For our experiments we used the same tuning parameters for EMHMC as \cite{byrne2013geodesic}.
 
 \noindent The probability of a connection between all combinations of proteins can be described by the lower-triangular portion of a symmetric matrix of probabilities, however the network eigenmodel uses a much lower dimensional representation to represent this connectivity matrix. Specifically, given an orthogonal matrix $U$, a diagonal matrix $\Lambda$, and a scalar $c$, then letting $\Phi(\cdot)$ represent the probit link function, the model is described as follows:
 
