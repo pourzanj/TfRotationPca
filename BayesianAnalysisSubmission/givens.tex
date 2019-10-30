@@ -467,12 +467,12 @@ return $Y$
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
-We demonstrate the use of the Givens representation for uniformly sampling the Stiefel manifold as well as several statistical examples. All Givens representation experiments were conducted in Stan using Stan's automatic warm-up and tuning options. For all Stan experiments, we ensured that there were no divergences during post-warmup sampling and that all $\hat{R}$ were $1.01$ or below. Presence of divergences suggests that the sampler may not be visiting areas of the posterior distribution that contain positive mass \citep{betancourt2015hamiltonian}, while $\hat{R}$ tests for convergence of the Markov chain to the stationary distribution \citep{gelman1992inference}. All timing experiments were conducted on a 2016 Macbook Pro.
+We demonstrate the use of the Givens representation for uniformly sampling the Stiefel manifold as well as several statistical examples. All Givens representation experiments were conducted in Stan using Stan's automatic warm-up and tuning options. For all Stan experiments, we ensured that there were no divergences during post-warmup sampling and that all $\hat{R}$ were $1.01$ or below. The presence of divergences suggests that the sampler may not be visiting areas of the posterior distribution that contain positive mass \citep{betancourt2015hamiltonian}, while $\hat{R}$ tests for convergence of the Markov chain to the stationary distribution \citep{gelman1992inference}. All timing experiments were conducted on a 2016 Macbook Pro.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Uniform Sampling on the Stiefel Manifold} \label{scaling_examples}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-We sample uniformly from the Stiefel manifold of various sizes to assess the practical scalability of the Givens representation. We compare its sampling efficiency and $\hat{R}$ values to GMC using 500 post-warmup samples from each method (Table \ref{tab:rhat_neff}).  We chose the step size tuning parameter of GMC by manually trying several possible values, then selecting the specific value that produced the highest number of effective samples per second over 500 samples.
+We sample uniformly from Stiefel manifolds of various sizes, to assess the practical scalability of the Givens representation. We compare its sampling efficiency and $\hat{R}$ values to GMC using 500 post-warmup samples from each method (Table \ref{tab:rhat_neff}).  We chose the step size tuning parameter of GMC by manually trying several possible values, then selecting the specific value that produced the highest number of effective samples per second over 500 samples.
 
 \begin{table*}
 \begin{tabular}{|cc||cc|cc|}
@@ -497,14 +497,14 @@ $p$ & $n$  & $\hat{R}$ & $n_{\mathrm{eff}}$ & $\hat{R}$ & $n_{\mathrm{eff}}$\\
 \label{tab:rhat_neff}
 \end{table*}
 
-\noindent As mentioned in section \ref{measureGivens}, to uniformly samples the Stiefel manifold in the Givens representations, the change-of-measure term, Equation \ref{eq:final_change_of_measure}, must be computed as part of the density. Meanwhile, uniform sampling over the Stiefel manifold is achieved in GMC simply using a constant density because the method uses the canonical matrix coordinates. However, as mentioned in section \ref{scaling}, this comes at the cost of an expensive HMC update to ensure the updated parameter still satisfies the constraints. In practice, we find that GMC scales better as $n$ is increased, although the approach using the Givens representation in Stan remains competitive (Figure \ref{fig:scaling}).
+\noindent As mentioned in Section \ref{measureGivens}, to uniformly sample the Stiefel manifold in the Givens representation, the change-of-measure term, Equation \ref{eq:final_change_of_measure}, must be computed as part of the density. Meanwhile, uniform sampling over the Stiefel manifold is achieved in GMC simply using a constant density because the method uses the canonical matrix coordinates. However, as mentioned in section \ref{scaling}, this comes at the cost of an expensive HMC update to ensure that the updated parameter still satisfies the constraints. In practice, we find that GMC scales better as $n$ is increased, although the approach using the Givens representation in Stan remains competitive (Figure \ref{fig:scaling}).
 
 \begin{figure}[h]
 \centering
 \vspace{.1in}
 \includegraphics[width=0.8\textwidth]{figures/scaling.png}
 \vspace{.05in}
-\caption{For small values of $n$ the Givens representation approach in Stan produces more effective samplers per second, while for larger values the GMC scales better since the primary cost of the matrix exponential remains constant.}
+\caption{For small values of $n$, the Givens representation approach in Stan produces more effective samplers per second, while for larger values GMC scales better since the primary cost of the matrix exponential remains constant.}
 \label{fig:scaling}
 \end{figure}
 
@@ -535,7 +535,7 @@ Factor Analysis (FA) and PPCA \citep{tipping1999probabilistic} posit a probabili
 \mb{x}_i | W, \Lambda, \sigma^2 &\sim& \mathcal{N}_n(0, \textbf{C}).
 \end{eqnarray}
 
-\noindent where $\textbf{C} := W \Lambda^2 W^T + \sigma^2$ I \citep{murphy2012machine}. Letting $\hat{\Sigma} := (1/N) \sum_{i=1}^N \mb{x}_i \mb{x}_i^T$ denote the empirical covariance matrix, this gives us the simplified PPCA likelihood
+\noindent where $\textbf{C} := W \Lambda^2 W^T + \sigma^2$ I \citep{murphy2012machine}. Letting $\hat{\Sigma} := (1/N) \sum_{i=1}^N \mb{x}_i \mb{x}_i^T$ denote the empirical covariance matrix, this yields the simplified PPCA likelihood
 
 \begin{eqnarray}
 p(\mb{x}_1, \cdots, \mb{x}_N | W, \Lambda, \sigma^2) &=& -\frac{N}{2} \ln |\textbf{C}| - \frac{1}{2} \sum_{i=1}^N \mb{x}_i^T \textbf{C}^{-1} \mb{x}_i\\
@@ -555,7 +555,7 @@ p(W, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots,
 
 \begin{eqnarray}
 \label{eq:ppca_density_givens}
-p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W(\Theta), \Lambda, \sigma^2)\, |J_{Y(\Theta)}(\Theta)|
+p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W(\Theta), \Lambda, \sigma^2)\, |J_{Y(\Theta)}(\Theta)|,
 \end{eqnarray}
 
 \noindent where the latter term comes from Equation \ref{eq:final_change_of_measure}.
@@ -610,7 +610,7 @@ $\sigma^2$ & 0.99 & 1.01 & 1.03 & 1.04 & 1.07 & 1.0 & 5,374\\
 %%%%%%%%%%%%%%%%%%%%%%%%%
 To illustrate the utility of placing priors over the angle parameters, $\Theta$, of the Givens representation, we fit a PPCA model with sparse priors over $\Theta$ to simulated data generated from \ref{eq:PpcaGenerativeProcess} with the same parameter settings as in the previous example, but with $W$ replaced with a sparse matrix. To generate a sparse orthogonal matrix, we drew an orthogonal matrix uniformly from $V_{3,50}$, converted the result to the Givens representation, randomly set each angle to zero with probability 0.8, then converted the result back to the canonical representation. The result was an orthogonal $V_{3,50}$ matrix, $W$, with 85\% of its elements equal to zero.
 
-\noindent For our model, we used the standard PPCA likelihood \ref{eq:ppca_likelihood} with uniform priors over $\Lambda^2$ and $\sigma^2$, but rather than placing a prior over $\Theta$ was uniform over the Stiefel manifold, we set $\Theta$ to follow the regularized horseshoe prior of \cite{piironen2017sparsity}, a commonly used sparsity-inducing prior. Formally, we set
+\noindent For our model, we used the standard PPCA likelihood \ref{eq:ppca_likelihood} with uniform priors over $\Lambda^2$ and $\sigma^2$, but rather than placing a prior over $\Theta$ to make $W$ uniform over the Stiefel manifold a-priori, we set $\Theta$ to follow the regularized horseshoe prior of \cite{piironen2017sparsity}, a commonly used sparsity-inducing prior. Formally, we set
 
 \begin{eqnarray}
 \theta_{ij} &\sim& \mathrm{TruncatedNormal}(0, \tau^2 \tilde{\lambda}_{ij}^2),\; \tilde{\lambda}_{ij}^2 = \frac{c^2 \lambda_{ij}^2}{c^2 + \tau^2 \lambda_{ij}^2}\\
@@ -626,7 +626,7 @@ c^2 &\sim& \mathrm{Inverse Gamma}(\nu/2, \nu s^2/2)\nonumber
 p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W(\Theta), \Lambda, \sigma^2)\, p(\Theta, \lambda, \tau, c^2).
 \end{eqnarray}
 
-\noindent Table \ref{tab:ppca50_sparse} shows a posterior summary for the sparse model versus the non-sparse corresponding to the density \ref{eq:ppca_density_givens}. While the marginal posterior distributions of $\Lambda^2$ and $\sigma^2$ are similar for both models, the sparse model expectedly results in a much sparser posterior distribution over $\Theta$ and thus $W$ (Figure \ref{fig:ppca50_coverage_sparse}). In particular, for elements of $W$ that are truly zero, the marginal posterior distributions of the sparse model tends to concentrate much closer to zero, while for truly non-zero elements, the sparse model is able to concentrate posterior mass away from zero.
+\noindent Table \ref{tab:ppca50_sparse} shows a posterior summary for the sparse model versus the non-sparse model corresponding to the density \ref{eq:ppca_density_givens}. While the marginal posterior distributions of $\Lambda^2$ and $\sigma^2$ are similar for both models, the sparse model expectedly results in a much sparser posterior distribution over $\Theta$ and thus $W$ (Figure \ref{fig:ppca50_coverage_sparse}). In particular, for elements of $W$ that are truly zero, the marginal posterior distributions of the sparse model tend to concentrate much closer to zero, while for truly non-zero elements, the sparse model is able to concentrate posterior mass away from zero.
 
 \begin{table*}
 \begin{tabular}{|cc||ccccccc|}
@@ -654,7 +654,7 @@ Sparse &  $\sigma^2$ & 0.97 & 1.00 & 1.01 & 1.03 & 1.05 & 1.0 & 7,191\\
 \vspace{.1in}
 \includegraphics[width=0.99\textwidth]{figures/ppca50_coverage_sparse.png}
 \vspace{.05in}
-\caption{True values of $W$ used in the simulation along with 80\% posterior credible intervals computed using 10,000 draws of the posterior from the sparse and non-sparse models, respectively. The posterior distribution of the sparse model places much more posterior mass closer to zero for values that are truly zero while concentrating mass away from zero for truly non-zero values.}
+\caption{True values of $W$ used in the simulation along with 80\% posterior credible intervals computed using 10,000 draws of the posterior from the sparse and non-sparse models, respectively. Compared to the non-sparse model, the posterior distribution of the sparse model places much more posterior mass close to zero for values that are truly zero, while concentrating mass away from zero for truly non-zero values.}
 \label{fig:ppca50_coverage_sparse}
 \end{figure}
 
@@ -712,7 +712,11 @@ $U[3,1]$ & 1.02 & 500 & 1.00 & 500\\
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
-We introduced an approach based on the Givens representation for sampling distributions specified in terms of orthogonal matrices. The approach is applicable to statistical models with orthogonal matrix parameters. Our approach addresses several of the practical concerns of using a transformation-based approach such as efficient computation of the measure adjustment term used in the density and topological issues that arise when mapping the Stiefel manifold to Euclidean space. We also provided an intuitive explanation behind the Givens representation that is accessible to statisticians. Lastly, we illustrated the use of the Givens representation on several practical examples, including a sparse PPCA example that illustrates how the Givens representation can be used to specify new distributions over the Stiefel manifold. We anticipate that one possible future direction of this work may be further exploring distributions over the Stiefel manifold that arise by placing certain priors over the Givens representation.
+We introduced an approach based on the Givens representation for sampling distributions specified in terms of orthogonal matrices. The approach is applicable to statistical models with orthogonal matrix parameters and addresses several of the practical concerns of using a transformation-based approach such as efficient computation of the measure adjustment term used in the density and topological issues that arise when mapping the Stiefel manifold to Euclidean space. Additionally, the approach is straight-forward to apply in Stan and other similar frameworks. We also provided an intuitive explanation behind the Givens representation, tying it to the geometry of the Stiefel manifold. We illustrated the use of the Givens representation on several practical examples, including a sparse PPCA example that illustrates how the Givens representation can be used to specify new distributions over the Stiefel manifold.
+
+\begin{acknowledgement}
+\noindent Research reported in this publication was performed by the Systems Biology Coagulopathy of Trauma Program of the US Army Medical Research and Materiel Command under award number W911QY-15-C-0026. The author P.J.A acknowledges support from research grant DOE ASCR CM4 DE-SC0009254 and NSF DMS - 1616353.
+\end{acknowledgement}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -735,7 +739,7 @@ G_{p:n}^T J_{Y_p(\Theta)}(\Theta)
 \end{pmatrix}
 \end{equation}
 
-\noindent For $l = 1, \cdots, n$, let us define the following shorthand notation
+\noindent For $l = 1, \cdots, n$, we define the following shorthand notation
 
 \begin{equation}
 \partial_{i,i+l} Y_k := \frac{\partial}{\partial \theta_{i,i+l}} Y_k
@@ -751,7 +755,7 @@ G_{p:n}^T J_{Y_p(\Theta)}(\Theta)
 \end{pmatrix}
 \end{equation}
 
-\noindent In the new notation Equation can be written in the following block matrix form:
+\noindent Now, Equation can be written in the following block matrix form:
 
 \begin{equation}
 \label{eq:matrix_blockform}
@@ -763,7 +767,7 @@ G_{p:n}^T \partial_{1} Y_p &G_{p:n}^T \partial_{2} Y_p & \cdots & G_{p:n}^T \par
 \end{pmatrix}.
 \end{equation}
 
-\noindent First note that the block matrices above the diagonal are all zero.  This can be seen by noting that the rotations in the Givens representation involving elements greater than $i$ will not affect $e_i$, i.e. letting $R_i := R_{i,i+1} \cdots R_{in}$,
+\noindent Note that the block matrices above the diagonal are all zero.  This can be seen by observing that the rotations in the Givens representation involving elements greater than $i$ will not affect $e_i$, i.e. letting $R_i := R_{i,i+1} \cdots R_{in}$,
 
 \begin{eqnarray}
 Y_i = R_1 R_2 \cdots R_p e_i = R_1 \cdots R_i e_i.
@@ -777,9 +781,9 @@ Y_i = R_1 R_2 \cdots R_p e_i = R_1 \cdots R_i e_i.
 \end{equation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Simplifying Diagonal Block Terms}
+\subsection{Simplifying the Diagonal Block Terms}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-Let $I_{i}$ denote the first $i$ columns of the $n \times n$ identity matrix and let $I_{-i}$ represent the last $n-i$ columns. The term $G_{i+1:n}^T$ in Expression \ref{eq:det_of_blocks} can be written as
+Let $I_{i}$ denote the first $i$ columns of the $n \times n$ identity matrix and let $I_{-i}$ represent the last $n-i$ columns. The term $G_{i+1:n}^T$ in expression \ref{eq:det_of_blocks} can be written as
 
 \begin{equation}
 G_{i+1:n}^T = I_{-i}^T G^T = I_{-i}^T R_p^T \cdots R_1^T.
@@ -791,16 +795,16 @@ G_{i+1:n}^T = I_{-i}^T G^T = I_{-i}^T R_p^T \cdots R_1^T.
 \det \left( G_{i+1:n}^T \partial_i Y_i  \right)  &=& \det \left( I_{-i}^T R_p^T \cdots R_1^T \right) =  \det\left( I_{-i}^T R_i^T \cdots R_1^T \partial_i Y_i \right).
 \end{eqnarray}
 
-\noindent In other words, the terms $R_p^T \cdots R_{i+1}^T$ have no effect on the determinant. This can by first separating terms so that
+\noindent In other words, the terms $R_p^T \cdots R_{i+1}^T$ have no effect on the determinant. This can be seen by first separating terms so that
 
 \begin{eqnarray}
 \det\left(G_{i+1:n}^T \partial_{i} Y_i \right) &=& \det\left( \underbrace{I_{-i}^T}_{(n-i) \times n} R_p^T \cdots R_1^T \underbrace{\partial_i Y_i}_{n \times (n-i)} \right)\\
 &=& \det\left(
 I_{-i}^T
-\left[ R_p^T \cdots R_{i+1}^T\right] \left[ R_i^T \cdots R_1^T \partial_i Y_i \right] \right)
+\left[ R_p^T \cdots R_{i+1}^T\right] \left[ R_i^T \cdots R_1^T \partial_i Y_i \right] \right),
 \end{eqnarray}
 
-\noindent then noticing that $R_{i+1} \cdots R_p$ only effects the first $i$ columns of the identity matrix so 
+\noindent and then noticing that $R_{i+1} \cdots R_p$ effects only the first $i$ columns of the identity matrix, so 
 
 \begin{eqnarray}
 I_{-i}^T
@@ -823,15 +827,16 @@ e_{i+k}^T R_i^T \cdots R_1^T \partial_{i,i+l} Y_i &=&  e_{i+k}^T R_i^T \cdots R_
 &=&  e_{i+k}^T R_i^T  (\partial_{i,i+l} R_i e_i).
 \end{eqnarray}
 
-\noindent Since  $e_{i+k}^T R_i^T R_i e_i =0$, taking the derivatives of both sides gives and applying the product rule yields
+\noindent Since  $e_{i+k}^T R_i^T R_i e_i =0$, taking the derivatives of both sides and applying the product rule yields
 
 \begin{eqnarray}
+\label{eq:kl_element_2}
 &&\partial_{i,i+l} (e_{i+k}^T R_i^T R_i e_i) = \partial_{i,i+l} 0\nonumber \\
 &\Rightarrow& (\partial_{i,i+l} e_{i+k}^T R_i^T) R_i e_i + e_{i+k}^T R_i^T ( \partial_{i,i+l}R_i e_i) = 0\nonumber \\
 &\Rightarrow& e_{i+k}^T R_i^T  (\partial_{i,i+l}R_i e_i) = -(\partial_{i,i+l} e_{i+k}^T R_i^T) R_i e_i.
 \end{eqnarray}
 
-\noindent Combining this fact with Expression \ref{eq:kl_element}, the expression for the $k,l$ element of $I_{-i}^T R_i^T \cdots R_1^T \partial_{i} Y_i $ becomes $-(\partial_{i,i+l} e_{i+k}^T R_i^T) R_i e_i$.
+\noindent Combining expression \ref{eq:kl_element_2} this fact with expression \ref{eq:kl_element}, the expression for the $k,l$ element of $I_{-i}^T R_i^T \cdots R_1^T \partial_{i} Y_i $ becomes $-(\partial_{i,i+l} e_{i+k}^T R_i^T) R_i e_i$.
 
 \noindent However, note that
 
@@ -844,7 +849,7 @@ e_{i+k}^T R_i^T &=&  e_{i+k}^T R_{in}^T \cdots R_{i,i+1}^T = e_{i+k}^T R_{i,i+k}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Diagonal Elements of the Block Matrices}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-To obtain the diagonal terms of the block matrices we directly compute $-\partial_{i,i+l} e_{i+k}^T R_i^T$ for $l=k$, $R_i e_i$, and their inner-product. Defining $D_{ij} := \partial_{ij} R_{ij}$,
+To obtain the diagonal terms of the block matrices, we directly compute $-\partial_{i,i+l} e_{i+k}^T R_i^T$ for $l=k$, $R_i e_i$, and their inner-product. Defining $D_{ij} := \partial_{ij} R_{ij}$,
 
 \begin{eqnarray}
 -\partial_{i,i+k} R_i e_{i+k} &=&   -\partial_{i,i+k} (R_{i,i+1} \cdots R_{i,i+k} e_{i+k}) \\
@@ -900,7 +905,7 @@ R_{i,i+1} \cdots R_{i,i+k-2}
 \\
 \end{eqnarray}
 
-\noindent which is zero up to the $i$th spot and after the $i+k$th spot.
+\noindent which is zero up to the $i$th spot. After the $i+k$th spot,
 
 \begin{eqnarray}
 R_i e_i &=&   R_{i,i+1} \cdots R_{in} e_i \\
@@ -918,7 +923,7 @@ R_i e_i &=&   R_{i,i+1} \cdots R_{in} e_i \\
 \end{pmatrix}.
 \end{eqnarray}
 
-\noindent Finally, directly computing the inner-product of $-\partial_{i,i+l} e_{i+k}^T R_i^T$ and $R_i e_i$:
+\noindent Finally, directly computing the inner product of $-\partial_{i,i+l} e_{i+k}^T R_i^T$ and $R_i e_i$ yields
 
 \begin{eqnarray}
 -(\partial_{i,i+l} e_{i+k}^T R_i^T) (R_i e_i)
@@ -945,7 +950,7 @@ R_i e_i &=&   R_{i,i+1} \cdots R_{in} e_i \\
 \prod_{k=i+1}^n \left( \prod_{j=k+1}^n \cos \theta_{ik} \right) = \prod_{j=i+1}^n \cos^{j-i-1} \theta_{ij}.
 \end{equation}
 
-\noindent Combining this with Expression \ref{eq:simplified_determinant} yields finally
+\noindent Combining this with Expression \ref{eq:simplified_determinant} yields
 
 \begin{eqnarray}
 \prod_{i=1}^p \det \left( I_{-i}^T R_i^T \cdots R_1^T \partial_{i} Y_i \right) = \prod_{i=1}^p \prod_{j=i+1}^n \cos^{j-i-1} \theta_{ij}.
@@ -957,9 +962,7 @@ R_i e_i &=&   R_{i,i+1} \cdots R_{in} e_i \\
 \bibliographystyle{ba}
 \bibliography{sample}
 
-%\begin{acknowledgement}
-\noindent Research reported in this publication was performed by the Systems Biology Coagulopathy of Trauma Program of the US Army Medical Research and Materiel Command under award number W911QY-15-C-0026. The author P.J.A acknowledges support from research grant DOE ASCR CM4 DE-SC0009254 and NSF DMS - 1616353.
-%\end{acknowledgement}
+
 
 \end{document}
 
