@@ -469,12 +469,12 @@ return $Y$
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
-We demonstrate the use of the Givens representation for uniformly sampling the Stiefel manifold as well as several statistical examples. All Givens representation experiments were conducted in Stan using Stan's automatic warm-up and tuning options. For all Stan experiments, we ensured that there were no divergences during post-warmup sampling and that all $\hat{R}$ were $1.01$ or below. The presence of divergences suggests that the sampler may not be visiting areas of the posterior distribution that contain positive mass \citep{betancourt2015hamiltonian}, while $\hat{R}$ tests for convergence of the Markov chain to the stationary distribution \citep{gelman1992inference}. All timing experiments were conducted on a 2016 Macbook Pro.
+We demonstrate the use of the Givens representation for uniformly sampling the Stiefel manifold as well as several statistical examples. All Givens representation experiments were conducted in Stan using the automatic warm-up and tuning options. For all Stan experiments, we ensured that there were no divergences during post-warmup sampling and that all $\hat{R}$ were $1.01$ or below. Presence of divergences suggests that the sampler may not be visiting areas of the posterior distribution that contain positive mass \citep{betancourt2015hamiltonian}, while $\hat{R}$ tests for convergence of the Markov chain to the stationary distribution \citep{gelman1992inference}. All timing experiments were conducted on a 2016 Macbook Pro.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Uniform Sampling on the Stiefel Manifold} \label{scaling_examples}
 %%%%%%%%%%%%%%%%%%%%%%%%%
-We sample uniformly from Stiefel manifolds of various sizes, to assess the practical scalability of the Givens representation. We compare its sampling efficiency and $\hat{R}$ values to GMC using 500 post-warmup samples from each method (Table \ref{tab:rhat_neff}).  We chose the step size tuning parameter of GMC by manually trying several possible values, then selecting the specific value that produced the highest number of effective samples per second over 500 samples.
+We sample uniformly from the Stiefel manifold of various sizes to assess the practical scalability of the Givens representation. We compare its sampling efficiency and $\hat{R}$ values to GMC using 500 post-warmup samples from each method (Table \ref{tab:rhat_neff}).  We chose the step size tuning parameter of GMC by manually trying several possible values, then selecting the specific value that produced the highest number of effective samples per second over 500 samples.
 
 \begin{table*}
 \begin{tabular}{|cc||cc|cc|}
@@ -506,12 +506,12 @@ $p$ & $n$  & $\hat{R}$ & $n_{\mathrm{eff}}$ & $\hat{R}$ & $n_{\mathrm{eff}}$\\
 \vspace{.1in}
 \includegraphics[width=0.8\textwidth]{figures/scaling.png}
 \vspace{.05in}
-\caption{For small values of $n$, the Givens representation approach in Stan produces more effective samplers per second, while for larger values GMC scales better since the primary cost of the matrix exponential remains constant.}
+\caption{For small values of $n$ the Givens representation approach in Stan produces more effective samplers per second, while for larger values GMC scales better since the primary cost of the matrix exponential remains constant.}
 \label{fig:scaling}
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{PPCA}
+\subsection{Probabilistic Principle Component Analysis (PPCA)}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 Factor Analysis (FA) and PPCA \citep{tipping1999probabilistic} posit a probabilistic generative model where high-dimensional data is determined by a linear function of some low-dimensional latent state \cite[Chapt.~12]{murphy2012machine}. Geometrically, for a three-dimensional set of points forming a flat pancake-like cloud, the orthogonal matrix corresponding to this linear function can be thought of as a $2$-frame that aligns with this cloud (Figure \ref{fig:MleSubspaceEstimate}). Formally, PPCA posits the following generative process for how a sequence of high-dimensional data vectors $\mathbf{x}_i \in \mathbb{R}^n$, $i = 1, \cdots, N$ arise from some low dimensional latent representations $\mathbf{z}_i \in \mathbb{R}^p$ ($p < n$):
 
@@ -550,17 +550,17 @@ p(\mb{x}_1, \cdots, \mb{x}_N | W, \Lambda, \sigma^2) &=& -\frac{N}{2} \ln |\text
 \noindent We used the Givens representation in Stan to sample the posterior distribution of the parameters in model \ref{eq:PpcaSimplifiedModel} from a simulated dataset with $n = 50$ and $p = 3$. For  $\Lambda$ and $\sigma^2$ we chose uniform priors over the positive real line and for $W$ we chose a uniform prior over the Stiefel manifold yielding the unnormalized posterior density
 
 \begin{eqnarray}
-p(W, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W, \Lambda, \sigma^2)
+p(W, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W, \Lambda, \sigma^2),
 \end{eqnarray}
 
 \noindent or in the Givens representation
 
 \begin{eqnarray}
 \label{eq:ppca_density_givens}
-p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W(\Theta), \Lambda, \sigma^2)\, |J_{Y(\Theta)}(\Theta)|,
+p(\Theta, \Lambda, \sigma^2 | \mb{x}_1, \cdots, \mb{x}_N) \propto p(\mb{x}_1, \cdots, \mb{x}_N | W(\Theta), \Lambda, \sigma^2)\, |J_{Y(\Theta)}(\Theta)|.
 \end{eqnarray}
 
-\noindent where the latter term comes from Equation \ref{eq:final_change_of_measure}.
+\noindent The latter term comes from Equation \ref{eq:final_change_of_measure}.
 
 \noindent For the true value of the parameters we used the settings used by \citet{jauch2018random} in their experiments section: $\Lambda^2 = \mathrm{diag}(5, 3, 1.5)$, $\sigma^2 = 1$, and $W$ drawn uniformly from $V_{3, 50}$. We took 10,000 samples using Stan's NUTS algorithm with default settings. Table \ref{tab:ppca50} shows the posterior quantiles along with $\hat{R}$ and $n_{\mathrm{eff}}$ values for $\Lambda^2$ and $\sigma^2$. Like \citet{jauch2018random}, we plot histograms of the principal angle,
 
@@ -714,10 +714,10 @@ $U[3,1]$ & 1.02 & 500 & 1.00 & 500\\
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%
-We introduced an approach based on the Givens representation for sampling distributions specified in terms of orthogonal matrices. The approach is applicable to statistical models with orthogonal matrix parameters and addresses several of the practical concerns of using a transformation-based approach such as efficient computation of the measure adjustment term used in the density and topological issues that arise when mapping the Stiefel manifold to Euclidean space. Additionally, the approach is straight-forward to apply in Stan and other similar frameworks. We also provided an intuitive explanation behind the Givens representation, tying it to the geometry of the Stiefel manifold. We illustrated the use of the Givens representation on several practical examples, including a sparse PPCA example that illustrates how the Givens representation can be used to specify new distributions over the Stiefel manifold.
+We have shown how the Givens representation can be used to develop sampling methods for distributions over the space of orthogonal matrices. We developed approaches for grappling with issues posed by the Stiefel manifold topology and metric. We showed how an auxiliary parameter approach and analytic results for the density measure adjustment terms can be used to develop efficient computational methods. We also showed how our Givens representation approach can be used to specify distributions over the space of orthogonal matrices. We then demonstrated in practice our methods on several examples making comparisons with other approaches.  We expect our introduced Givens representation methods to be applicable to a wide-class of statistical models with orthogonal matrix parameters and to help further facilitate their use in modern probabilistic programming frameworks.
 
 \begin{acknowledgement}
-\noindent Research reported in this publication was performed by the Systems Biology Coagulopathy of Trauma Program of the US Army Medical Research and Materiel Command under award number W911QY-15-C-0026. The author P.J.A acknowledges support from research grant DOE ASCR CM4 DE-SC0009254 and NSF DMS - 1616353.
+\noindent Research reported in this publication was performed by the Systems Biology Coagulopathy of Trauma Program of the US Army Medical Research and Materiel Command under award number W911QY-15-C-0026. The author P.J.A acknowledges support from research grant DOE ASCR CM4 DE-SC0009254, DOE ASCR PhILMS DE-SC0019246, and NSF DMS - 1616353.
 \end{acknowledgement}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -757,7 +757,7 @@ G_{p:n}^T J_{Y_p(\Theta)}(\Theta)
 \end{pmatrix}
 \end{equation}
 
-\noindent Now, Equation can be written in the following block matrix form:
+\noindent In the new notation Equation can be written in the following block matrix form:
 
 \begin{equation}
 \label{eq:matrix_blockform}
@@ -783,7 +783,7 @@ Y_i = R_1 R_2 \cdots R_p e_i = R_1 \cdots R_i e_i.
 \end{equation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Simplifying the Diagonal Block Terms}
+\subsection{Simplifying Diagonal Block Terms}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 Let $I_{i}$ denote the first $i$ columns of the $n \times n$ identity matrix and let $I_{-i}$ represent the last $n-i$ columns. The term $G_{i+1:n}^T$ in expression \ref{eq:det_of_blocks} can be written as
 
@@ -806,7 +806,7 @@ I_{-i}^T
 \left[ R_p^T \cdots R_{i+1}^T\right] \left[ R_i^T \cdots R_1^T \partial_i Y_i \right] \right),
 \end{eqnarray}
 
-\noindent and then noticing that $R_{i+1} \cdots R_p$ effects only the first $i$ columns of the identity matrix, so 
+\noindent and then noticing that $R_{i+1} \cdots R_p$ affects only the first $i$ columns of the identity matrix so 
 
 \begin{eqnarray}
 I_{-i}^T
@@ -925,7 +925,7 @@ R_i e_i &=&   R_{i,i+1} \cdots R_{in} e_i \\
 \end{pmatrix}.
 \end{eqnarray}
 
-\noindent Finally, directly computing the inner product of $-\partial_{i,i+l} e_{i+k}^T R_i^T$ and $R_i e_i$ yields
+\noindent Finally, directly computing the inner-product of $-\partial_{i,i+l} e_{i+k}^T R_i^T$ and $R_i e_i$ yields
 
 \begin{eqnarray}
 -(\partial_{i,i+l} e_{i+k}^T R_i^T) (R_i e_i)
