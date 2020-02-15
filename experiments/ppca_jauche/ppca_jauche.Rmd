@@ -157,7 +157,7 @@ q_princ_angles %>%
   facet_grid(. ~ var_id) +
   theme_bw() +
   theme(text = element_text(size=20)) +
-  xlab("Principle Angle")
+  xlab("Principal Angle")
 ```
 
 
