@@ -143,7 +143,7 @@ Given any $n \times p$ matrix, $A$, the Givens reduction algorithm is a numerica
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=1.0\textwidth]{figures/givens_reduction.png}
+\includegraphics[width=0.6\textwidth]{figures/givens_reduction.png}
 \vspace{.05in}
 \caption{The Givens reduction eliminates lower diagonal elements of an $n \times p$ matrix one column at a time. Because each rotation, $R_{ij}(\theta_{ij})$, only affects rows $i$ and $j$, previously zeroed out elements do not change.}
 \label{fig:givens_reduction}
@@ -244,7 +244,7 @@ As is usual in any transformation of random variables, care must be taken to inc
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=0.4\textwidth]{figures/AreaForm_atz.pdf}
+\includegraphics[width=0.35\textwidth]{figures/AreaForm_atz.pdf}
 \vspace{.05in}
 \caption{Uniform sampling in the Givens representation coordinates does not necessarily lead to uniform sampling over the Stiefel manifold without the proper measure adjustment term. Under the mapping, regions near the pole are shrunk to regions on the sphere with little area, as opposed to regions near to the equator which the transform maps to much larger areas on the sphere. Intuitively, the change-of-measure term quantifies this proportion of shrinkage in area.}
 \label{fig:AreaForm}
@@ -263,9 +263,9 @@ G := R_{12}(\theta_{12}) \cdots R_{1n}(\theta_{1n})  \cdots R_{23}(\theta_{23}) 
 \bigwedge_{i=1}^p \bigwedge_{j=i+1}^n G_j^T\, dY_i.
 \end{equation}
 
-\noindent The terms $dY_i$, $i = 1, \cdots, p$, are known as differential 1-forms or covectors, and they represent infinitesimal directions along the Stiefel manifold. The wedge symbol denotes the wedge product, an anticommutative operation that takes in an $r$-form and an $s$-form and results in an $(r+s)$-form. Wedge products are closely related to, and in fact a generalization of determinants. For example, the wedge product of two 1-forms results in a 2-form, a signed infinitesimal area that is used for measuring surface areas of a manifold, just as the determinant of matrix comprised of two column vectors can be used to find the area of the parallelogram formed by those two vectors.
+\noindent The terms $dY_i$, $i = 1, \cdots, p$, are known as differential 1-forms or covectors, and they represent infinitesimal directions along the Stiefel manifold. The wedge symbol denotes the wedge product, an anticommutative operation that takes in an $r$-form and an $s$-form and results in an $(r+s)$-form. Wedge products are closely related to, and in fact a generalization of determinants. For example, the wedge product of two 1-forms results in a 2-form, a signed infinitesimal area that is used for measuring surface areas of a manifold, just as the determinant of a matrix comprised of two column vectors can be used to find the area of the parallelogram formed by those two vectors. For a simple introduction to differential forms, wedge products, and their connection to determinants we refer the reader to the excellent set of notes by \cite{edelman200518}. For a more comprehensive overview in the context of multivariate statistics we recommend \cite{muirhead2009aspects}.
 
-\noindent Letting $J_{Y_i(\Theta)}(\Theta)$ be the Jacobian of the $i$th column of $Y$ with respect to the angle coordinates of the Givens representation, this differential form in Expression \ref{eq:WedgeForm} can be written in the coordinates of the Givens representation as
+\noindent Letting $J_{Y_i(\Theta)}(\Theta)$ be the Jacobian of the $i$th column of $Y$ with respect to the angle coordinates of the Givens representation, the differential form in Expression \ref{eq:WedgeForm} can be written in the coordinates of the Givens representation as
 
 \begin{equation}
 \label{eq:WedgeForm_givens}
@@ -301,7 +301,7 @@ Two issues related to the topology of the Stiefel manifold arise when using the 
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=0.45\textwidth]{figures/sliver_globe.png}
+\includegraphics[width=0.4\textwidth]{figures/sliver_globe.png}
 \vspace{.05in}
 \caption{The angular coordinate chart has an infinitesimal sliver of measure zero lying at $\theta_{12} = -\pi = \pi$ that separates two otherwise connected parts of the sphere. Trajectories $Y(t)$ over the Stiefel manifold that cross this sliver have no equivalent representation, $\Theta(t)$, in the coordinates of the Givens representation. This can become particularly problematic when there is significant probability mass on both sides of the sliver. The grid over the sphere reveals how the Givens representation maps areas that are the same size in the $\Theta$ coordinates to smaller and smaller regions on the sphere the closer they are to the poles. Thus the measure adjustment term (Equation \ref{eq:final_change_of_measure}), which measures how the transform changes the area of these infinitesimal regions, goes to zero near the poles, making the transformed density at these points zero regardless of whether they were assigned to zero by the original density.}
 \label{fig:pathologies}
@@ -317,7 +317,7 @@ Two issues related to the topology of the Stiefel manifold arise when using the 
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=0.5\textwidth]{figures/donut.png}
+\includegraphics[width=0.45\textwidth]{figures/donut.png}
 \vspace{.05in}
 \caption{(Upper) 1,000 samples from a Von Mises distribution with parameters $\mu = -\pi$ and $\kappa = 5$ sampled over the space $\theta \in [-\pi, \pi]$ using Stan. Most of the mass of the distribution is concentrated at the ends of the interval while little mass is concentrated towards the middle. Because these two ends of the interval are disconnected in this representation, the sampler gets ``stuck" in the mode corresponding to the $-\pi$ side of the interval rather than the $\pi$ side. (Lower) 1,000 samples from the equivalent distribution sampled over the $(x,y)$-space. By introducing an auxiliary coordinate, one can effectively replicate the topology of a circle, effectively ``wrapping" the two ends of the interval so that the sampler avoids getting stuck in one region.}
 \label{fig:donut}
@@ -506,7 +506,7 @@ $p$ & $n$  & $\hat{R}$ & $n_{\mathrm{eff}}$ & $\hat{R}$ & $n_{\mathrm{eff}}$\\
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=0.6\textwidth]{figures/scaling.png}
+\includegraphics[width=0.5\textwidth]{figures/scaling.png}
 \vspace{.05in}
 \caption{For small values of $n$ the Givens representation approach in Stan produces more effective samplers per second, while for larger values GMC scales better since the primary cost of the matrix exponential remains constant.}
 \label{fig:scaling}
@@ -526,7 +526,7 @@ Factor Analysis (FA) and PPCA \citep{tipping1999probabilistic} posit a probabili
 \begin{figure}[h]
 \centering
 \vspace{.1in}
-\includegraphics[width=0.4\textwidth]{figures/uncertainty_atz.pdf}
+\includegraphics[width=0.35\textwidth]{figures/uncertainty_atz.pdf}
 \vspace{.05in}
 \caption{Three dimensional data generated from Equation \ref{eq:PpcaGenerativeProcess} with $p = 2, W = I_{3,2}, \Lambda_{11} = 2, \Lambda_{22} = 1$ and $\sigma = 1$. The maximum-a-posteriori (MAP) estimate of PPCA corresponds to a single orthogonal matrix in the Stiefel Manifold that is closest, in terms of average squared distance, to the set of points. When there are few data points relative to the size of the matrix, this point estimate can often have high variance.}
 \label{fig:MleSubspaceEstimate}
