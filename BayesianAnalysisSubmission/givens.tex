@@ -250,8 +250,7 @@ As is usual in any transformation of random variables, care must be taken to inc
 \label{fig:AreaForm}
 \end{figure}
 
-
-\noindent One way to compute the change-of-measure term analogous to the Jacobian determinant is to appeal to the algebra of differential forms. Denote the product of $n \times n$ rotation matrices in the Givens representation by $G$, i.e. 
+\noindent One way to compute the change-of-measure term analogous to the Jacobian determinant is to appeal to the algebra of differential forms, a useful tool used in geometry to measure areas, volumes, and their higher-dimensional analogues. Denote the product of $n \times n$ rotation matrices in the Givens representation by $G$, i.e. 
 
 \begin{equation}
 G := R_{12}(\theta_{12}) \cdots R_{1n}(\theta_{1n})  \cdots R_{23}(\theta_{23}) \cdots R_{pn}(\theta_{pn}) \cdots R_{p,p+1}(\theta_{p,p+1}) \cdots R_{pn}(\theta_{pn}),
@@ -264,7 +263,9 @@ G := R_{12}(\theta_{12}) \cdots R_{1n}(\theta_{1n})  \cdots R_{23}(\theta_{23}) 
 \bigwedge_{i=1}^p \bigwedge_{j=i+1}^n G_j^T\, dY_i.
 \end{equation}
 
-\noindent Letting $J_{Y_i(\Theta)}(\Theta)$ be the Jacobian of the $i$th column of $Y$ with respect to the angle coordinates of the Givens representation, this differential form can be written in the coordinates of the Givens representation as
+\noindent The terms $dY_i$, $i = 1, \cdots, p$, are known as differential 1-forms or covectors, and they represent infinitesimal directions along the Stiefel manifold. The wedge symbol denotes the wedge product, an anticommutative operation that takes in an $r$-form and an $s$-form and results in an $(r+s)$-form. Wedge products are closely related to, and in fact a generalization of determinants. For example, the wedge product of two 1-forms results in a 2-form, a signed infinitesimal area that is used for measuring surface areas of a manifold, just as the determinant of matrix comprised of two column vectors can be used to find the area of the parallelogram formed by those two vectors.
+
+\noindent Letting $J_{Y_i(\Theta)}(\Theta)$ be the Jacobian of the $i$th column of $Y$ with respect to the angle coordinates of the Givens representation, this differential form in Expression \ref{eq:WedgeForm} can be written in the coordinates of the Givens representation as
 
 \begin{equation}
 \label{eq:WedgeForm_givens}
